@@ -6,7 +6,7 @@ app.get("/api", (req: Request, res: Response) => {
     
     res.json({
         "success" : true,
-        "message" : "Haz las pantallas Ivan" 
+        "message" : "Las pantallas ya quedaron finas" 
     })
 });
 
