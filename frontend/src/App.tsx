@@ -1,12 +1,13 @@
-// @ts-ignore
-import AdminLayout from "./pages/admin/AdminLayout.jsx";
-// @ts-ignore
-import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios.jsx";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import './index.css';
+const queryClient = new QueryClient();
 
 function App() {
-  return <AdminUsuarios />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div>Hola</div>
+    </QueryClientProvider>
+  );
 }
 
 export default App;
