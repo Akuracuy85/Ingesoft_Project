@@ -7,7 +7,7 @@ export default function HeaderAdmin() {
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-8">
       {/* Logo y nombre */}
       <div className="flex items-center gap-2">
-        <img src={logo} alt="Unite logo" className="w-6 h-6" />
+        <img src={logo} alt="Unite logo" className="w-25 h-25" />
         <span className="font-semibold text-foreground"></span>
       </div>
 

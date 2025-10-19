@@ -21,9 +21,6 @@ export default function SidebarAdmin({ activeItem }) {
       {/* Logo */}
       <div className="p-6">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
-            <span className="text-background font-bold text-sm">U</span>
-          </div>
           <span className="font-semibold text-lg text-sidebar-foreground">
             Unite
           </span>
