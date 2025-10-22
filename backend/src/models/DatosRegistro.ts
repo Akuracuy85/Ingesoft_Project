@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Rol } from "../enums/Rol";
 
 @Entity()
-export class Usuario {
+export class DatosRegistro {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ type: "int" })

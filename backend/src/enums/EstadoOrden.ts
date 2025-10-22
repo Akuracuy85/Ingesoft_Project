@@ -1,0 +1,5 @@
+export enum EstadoOrden {
+  PENDIENTE = "PENDIENTE",
+  COMPLETADA = "COMPLETADA",
+  CANCELADA = "CANCELADA",
+}
