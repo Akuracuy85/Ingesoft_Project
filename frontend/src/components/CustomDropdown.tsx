@@ -7,7 +7,6 @@ interface Option {
 }
 
 interface CustomDropdownProps {
-  label: string;
   options: Option[];
   value: string;
   onChange: (value: string) => void;
@@ -15,7 +14,6 @@ interface CustomDropdownProps {
 }
 
 export const CustomDropdown: React.FC<CustomDropdownProps> = ({
-  label,
   options,
   value,
   onChange,
@@ -37,8 +35,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
   return (
     <div className="relative group" ref={dropdownRef}>
-      <h3 className="text-lg font-medium mb-2">{label}</h3>
-
+      
       {/* Selector visible */}
       <div
         className={`flex items-center justify-between border rounded px-3 py-2 cursor-pointer transition-colors ${

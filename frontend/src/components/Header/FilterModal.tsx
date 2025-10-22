@@ -1,8 +1,7 @@
-import React from "react";
-import { PriceRangeInput } from "./PriceRangeInput";
-import { LocationSelect } from "./LocationSelect";
-import { MultiSelectDropdown } from "./MultiSelectDropdown";
-import { DateRangePicker } from "./DateRangePicker";
+import { PriceRangeInput } from "./Filters/PriceRangeInput";
+import { LocationSelect } from "./Filters/LocationSelect";
+import { MultiSelectDropdown } from "./Filters/MultiSelectDropdown";
+import { DateRangePicker } from "./Filters/DateRangePicker";
 
 export const FilterModal = ({ onClose }: { onClose: () => void }) => {
   return (

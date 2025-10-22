@@ -1,0 +1,30 @@
+.react-datepicker {
+  @apply bg-white rounded-xl shadow-xl border border-red-300;
+  height: 280px; /* 👈 Ajusta aquí la altura del pop-up */
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+  @apply text-gray-700;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-red-500 text-white;
+}
+
+.react-datepicker__day--outside-month {
+  @apply text-gray-300;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-red-100 text-red-700;
+}
+
+.react-datepicker__header {
+  @apply bg-red-50 border-b border-red-200;
+}
+
+.react-datepicker__current-month {
+  @apply text-red-700 font-semibold;
+}

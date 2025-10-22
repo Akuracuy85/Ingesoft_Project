@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { CustomDropdown } from "../CustomDropdown";
-import { locationsMock } from "../../data/locationsMock";
-import type { Departamento, Provincia, Distrito } from "../../models/ListLocations";
+import { useState } from "react";
+import { CustomDropdown } from "../../CustomDropdown";
+import { locationsMock } from "../../../data/locationsMock";
+import type { Departamento, Provincia, Distrito } from "../../../models/ListLocations";
 
 export const LocationSelect = () => {
   const [departamento, setDepartamento] = useState<Departamento | null>(null);
