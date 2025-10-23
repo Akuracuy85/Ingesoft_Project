@@ -1,12 +1,13 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Rol } from "../enums/Rol";
+import { PasswordHasher } from "@/types/PasswordHasher";
 
 @Entity()
 export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({ type: "int" })
-  dni: number;
+  @Column()
+  dni: string;
   @Column()
   email: string;
   @Column()
@@ -18,9 +19,22 @@ export class Usuario {
   @Column()
   celular: string;
   @Column()
-  passwordHash: string;
+  password: string;
   @Column({ type: "enum", enum: Rol })
   rol: Rol;
   @Column()
   activo: boolean;
+
+  public async hashearPassword() {
+    this.password = await PasswordHasher.hash(this.password);
+  }
+
+  public activar(){
+    this.activo = true;
+  }
+
+  public desactivar(){
+    this.activo = false;
+  }
+
 }
