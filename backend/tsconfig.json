@@ -4,14 +4,18 @@
     "module": "CommonJS",                      
     "rootDir": "src",                          
     "outDir": "dist",                          
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,                   
     "experimentalDecorators": true,            
     "emitDecoratorMetadata": true,             
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
