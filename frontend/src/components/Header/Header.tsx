@@ -45,7 +45,16 @@ export const Header: React.FC = () => {
       </header>
 
       {/* 🔹 MODAL DE FILTROS */}
-      {showFilters && <FilterModal onClose={toggleFilters} />}
+      {showFilters && (
+        <FilterModal
+          onClose={toggleFilters}
+          onApplyFilters={(filters) => {
+            console.log("🎯 Filtros aplicados:", filters);
+            toggleFilters(); // opcional: cerrar el modal al aplicar
+          }}
+        />
+      )}
+
     </>
   );
 };
