@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { PriceRangeType } from "../../../types/PriceRangeType";
 
 interface PriceInputProps {
   value: string;
@@ -20,16 +21,13 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, h
       onChange={(e) => {
         let val = e.target.value;
 
-        // Permitir vacío
         if (val === "") {
           setValue(val);
           return;
         }
 
-        // Evitar valores menores a min
         if (parseFloat(val) < min) return;
 
-        // Formatear máximo 2 decimales mientras se escribe
         if (val.includes(".")) {
           const [intPart, decPart] = val.split(".");
           val = intPart + "." + decPart.slice(0, 2);
@@ -40,8 +38,6 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, h
       onFocus={handleFocus}
       onBlur={(e) => {
         handleBlur(e, setValue, min);
-
-        // Forzar 2 decimales al salir
         if (e.currentTarget.value) {
           let num = parseFloat(e.currentTarget.value);
           if (num < min) num = min;
@@ -53,9 +49,15 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, h
   </div>
 );
 
-export const PriceRangeInput: React.FC = () => {
-  const [fromValue, setFromValue] = useState("");
-  const [toValue, setToValue] = useState("");
+interface PriceRangeInputProps {
+  value: PriceRangeType | null;
+  onChange: (value: PriceRangeType) => void;
+  min?: number;
+}
+
+export const PriceRangeInput: React.FC<PriceRangeInputProps> = ({ value, onChange, min = 0 }) => {
+  const [fromValue, setFromValue] = useState(value?.from || "");
+  const [toValue, setToValue] = useState(value?.to || "");
   const [error, setError] = useState("");
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -63,24 +65,17 @@ export const PriceRangeInput: React.FC = () => {
     e.currentTarget.classList.add("text-black");
   };
 
-  const handleBlur = (
-    e: React.FocusEvent<HTMLInputElement>,
-    setter: (v: string) => void,
-    min?: number
-  ) => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>, setter: (v: string) => void, min?: number) => {
     if (!e.currentTarget.value) {
       e.currentTarget.classList.remove("text-black");
       e.currentTarget.classList.add("text-gray-400");
       return;
     }
-
     let num = parseFloat(e.currentTarget.value);
     if (min !== undefined && num < min) num = min;
-
     setter(num.toFixed(2));
   };
 
-  // Revisar errores cada vez que cambian los valores
   const validate = (from: string, to: string) => {
     if (from && to && parseFloat(to) < parseFloat(from)) {
       setError("El precio final no puede ser menor que el inicial.");
@@ -89,35 +84,37 @@ export const PriceRangeInput: React.FC = () => {
     }
   };
 
+  const handleChangeFrom = (val: string) => {
+    setFromValue(val);
+    onChange({ from: val, to: toValue });
+    validate(val, toValue);
+  };
+
+  const handleChangeTo = (val: string) => {
+    setToValue(val);
+    onChange({ from: fromValue, to: val });
+    validate(fromValue, val);
+  };
+
   return (
     <div className="mb-6">
       <h3 className="text-lg font-medium mb-2">Rango de precios</h3>
       <div className="flex gap-4">
-        {/* Precio inicial */}
         <PriceInput
           value={fromValue}
-          setValue={(val) => {
-            setFromValue(val);
-            validate(val, toValue);
-          }}
+          setValue={handleChangeFrom}
           handleFocus={handleFocus}
-          handleBlur={(e, setter) => handleBlur(e, setter, 0)}
-          min={0}
+          handleBlur={(e, setter) => handleBlur(e, setter, min)}
+          min={min}
         />
-
-        {/* Precio final */}
         <PriceInput
           value={toValue}
-          setValue={(val) => {
-            setToValue(val);
-            validate(fromValue, val);
-          }}
+          setValue={handleChangeTo}
           handleFocus={handleFocus}
-          handleBlur={(e, setter) => handleBlur(e, setter, 0)}
-          min={0}
+          handleBlur={(e, setter) => handleBlur(e, setter, min)}
+          min={min}
         />
       </div>
-
       {error && <p className="text-red-500 mt-1 text-sm">{error}</p>}
     </div>
   );

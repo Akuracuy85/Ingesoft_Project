@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-// ---------- 1️⃣ Botón del input ----------
+// 🔹 Botón custom para el input del datepicker
 const ButtonInput = React.forwardRef(
   ({ value, onClick }: { value?: string; onClick?: () => void }, ref: any) => (
     <button
@@ -30,7 +30,7 @@ const ButtonInput = React.forwardRef(
   )
 );
 
-// ---------- 2️⃣ Header del calendario ----------
+// 🔹 Header custom del calendario
 const CalendarHeader = ({
   monthDate,
   decreaseMonth,
@@ -39,7 +39,6 @@ const CalendarHeader = ({
   nextMonthButtonDisabled,
   setCurrentMonth,
 }: any) => {
-  // 🔹 Guardamos el mes actualmente mostrado
   React.useEffect(() => {
     setCurrentMonth(monthDate);
   }, [monthDate]);
@@ -69,17 +68,20 @@ const CalendarHeader = ({
   );
 };
 
+// 🔹 Props tipadas del DatePickerField
+type DatePickerFieldProps = {
+  label: string;
+  value: Date | null;
+  onChange: (date: Date) => void;
+  minDate?: Date;
+};
+
 export const DatePickerField = ({
   label,
   value,
   onChange,
   minDate,
-}: {
-  label: string;
-  value: Date | null;
-  onChange: (date: Date) => void;
-  minDate?: Date;
-}) => {
+}: DatePickerFieldProps) => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const pickerRef = useRef<DatePicker>(null!);
 

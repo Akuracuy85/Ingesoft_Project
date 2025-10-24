@@ -4,6 +4,8 @@ import { ChevronDown } from "lucide-react"; // ← usa ícono ligero de lucide-r
 interface MultiSelectDropdownProps {
   label: string;
   options: string[];
+  value: string[]; // lista seleccionada
+  onChange: (val: string[]) => void; // callback al cambiar selección  
 }
 
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
