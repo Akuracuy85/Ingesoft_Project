@@ -2,7 +2,9 @@ import React from "react";
 import userIcon from "../../assets/Header_UserIcon.svg";
 import logo from "../../assets/Logo_Unite.svg";
 
-export default function HeaderAdmin() {
+// 1. Definimos el tipo para el componente. 
+// 'React.FC' (Functional Component) se usa para componentes que no tienen props o que tienen props bien definidas.
+const HeaderAdmin: React.FC = () => {
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-8">
       {/* Logo y nombre */}
@@ -25,3 +27,5 @@ export default function HeaderAdmin() {
     </header>
   );
 }
+
+export default HeaderAdmin;

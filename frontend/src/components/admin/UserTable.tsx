@@ -1,7 +1,38 @@
 import React from "react";
 import { Edit, Trash2, Power } from "lucide-react";
 
-export default function UserTable({ users, onEdit, onToggleStatus, onDelete }) {
+// --- 1. INTERFAZ PARA EL OBJETO USUARIO ---
+
+// Define la estructura de cada usuario en el array
+interface User {
+  id: number; // Asumimos que el ID es un número o string
+  name: string;
+  email: string;
+  dni : string;
+  // Usamos "Union Types" para restringir los valores de Rol y Estado
+  role: 'Cliente' | 'Organizador' | 'Administrador';
+  status: 'Activo' | 'Inactivo';
+  lastAccess: string; // Asumimos que la fecha de último acceso es un string formateado
+  // Si hubiera más campos, los agregarías aquí
+}
+
+// --- 2. INTERFAZ PARA LAS PROPIEDADES (PROPS) ---
+
+// Define las propiedades que recibe el componente UserTable
+interface UserTableProps {
+  // 'users' es un array de objetos 'User'
+  users: User[]; 
+  // 'onEdit' recibe el objeto 'User' completo
+  onEdit: (user: User) => void;
+  // 'onToggleStatus' y 'onDelete' reciben el ID del usuario
+  onToggleStatus: (userId: User['id']) => void; 
+  onDelete: (userId: User['id']) => void;
+}
+
+// --- 3. COMPONENTE CON TIPADO ---
+
+// Tipamos el componente con las props definidas
+const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus, onDelete }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -20,7 +51,7 @@ export default function UserTable({ users, onEdit, onToggleStatus, onDelete }) {
           {users.length === 0 ? (
             <tr>
               <td
-                colSpan="7"
+                colSpan={7} // Se recomienda tipar colSpan como número
                 className="text-center py-8 text-muted-foreground"
               >
                 No se encontraron usuarios
@@ -87,3 +118,5 @@ export default function UserTable({ users, onEdit, onToggleStatus, onDelete }) {
     </div>
   );
 }
+
+export default UserTable;

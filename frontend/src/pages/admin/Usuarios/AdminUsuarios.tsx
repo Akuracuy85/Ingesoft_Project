@@ -1,13 +1,45 @@
 import React, { useState } from "react";
-import HeaderAdmin from "../../../components/admin/HeaderAdmin.jsx";
-import SidebarAdmin from "../../../components/admin/SidebarAdmin.jsx";
-import UserTable from "../../../components/admin/UserTable.jsx";
-import UserModal from "../../../components/admin/UserModal.jsx";
+// Usaremos "import type" si tu configuración es estricta (como en los errores anteriores)
+import HeaderAdmin from "../../../components/admin/HeaderAdmin.js";
+import SidebarAdmin from "../../../components/admin/SidebarAdmin.js";
+import UserTable from "../../../components/admin/UserTable.js";
+import UserModal from "../../../components/admin/UserModal.js";
 import { Search, Plus, Download } from "lucide-react";
 
+// --- 1. DEFINICIÓN DE INTERFACES Y TIPOS ---
 
-export default function AdminUsuarios() {
-  const initialUsers = [
+// Definición para el objeto de usuario (la estructura de 'initialUsers')
+type UserRole = 'Cliente' | 'Organizador' | 'Administrador';
+type UserStatus = 'Activo' | 'Inactivo';
+type UserID = number; // El ID es numérico
+
+interface User {
+  id: UserID;
+  name: string;
+  email: string;
+  dni: string;
+  role: UserRole;
+  status: UserStatus;
+  lastAccess: string;
+}
+
+// Interfaz para los datos que vienen del formulario (UserModal)
+// Es idéntica a User, pero sin 'id' ni 'lastAccess'
+interface UserFormData {
+  name: string;
+  email: string;
+  dni: string;
+  role: UserRole;
+  status: UserStatus;
+}
+
+// Tipado para los filtros de rol y estado (incluye 'all')
+type FilterValue = UserRole | UserStatus | 'all';
+
+
+// --- 2. COMPONENTE FUNCIONAL ---
+
+const initialUsers: User[] = [ // Tipamos el array inicial
     {
       id: 1001,
       name: "María López",
@@ -53,44 +85,53 @@ export default function AdminUsuarios() {
       status: "Activo",
       lastAccess: "04/10/25",
     },
-  ];
+];
 
-  const [users, setUsers] = useState(initialUsers);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+// Tipamos todos los estados con sus interfaces o tipos correctos
+export default function AdminUsuarios(): React.ReactElement { // o React.FC
+  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [roleFilter, setRoleFilter] = useState<FilterValue>("all");
+  const [statusFilter, setStatusFilter] = useState<FilterValue>("all");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  // editingUser puede ser un objeto User o null
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const filteredUsers = users.filter((user) => {
+  // Tipamos la función de filtrado para mayor claridad
+  const filteredUsers = users.filter((user: User) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.dni && user.dni.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    // Necesitamos hacer un casting a los tipos para que TypeScript sepa que son compatibles
+    const matchesRole = roleFilter === "all" || user.role === roleFilter as UserRole;
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter as UserStatus;
 
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleCreateUser = () => {
+  const handleCreateUser = (): void => {
     setEditingUser(null);
     setIsModalOpen(true);
   };
 
-  const handleEditUser = (user) => {
+  // Tipamos la función para asegurar que recibe un User
+  const handleEditUser = (user: User): void => {
     setEditingUser(user);
     setIsModalOpen(true);
   };
 
-  const handleSaveUser = (userData) => {
+  // Tipamos la función para asegurar que recibe los datos del formulario (UserFormData)
+  const handleSaveUser = (userData: UserFormData): void => {
     if (editingUser) {
+      // Edición de usuario
       setUsers(
         users.map((u) => (u.id === editingUser.id ? { ...u, ...userData } : u))
       );
     } else {
-      const newUser = {
+      // Creación de nuevo usuario
+      const newUser: User = { // Tipamos el objeto nuevo
         ...userData,
         id: Math.max(...users.map((u) => u.id)) + 1,
         lastAccess: new Date().toLocaleDateString("es-ES", {
@@ -104,7 +145,8 @@ export default function AdminUsuarios() {
     setIsModalOpen(false);
   };
 
-  const handleToggleStatus = (userId) => {
+  // Tipamos la función para asegurar que recibe un ID
+  const handleToggleStatus = (userId: UserID): void => {
     setUsers(
       users.map((u) =>
         u.id === userId
@@ -114,18 +156,20 @@ export default function AdminUsuarios() {
     );
   };
 
-  const handleDeleteUser = (userId) => {
+  // Tipamos la función para asegurar que recibe un ID
+  const handleDeleteUser = (userId: UserID): void => {
     if (confirm("¿Deseas eliminar este usuario?")) {
       setUsers(users.filter((u) => u.id !== userId));
     }
   };
 
-  const handleExport = (format) => {
+  const handleExport = (format: string): void => {
     alert(`Exportando lista de usuarios como ${format.toUpperCase()}...`);
   };
 
   return (
     <div className="flex h-screen bg-background">
+      {/* Las props de SidebarAdmin ya fueron tipadas en un ejemplo anterior */}
       <SidebarAdmin activeItem="Usuarios" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -151,16 +195,17 @@ export default function AdminUsuarios() {
                     <input
                       placeholder="Buscar por nombre, correo o DNI"
                       value={searchQuery}
+                      // El evento onChange es inferido por TypeScript
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10 border border-border rounded-md px-3 py-2 w-full text-sm"
                     />
                   </div>
                 </div>
 
-                {/* Filtros simples por ahora */}
                 <select
                   value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
+                  // Aseguramos que el valor del select coincide con nuestro FilterValue
+                  onChange={(e) => setRoleFilter(e.target.value as FilterValue)}
                   className="border border-border rounded-md px-3 py-2 text-sm"
                 >
                   <option value="all">Todos los roles</option>
@@ -171,7 +216,7 @@ export default function AdminUsuarios() {
 
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => setStatusFilter(e.target.value as FilterValue)}
                   className="border border-border rounded-md px-3 py-2 text-sm"
                 >
                   <option value="all">Todos los estados</option>
@@ -220,11 +265,13 @@ export default function AdminUsuarios() {
         </main>
       </div>
 
+      {/* Las props de UserModal también han sido tipadas */}
       <UserModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveUser}
-        user={editingUser}
+        // Pasamos el estado tipado
+        user={editingUser} 
       />
     </div>
   );

@@ -1,14 +1,59 @@
 import React, { useState, useEffect } from "react";
+import type { FormEvent } from "react";
 
-export default function UserModal({ isOpen, onClose, onSave, user }) {
-  const [formData, setFormData] = useState({
+
+// --- 1. INTERFACES PARA DATOS Y ESTADO ---
+
+// 1.1. Interfaz para los datos del usuario (lo que se recibe/edita)
+interface User {
+  name: string;
+  email: string;
+  dni: string;
+  // Usamos "Union Types" para restringir los valores válidos
+  role: 'Cliente' | 'Organizador' | 'Administrador';
+  status: 'Activo' | 'Inactivo';
+}
+
+// 1.2. Interfaz para el estado del formulario (es igual a User, pero dni puede ser opcional/vacio)
+// En este caso, son idénticas, pero es buena práctica tenerlas separadas.
+interface UserFormData {
+  name: string;
+  email: string;
+  dni: string;
+  role: 'Cliente' | 'Organizador' | 'Administrador';
+  status: 'Activo' | 'Inactivo';
+}
+
+
+// --- 2. INTERFAZ PARA PROPIEDADES (PROPS) ---
+
+// 2. Interfaz para las propiedades que recibe el componente
+interface UserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  // La función onSave recibe los datos del formulario (UserFormData)
+  onSave: (data: UserFormData) => void; 
+  // 'user' es opcional y puede ser 'null' o un objeto 'User'
+  user: User | null; 
+}
+
+// --- 3. COMPONENTE CON TIPADO ---
+
+// Tipamos el componente con las props definidas
+const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) => {
+  
+  // Tipamos el estado inicial con UserFormData
+  const initialFormData: UserFormData = {
     name: "",
     email: "",
     dni: "",
     role: "Cliente",
     status: "Activo",
-  });
+  };
+  
+  const [formData, setFormData] = useState<UserFormData>(initialFormData);
 
+  // Efecto para inicializar el formulario cuando 'user' o 'isOpen' cambian
   useEffect(() => {
     if (user) {
       setFormData({
@@ -19,17 +64,13 @@ export default function UserModal({ isOpen, onClose, onSave, user }) {
         status: user.status,
       });
     } else {
-      setFormData({
-        name: "",
-        email: "",
-        dni: "",
-        role: "Cliente",
-        status: "Activo",
-      });
+      setFormData(initialFormData);
     }
-  }, [user, isOpen]);
+    // Añadimos 'initialFormData' como dependencia si fuese una prop, pero aquí es constante
+  }, [user, isOpen]); 
 
-  const handleSubmit = (e) => {
+  // Tipamos el evento de envío del formulario
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
@@ -49,6 +90,7 @@ export default function UserModal({ isOpen, onClose, onSave, user }) {
             <input
               type="text"
               value={formData.name}
+              // El evento 'e' en onChange no necesita ser tipado aquí, TypeScript lo infiere
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Ej: María López"
               className="w-full border border-border rounded-md px-3 py-2 text-sm"
@@ -83,7 +125,8 @@ export default function UserModal({ isOpen, onClose, onSave, user }) {
             <label className="block text-sm font-medium mb-1">Rol</label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              // Aseguramos que el valor de e.target.value coincida con los Union Types definidos
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
               className="w-full border border-border rounded-md px-3 py-2 text-sm"
             >
               <option value="Cliente">Cliente</option>
@@ -96,7 +139,8 @@ export default function UserModal({ isOpen, onClose, onSave, user }) {
             <label className="block text-sm font-medium mb-1">Estado</label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              // Aseguramos que el valor de e.target.value coincida con los Union Types definidos
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as User['status'] })}
               className="w-full border border-border rounded-md px-3 py-2 text-sm"
             >
               <option value="Activo">Activo</option>
@@ -124,3 +168,5 @@ export default function UserModal({ isOpen, onClose, onSave, user }) {
     </div>
   );
 }
+
+export default UserModal;
