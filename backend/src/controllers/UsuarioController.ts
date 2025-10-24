@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UsuarioService } from "@/services/UsuarioService";
 import { HandleResponseError } from "@/utils/Errors";
+import { StatusCodes } from "http-status-codes";
 
 export class UsuarioController {
   private static instance: UsuarioController;
@@ -20,7 +21,10 @@ export class UsuarioController {
   async obtenerPorId(req: Request, res: Response) {
     try {
       const usuario = await this.usuarioService.buscarPorId(Number(req.params.id));
-      res.json(usuario);
+      res.status(StatusCodes.OK).json({
+        success : true,
+        usuario : usuario
+      });
     } catch (error) {
       HandleResponseError(res, error);
     }
@@ -29,25 +33,33 @@ export class UsuarioController {
   async obtenerPorRol(req: Request, res: Response) {
     try {
       const usuarios = await this.usuarioService.buscarPorRol(req.params.rol as any);
-      res.json(usuarios);
+      res.status(StatusCodes.OK).json({
+        success : true,
+        usuarios : usuarios
+      });
     } catch (error) {
       HandleResponseError(res, error);
     }
   }
 
-  async crear(req: Request, res: Response) {
+  async crearUsuario(req: Request, res: Response) {
     try {
-      const usuario = await this.usuarioService.crearUsuario(req.body);
-      res.status(201).json(usuario);
+      console.log(req.body)
+      await this.usuarioService.crearUsuario(req.body);
+      res.status(StatusCodes.CREATED).json({
+        success : true,
+      });
     } catch (error) {
       HandleResponseError(res, error);
     }
   }
 
-  async editar(req: Request, res: Response) {
+  async editarUsuario(req: Request, res: Response) {
     try {
-      const usuario = await this.usuarioService.editarUsuario(Number(req.params.id), req.body);
-      res.json(usuario);
+      await this.usuarioService.editarUsuario(Number(req.params.id), req.body);
+      res.status(StatusCodes.OK).json({
+        success : true,
+      });
     } catch (error) {
       HandleResponseError(res, error);
     }
@@ -56,7 +68,32 @@ export class UsuarioController {
   async borrar(req: Request, res: Response) {
     try {
       await this.usuarioService.desactivarUsuario(Number(req.params.id));
-      res.json({ message: "Usuario eliminado correctamente" });
+      res.status(StatusCodes.OK).json({ 
+        success : true,
+        message: "Usuario eliminado correctamente"
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  }
+
+  async activar(req: Request, res: Response) {
+    try {
+      await this.usuarioService.activarUsuario(Number(req.params.id));
+      res.status(StatusCodes.OK).json({
+        success : true
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  }
+
+  async desactivar(req: Request, res: Response) {
+    try {
+      await this.usuarioService.desactivarUsuario(Number(req.params.id));
+      res.status(StatusCodes.OK).json({
+        success : true
+      });
     } catch (error) {
       HandleResponseError(res, error);
     }

@@ -1,6 +1,8 @@
 import { AppDataSource } from "@/database/data-source";
 import { Rol } from "@/enums/Rol";
 import { Usuario } from "@/models/Usuario";
+import { Cliente } from "@/models/Cliente";
+import { Organizador } from "@/models/Organizador";
 import { Repository } from "typeorm";
 
 export class UsuarioRepository {
@@ -23,7 +25,11 @@ export class UsuarioRepository {
   }
 
   async buscarPorEmail(email: string): Promise<Usuario | null> {
-    return await this.repository.findOneBy({ email });
+    return await this.repository
+      .createQueryBuilder("usuario")
+      .addSelect("usuario.password")
+      .where("usuario.email = :email", { email })
+      .getOne();
   }
 
   async buscarPorDNI(dni: string): Promise<Usuario | null> {
@@ -35,13 +41,22 @@ export class UsuarioRepository {
   }
 
   async crearUsuario(data: Partial<Usuario>): Promise<Usuario> {
-    const user = this.repository.create(data);
-    return await this.repository.save(user);
+    let usuario: Usuario;
+    switch (data.rol) {
+      case Rol.CLIENTE:
+        usuario = this.repository.create(data as Cliente);
+        break;
+      case Rol.ORGANIZADOR:
+        usuario = this.repository.create(data as Organizador);
+        break;
+      default:
+        usuario = this.repository.create(data);
+    }
+    return await this.repository.save(usuario);
   }
 
-  async actualizarUsuario(id: number, data: Partial<Usuario>): Promise<Usuario | null> {
+  async actualizarUsuario(id: number, data: Partial<Usuario>){
     await this.repository.update(id, data);
-    return await this.buscarPorId(id);
   }
 
   async borrarUsuario(usuario: Usuario): Promise<void> {

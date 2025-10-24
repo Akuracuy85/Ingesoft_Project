@@ -1,12 +1,18 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ChildEntity, Column, OneToMany } from "typeorm";
+import { Usuario } from "./Usuario";
+import { Rol } from "../enums/Rol";
 import { Tarjeta } from "./Tarjeta";
 
-@Entity()
-export class Cliente {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column({ type: "int" })
+@ChildEntity()
+export class Cliente extends Usuario {
+  @Column({ type: "int", default: 0 })
   puntos: number;
-  @ManyToOne(() => Tarjeta, { onDelete: "CASCADE" })
-  tarjetas: Tarjeta;
+
+  @OneToMany(() => Tarjeta, tarjeta => tarjeta.cliente, { cascade: true })
+  tarjetas: Tarjeta[];
+
+  constructor() {
+    super();
+    this.rol = Rol.CLIENTE;
+  }
 }

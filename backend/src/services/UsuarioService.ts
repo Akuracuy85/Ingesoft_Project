@@ -2,7 +2,8 @@ import { UsuarioRepository } from "@/repositories/UsuarioRepository";
 import { Usuario } from "@/models/Usuario";
 import { Rol } from "@/enums/Rol";
 import { CustomError } from "@/types/CustomError";
-import { StatusCodes } from "http-status-codes"
+import { StatusCodes } from "http-status-codes";
+import { PasswordHasher } from "@/types/PasswordHasher";
 
 export class UsuarioService {
   private static instance: UsuarioService;
@@ -20,43 +21,113 @@ export class UsuarioService {
   }
 
   async buscarPorId(id: number): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.buscarPorId(id);
-    if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-    return usuario;
+    try {
+      const usuario = await this.usuarioRepository.buscarPorId(id);
+      if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      return usuario;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al buscar usuario en la base de datos", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async buscarPorEmail(email: string): Promise<Usuario> {
+    try {
+      const usuario = await this.usuarioRepository.buscarPorEmail(email);
+      if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      return usuario;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al buscar usuario por email", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async buscarPorDNI(dni: string): Promise<Usuario | null> {
+    try {
+      const usuario = await this.usuarioRepository.buscarPorDNI(dni);
+      if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      return usuario;
+    } catch (error) {
+      throw new CustomError("Error al buscar usuario por DNI", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async buscarPorRol(rol: Rol): Promise<Usuario[]> {
-    return await this.usuarioRepository.buscarPorRol(rol);
+    try {
+      return await this.usuarioRepository.buscarPorRol(rol);;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al buscar usuarios por rol", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  async crearUsuario(usuario: Partial<Usuario>) {
-    if (!usuario.password) throw new CustomError("La contraseña es obligatoria", StatusCodes.BAD_REQUEST);
-    await usuario.hashearPassword();
-    return await this.usuarioRepository.crearUsuario(usuario);
+  async crearUsuario(usuarioData: Partial<Usuario>) {
+    try {
+      if (!usuarioData.password) throw new CustomError("La contraseña es obligatoria", StatusCodes.BAD_REQUEST);
+      if (!usuarioData.rol) throw new CustomError("El rol es obligatorio", StatusCodes.BAD_REQUEST);
+      usuarioData.password = await PasswordHasher.hash(usuarioData.password)
+      return await this.usuarioRepository.crearUsuario(usuarioData);
+    } catch (error: any) {
+      if (error instanceof CustomError) throw error;
+      if (error && error.code === "ER_DUP_ENTRY") {
+        throw new CustomError("El usuario ya existe", StatusCodes.CONFLICT);
+      }
+      throw new CustomError("Error al crear usuario: " + error, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async editarUsuario(id: number, data: Partial<Usuario>) {
-    delete data.password;
-    const usuario = await this.usuarioRepository.actualizarUsuario(id, data);
-    if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-    return usuario;
+    try {
+      const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
+      if (!usuarioExistente) {
+        throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      }
+
+      if (data.password) delete data.password;
+      const usuarioActualizado = await this.usuarioRepository.actualizarUsuario(id, data);
+      return usuarioActualizado;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al actualizar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async borrarUsuario(id: number) {
-    const usuario = await this.usuarioRepository.buscarPorId(id);
-    if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-    return await this.usuarioRepository.borrarUsuario(usuario);
+    try {
+      const usuario = await this.usuarioRepository.buscarPorId(id);
+      if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      return await this.usuarioRepository.borrarUsuario(usuario);
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al eliminar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async activarUsuario(id: number) {
-    const usuario = await this.usuarioRepository.actualizarUsuario(id, { activo: true });
-    if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-    return usuario;
+    try {
+      const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
+      if (!usuarioExistente) {
+        throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      }
+      await this.usuarioRepository.actualizarUsuario(id, { activo: true });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al activar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async desactivarUsuario(id: number) {
-    const usuario = await this.usuarioRepository.actualizarUsuario(id, { activo: false });
-    if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-    return usuario;
+    try {
+      const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
+      if (!usuarioExistente) {
+        throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+      }
+      await this.usuarioRepository.actualizarUsuario(id, { activo: false });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al desactivar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
+
+  
 }
