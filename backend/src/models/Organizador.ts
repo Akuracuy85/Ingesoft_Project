@@ -1,11 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ChildEntity, Column } from "typeorm";
+import { Usuario } from "./Usuario";
+import { Rol } from "../enums/Rol";
 
-@Entity()
-export class Organizador {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
+@ChildEntity()
+export class Organizador extends Usuario {
+  @Column({ nullable: true })
   RUC: string;
-  @Column()
+
+  @Column({ nullable: true })
   RazonSocial: string;
+
+  constructor() {
+    super();
+    this.rol = Rol.ORGANIZADOR;
+  }
 }

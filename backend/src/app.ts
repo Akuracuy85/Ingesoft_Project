@@ -1,16 +1,10 @@
 import express, { Request, Response } from "express";
+import uniteRouter from "./routes/routes";
 
 const app = express();
-const apiRouter = express.Router();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-apiRouter.get("/sas", (req: Request, res: Response) => {
-    
-    res.json({
-        "success" : true,
-        "message" : "Las pantallas ya quedaron finas" 
-    })
-});
-
-app.use("/api", apiRouter)
+app.use("/api", uniteRouter)
 
 export default app;
