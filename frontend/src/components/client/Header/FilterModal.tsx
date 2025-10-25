@@ -4,10 +4,10 @@ import { LocationSelect } from "./Filters/LocationSelect";
 import { MultiSelectDropdown } from "./Filters/MultiSelectDropdown";
 import { DateRangePicker } from "./Filters/DateRangePicker";
 
-import type { FiltersType } from "../../types/FiltersType";
-import type { PriceRangeType } from "../../types/PriceRangeType";
-import type { LocationType } from "../../types/LocationType";
-import type { DateRangeType } from "../../types/DateRangeType";
+import type { FiltersType } from "../../../types/FiltersType";
+import type { PriceRangeType } from "../../../types/PriceRangeType";
+import type { LocationType } from "../../../types/LocationType";
+import type { DateRangeType } from "../../../types/DateRangeType";
 
 export const FilterModal = ({
   onClose,

@@ -1,4 +1,4 @@
-import type { DateRangeType } from "../../../types/DateRangeType";
+import type { DateRangeType } from "../../../../types/DateRangeType";
 import { DatePickerField } from "./DatePickerField";
 
 type DateRangePickerProps = {

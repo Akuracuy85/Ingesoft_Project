@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { Event } from "../../../models/Event";
+import type { Event } from "../../../../models/Event";
 
 interface FeaturedEventProps {
   events: Event[];

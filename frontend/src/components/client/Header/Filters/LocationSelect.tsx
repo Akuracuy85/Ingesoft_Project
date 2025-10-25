@@ -1,6 +1,6 @@
 import { CustomDropdown } from "../../CustomDropdown";
-import { locationsMock } from "../../../data/locationsMock";
-import type { LocationType, Option } from "../../../types/LocationType";
+import { locationsMock } from "../../../../data/locationsMock";
+import type { LocationType, Option } from "../../../../types/LocationType";
 
 type LocationSelectProps = {
   value: LocationType;

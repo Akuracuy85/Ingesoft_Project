@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { PriceRangeType } from "../../../types/PriceRangeType";
+import type { PriceRangeType } from "../../../../types/PriceRangeType";
 
 interface PriceInputProps {
   value: string;
