@@ -36,7 +36,7 @@ export class Evento {
   imagenBanner: Buffer;
   @Column({ type: "longblob", nullable: true })
   imagenLugar: Buffer;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "int" })
   gananciaTotal: number;
   @OneToMany(() => Zona, zona => zona.evento, { onDelete: "CASCADE" })
   zonas: Zona[];

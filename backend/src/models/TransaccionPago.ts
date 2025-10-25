@@ -6,7 +6,7 @@ import { MetodoPago } from "../enums/MetodoPago";
 export class TransaccionPago {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "int" })
   monto: number;
   @Column({ type: "enum", enum: EstadoTransaccion })
   estado: EstadoTransaccion;
