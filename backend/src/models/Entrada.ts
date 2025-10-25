@@ -11,6 +11,6 @@ export class Entrada {
   dniCliente: string;
   @Column()
   tipoEntrada: string;
-  @ManyToOne(() => Evento, evento => evento.entradas)
+  @ManyToOne(() => Evento, evento => evento.entradas, { onDelete: "CASCADE" })
   evento: Evento;
 }
