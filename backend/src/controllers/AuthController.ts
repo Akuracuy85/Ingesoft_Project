@@ -1,6 +1,7 @@
 import { AuthService } from "@/services/AuthService";
 import { CrearCookieDeSesion } from "@/utils/CookieUtils";
 import { HandleResponseError } from "@/utils/Errors";
+import { GenerarAccessToken, VerificarRefreshToken } from "@/utils/JWTUtils";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
@@ -20,13 +21,14 @@ export class AuthController {
     return AuthController.instance;
   }
 
-  public async Status(req: Request, res: Response) {
+  Status = async (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({
-      success : true,
+      success: true,
+      expiresIn: req.tokenExpiresIn || 0
     });
   }
 
-  public async Login(req: Request, res: Response) {
+  Login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
       const { accessToken, refreshToken } = await this.authService.AutenticarUsuario(email, password);
@@ -37,6 +39,29 @@ export class AuthController {
     } catch (error) {
       HandleResponseError(res, error);
     }
+  }
+
+  Refresh = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refresh_token;
+    if (!refreshToken) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: "No autorizado" });
+    }
+
+    try {
+      const decoded = VerificarRefreshToken(refreshToken);
+      const newAccessToken = GenerarAccessToken(decoded.userId);
+      CrearCookieDeSesion(res, newAccessToken);
+
+      return res.status(StatusCodes.OK).json({ success: true });
+    } catch {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: "Refresh token inválido o expirado" });
+    }
+  }
+
+  Logout = async (req: Request, res: Response) => {
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+    res.status(StatusCodes.OK).json({ success: true });
   }
 
 }

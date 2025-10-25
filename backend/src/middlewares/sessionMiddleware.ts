@@ -5,8 +5,8 @@ import { VerificarAccessToken } from "@/utils/JWTUtils";
 
 export class SessionMiddleware {
   
-  public VerificarToken(req: Request, res: Response, next: NextFunction) {
-    const token = req.cookies.token;
+  VerificarToken = async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.access_token;
 
     if (!token) {
       return res.status(StatusCodes.UNAUTHORIZED).json({ 
@@ -16,8 +16,11 @@ export class SessionMiddleware {
     }
 
     try {
-      const decoded = VerificarAccessToken(token) as { userId: number };
+      const decoded = VerificarAccessToken(token) as { userId: number, exp: number };
       req.userId = decoded.userId;
+      const expirationTime = decoded.exp * 1000;
+      const currentTime = Date.now();
+      req.tokenExpiresIn = Math.max(0, expirationTime - currentTime);
       next();
     } catch (err) {
       return res.status(StatusCodes.UNAUTHORIZED).json({ 
@@ -27,3 +30,5 @@ export class SessionMiddleware {
     }
   }
 }
+
+export const sessionMiddleware = new SessionMiddleware();

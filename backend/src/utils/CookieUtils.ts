@@ -11,7 +11,7 @@ function CrearCookie(res: Response, nombre: string, valor: string, duracion: num
   })
 }
 
-export function CrearCookieDeSesion(res: Response, accessToken: string, refreshToken: string) {
+export function CrearCookieDeSesion(res: Response, accessToken: string, refreshToken?: string) {
   CrearCookie(res, "access_token", accessToken, 1 * TIME.HOUR);
-  CrearCookie(res, "refresh_token", refreshToken, 2 * TIME.HOUR);
+  if(refreshToken) CrearCookie(res, "refresh_token", refreshToken, 2 * TIME.HOUR);
 }

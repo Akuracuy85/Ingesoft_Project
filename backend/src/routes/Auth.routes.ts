@@ -1,11 +1,14 @@
 import { authController } from "@/controllers/AuthController";
+import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 import { Router } from "express";
 
 
 const router = Router();
 
-router.get("/status", (req, res) => authController.Status(req, res));
+router.get("/status", sessionMiddleware.VerificarToken, authController.Status);
 
-router.post("/login", (req, res) => authController.Login(req, res));
+router.post("/login", authController.Login);
+
+router.delete("/logout", sessionMiddleware.VerificarToken, authController.Logout);
 
 export default router;

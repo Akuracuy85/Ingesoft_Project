@@ -8,11 +8,11 @@ export const ACCESS_JWT_TIME = TIME.MINUTE * 15;
 export const REFRESH_JWT_TIME = TIME.HOUR * 1;
 
 export function GenerarAccessToken(userId: number) {
-  return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: "15m" });
+  return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: "1h" });
 }
 
 export function GenerarRefreshToken(userId: number) {
-  return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: "3h" });
 }
 
 export function VerificarAccessToken(token: string) {

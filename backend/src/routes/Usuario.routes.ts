@@ -3,18 +3,18 @@ import { usuarioController } from "@/controllers/UsuarioController";
 
 const router = Router();
 
-router.get("/:id", (req, res) => usuarioController.obtenerPorId(req, res));
+router.get("/:id", usuarioController.obtenerPorId);
 
-router.get("/rol/:rol", (req, res) => usuarioController.obtenerPorRol(req, res));
+router.get("/rol/:rol", usuarioController.obtenerPorRol);
 
-router.post("/", (req, res) => usuarioController.crearUsuario(req, res));
+router.post("/", usuarioController.crearUsuario);
 
-router.put("/:id", (req, res) => usuarioController.editarUsuario(req, res));
+router.put("/:id", usuarioController.editarUsuario);
 
-router.delete("/:id", (req, res) => usuarioController.borrar(req, res));
+router.delete("/:id", usuarioController.borrar);
 
-router.patch("/activar/:id", (req, res) => usuarioController.activar(req, res));
+router.patch("/activar/:id", usuarioController.activar);
 
-router.patch("/desactivar/:id", (req, res) => usuarioController.desactivar(req, res));
+router.patch("/desactivar/:id", usuarioController.desactivar);
 
 export default router;

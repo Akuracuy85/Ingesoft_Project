@@ -18,7 +18,7 @@ export class UsuarioController {
     return UsuarioController.instance;
   }
 
-  async obtenerPorId(req: Request, res: Response) {
+  obtenerPorId = async (req: Request, res: Response) => {
     try {
       const usuario = await this.usuarioService.buscarPorId(Number(req.params.id));
       res.status(StatusCodes.OK).json({
@@ -30,7 +30,7 @@ export class UsuarioController {
     }
   }
 
-  async obtenerPorRol(req: Request, res: Response) {
+  obtenerPorRol = async (req: Request, res: Response) => {
     try {
       const usuarios = await this.usuarioService.buscarPorRol(req.params.rol as any);
       res.status(StatusCodes.OK).json({
@@ -42,7 +42,7 @@ export class UsuarioController {
     }
   }
 
-  async crearUsuario(req: Request, res: Response) {
+  crearUsuario = async (req: Request, res: Response) => {
     try {
       await this.usuarioService.crearUsuario(req.body);
       res.status(StatusCodes.CREATED).json({
@@ -53,7 +53,7 @@ export class UsuarioController {
     }
   }
 
-  async editarUsuario(req: Request, res: Response) {
+  editarUsuario = async (req: Request, res: Response) => {
     try {
       await this.usuarioService.editarUsuario(Number(req.params.id), req.body);
       res.status(StatusCodes.OK).json({
@@ -64,7 +64,7 @@ export class UsuarioController {
     }
   }
 
-  async borrar(req: Request, res: Response) {
+  borrar = async (req: Request, res: Response) => {
     try {
       await this.usuarioService.desactivarUsuario(Number(req.params.id));
       res.status(StatusCodes.OK).json({ 
@@ -76,7 +76,7 @@ export class UsuarioController {
     }
   }
 
-  async activar(req: Request, res: Response) {
+  activar = async (req: Request, res: Response) => {
     try {
       await this.usuarioService.activarUsuario(Number(req.params.id));
       res.status(StatusCodes.OK).json({
@@ -87,7 +87,7 @@ export class UsuarioController {
     }
   }
 
-  async desactivar(req: Request, res: Response) {
+  desactivar = async (req: Request, res: Response) => {
     try {
       await this.usuarioService.desactivarUsuario(Number(req.params.id));
       res.status(StatusCodes.OK).json({
