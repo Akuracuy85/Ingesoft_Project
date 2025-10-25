@@ -1,6 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Documento } from "./Documento";
 import { EstadoEvento } from "../enums/EstadoEvento";
+import { Zona } from "./Zona";
+import { Entrada } from "./Entrada";
 
 @Entity()
 export class Evento {
@@ -11,8 +13,8 @@ export class Evento {
   @Column()
   descripcion: string;
   @Column({ type: "datetime" })
-  fecha: Date;
-  @Column()
+  fechaEvento: Date;
+  @Column({type: "text"})
   lugar: string;
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;
@@ -26,8 +28,14 @@ export class Evento {
   codigoPrivado: string;
   @ManyToOne(() => Documento, { onDelete: "CASCADE" })
   terminosUso: Documento;
-  @Column()
-  imagen: string;
+  @Column({ type: "longblob", nullable: true })
+  imagenBanner: Buffer;
+  @Column({ type: "longblob", nullable: true })
+  imagenLugar: Buffer;
   @Column({ type: "decimal", precision: 10, scale: 2 })
   gananciaTotal: number;
+  @OneToMany(() => Zona, zona => zona.evento, { cascade: true })
+  zonas: Zona[];
+  @OneToMany(() => Entrada, entrada => entrada.evento, { cascade: true})
+  entradas: Entrada[];
 }
