@@ -44,7 +44,6 @@ export class UsuarioController {
 
   async crearUsuario(req: Request, res: Response) {
     try {
-      console.log(req.body)
       await this.usuarioService.crearUsuario(req.body);
       res.status(StatusCodes.CREATED).json({
         success : true,
