@@ -58,7 +58,7 @@ export const eventosMock: Event[] = [
     image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
   },
   {
-    id: 8,
+    id: 9,
     title: "Invasion alienigena",
     date: "2025-11-30",
     place: "Online",
