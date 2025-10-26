@@ -8,7 +8,7 @@ export class Cliente extends Usuario {
   @Column({ type: "int", default: 0 })
   puntos: number;
 
-  @OneToMany(() => Tarjeta, tarjeta => tarjeta.cliente, { cascade: true })
+  @OneToMany(() => Tarjeta, tarjeta => tarjeta.cliente, { cascade: true, onDelete: "CASCADE" })
   tarjetas: Tarjeta[];
 
   constructor() {

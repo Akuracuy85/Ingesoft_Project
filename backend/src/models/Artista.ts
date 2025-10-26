@@ -7,7 +7,7 @@ export class Artista {
   id: number;
   @Column()
   nombre: string;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "int" })
   duracionMin: number;
   @ManyToOne(() => Categoria, { onDelete: "CASCADE" })
   categoria: Categoria;

@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Cliente } from "./Cliente";
+import { Evento } from "./Evento";
 
 @Entity()
 export class Calificacion {
@@ -11,4 +12,6 @@ export class Calificacion {
   cliente: Cliente;
   @Column()
   comentario: string;
+  @ManyToOne(() => Evento, (evento) => evento.calificaciones, { onDelete: "CASCADE" })
+  evento: Evento;
 }
