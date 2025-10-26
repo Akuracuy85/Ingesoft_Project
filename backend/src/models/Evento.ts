@@ -1,6 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Documento } from "./Documento";
 import { EstadoEvento } from "../enums/EstadoEvento";
+import { Zona } from "./Zona";
+import { Entrada } from "./Entrada";
+import { Artista } from "./Artista";
+import { Cola } from "./Cola";
+import { Calificacion } from "./Calificacion";
 
 @Entity()
 export class Evento {
@@ -11,8 +16,8 @@ export class Evento {
   @Column()
   descripcion: string;
   @Column({ type: "datetime" })
-  fecha: Date;
-  @Column()
+  fechaEvento: Date;
+  @Column({type: "text"})
   lugar: string;
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;
@@ -24,10 +29,23 @@ export class Evento {
   entradasVendidas: number;
   @Column()
   codigoPrivado: string;
-  @ManyToOne(() => Documento, { onDelete: "CASCADE" })
+  @OneToOne(() => Documento, { nullable: true, onDelete: "CASCADE" })
+  @JoinColumn()
   terminosUso: Documento;
-  @Column()
-  imagen: string;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "longblob", nullable: true })
+  imagenBanner: Buffer;
+  @Column({ type: "longblob", nullable: true })
+  imagenLugar: Buffer;
+  @Column({ type: "int" })
   gananciaTotal: number;
+  @OneToMany(() => Zona, zona => zona.evento, { onDelete: "CASCADE" })
+  zonas: Zona[];
+  @OneToMany(() => Entrada, entrada => entrada.evento, { onDelete: "CASCADE" })
+  entradas: Entrada[];
+  @ManyToOne(() => Artista)
+  artista: Artista;
+  @OneToOne(() => Cola, cola => cola.evento)
+  cola: Cola;
+  @OneToMany(() => Calificacion, (calificacion) => calificacion.evento)
+  calificaciones: Calificacion[];
 }

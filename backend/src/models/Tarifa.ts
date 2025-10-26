@@ -6,7 +6,7 @@ export class Tarifa {
   id: number;
   @Column()
   nombre: string;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "int" })
   precio: number;
   @Column({ type: "datetime" })
   fechaInicio: Date;

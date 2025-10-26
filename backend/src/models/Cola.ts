@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Evento } from "./Evento";
 
 @Entity()
 export class Cola {
@@ -8,4 +9,7 @@ export class Cola {
   creadoEn: Date;
   @Column()
   estado: string;
+  @OneToOne(() => Evento, evento => evento.cola, { onDelete: "CASCADE" })
+  @JoinColumn()
+  evento: Evento;
 }

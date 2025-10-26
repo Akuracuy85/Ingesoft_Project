@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Evento } from "./Evento";
 
 @Entity()
 export class Zona {
@@ -9,5 +10,9 @@ export class Zona {
   @Column({ type: "int" })
   capacidad: number;
   @Column()
-  ubicacion: string;
+  cantidadComprada: number;
+  @Column()
+  costo: number;
+  @ManyToOne(() => Evento, (evento) => evento.zonas)
+  evento: Evento;
 }

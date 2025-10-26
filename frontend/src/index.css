@@ -1,1 +1,5 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "react-datepicker/dist/react-datepicker.css";
+@import "tw-animate-css";
+@import "./styles/react-datepicker.css";
+@import "./styles/adminStyles.css";

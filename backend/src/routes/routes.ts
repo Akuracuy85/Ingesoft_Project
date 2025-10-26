@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import usuarioRoutes from "./Usuario.routes";
+import authRouter from "./Auth.routes";
 
 const uniteRouter = express.Router();
 
@@ -12,5 +13,6 @@ uniteRouter.get("/sas", (req: Request, res: Response) => {
 });
 
 uniteRouter.use("/usuario", usuarioRoutes)
+uniteRouter.use("/auth", authRouter)
 
 export default uniteRouter
