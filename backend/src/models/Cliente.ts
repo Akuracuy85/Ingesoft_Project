@@ -4,7 +4,7 @@ import { Rol } from "../enums/Rol";
 import { Tarjeta } from "./Tarjeta";
 
 @ChildEntity()
-export class Cliente extends Usuario {
+  export class Cliente extends Usuario {
   @Column({ type: "int", default: 0 })
   puntos: number;
 

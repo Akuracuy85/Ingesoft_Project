@@ -6,7 +6,7 @@ export class Descuento {
   id: number;
   @Column()
   tipo: string;
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "int"})//cambiado
   valor: number;
   @Column({ type: "datetime" })
   fechaInicio: Date;
