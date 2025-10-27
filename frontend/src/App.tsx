@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ColaVirtual from "./pages/client/Eventos/ColaVirtual.tsx";
 import { Routes, Route } from "react-router-dom";
 
 // 1. AÑADE esta importación (la tenías en el primer ejemplo)
@@ -22,6 +23,7 @@ function App() {
           <Route path="/evento/:id" element={<CompraDeEntradas />} />
           
           <Route path="/info" element={<InformacionPersonal />} />
+          <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
 
           {/* === ADMIN === */}
           <Route path="/admin" element={<></>}>
