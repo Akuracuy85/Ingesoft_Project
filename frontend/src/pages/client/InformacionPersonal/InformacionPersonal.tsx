@@ -1,5 +1,6 @@
 "use client"
 
+import ClientLayout from "../ClientLayout"
 import { useState } from "react"
 import { Button } from "../../../components/ui/button"
 import { Input } from "../../../components/ui/input"
@@ -16,16 +17,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog"
-import { User, Mail, CreditCard, Calendar, Phone, MapPin, FileText, Trash2, Plus, History } from "lucide-react"
+import { User, Mail, CreditCard, Calendar, Phone, FileText, Trash2, Plus, History } from "lucide-react"
 
-export function PersonalInfo() {
+export default function InformacionPersonal() {
   const [userInfo, setUserInfo] = useState({
     fullName: "María González",
     email: "maria.gonzalez@email.com",
     dni: "12345678",
     birthDate: "1990-05-15",
-    phone: "+34 612 345 678",
-    address: "Calle Principal 123, Madrid",
+    phone: "+51 612 345 678",
   })
 
   const [savedCard, setSavedCard] = useState<{ type: string; lastFourDigits: string } | null>({
@@ -33,7 +33,7 @@ export function PersonalInfo() {
     lastFourDigits: "4582",
   })
 
-  const [points, setPoints] = useState(1250)
+  const [points] = useState(1250)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showCardModal, setShowCardModal] = useState(false)
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
@@ -58,27 +58,8 @@ export function PersonalInfo() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8]">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#D59B2C] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U</span>
-            </div>
-            <span className="text-xl font-semibold text-gray-900">Unite</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">{userInfo.fullName}</span>
-            <div className="w-10 h-10 bg-[#D59B2C] rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+    <ClientLayout showFilterButton={false}>
+      <div className="w-full min-h-screen bg-[#F8F8F8] px-6 py-8 max-w-7xl mx-auto">
         {/* Title Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Información personal</h1>
@@ -171,19 +152,6 @@ export function PersonalInfo() {
                       className="border-gray-300"
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className="flex items-center gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4" />
-                      Dirección
-                    </Label>
-                    <Input
-                      id="address"
-                      value={userInfo.address}
-                      onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })}
-                      className="border-gray-300"
-                    />
-                  </div>
                 </div>
 
                 <div className="pt-4">
@@ -267,9 +235,9 @@ export function PersonalInfo() {
             </Card>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Card Modal */}
+      {/* Dialogs & Alerts */}
       <Dialog open={showCardModal} onOpenChange={setShowCardModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -313,7 +281,6 @@ export function PersonalInfo() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Card Alert */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -331,7 +298,6 @@ export function PersonalInfo() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Points History Modal */}
       <Dialog open={showPointsHistory} onOpenChange={setShowPointsHistory}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -361,6 +327,6 @@ export function PersonalInfo() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </ClientLayout>
   )
 }
