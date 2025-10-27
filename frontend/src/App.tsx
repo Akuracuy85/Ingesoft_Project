@@ -8,6 +8,8 @@ import CompraDeEntradas from "./pages/client/CompraDeEntradas";
 import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos";
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 // Aquí importarías las páginas de Admin cuando las tengas
+import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
+
 
 const queryClient = new QueryClient();
 
@@ -26,10 +28,8 @@ function App() {
           <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
 
           {/* === ADMIN === */}
-          <Route path="/admin" element={<></>}>
-            {/* 3. CORRECCIÓN: La ruta anidada no lleva el path del padre */}
-            <Route path="ejemplo" element={<></>} />
-          </Route>
+          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+
         </Routes>
       </div>
     </QueryClientProvider>
