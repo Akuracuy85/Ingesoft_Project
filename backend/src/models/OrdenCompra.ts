@@ -39,8 +39,10 @@ export class OrdenCompra {
   @Column({ type: "int" })
   cantidadEntradas: number;
 
-  @Column({ type: "decimal", precision: 10, scale: 2 })
-  totalPagado: number; // Total final a pagar
+  // --- INICIO DE LA CORRECCIÓN ---
+  @Column({ type: "int" }) // <-- CAMBIADO DE 'decimal' A 'int'
+  totalPagado: number; // Ahora S/ 600.00 se guarda como 60000
+  // --- FIN DE LA CORRECCIÓN --
 
   @CreateDateColumn()
   createdAt: Date;
