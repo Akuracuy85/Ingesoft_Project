@@ -17,8 +17,16 @@ export class Evento {
   descripcion: string;
   @Column({ type: "datetime" })
   fechaEvento: Date;
+  //@Column({type: "text"})
+  //lugar: string;
   @Column({type: "text"})
-  lugar: string;
+  departamento: string;
+
+  @Column({type: "text"})
+  provincia: string;
+
+  @Column({type: "text"})
+  distrito: string;
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;
   @Column({ type: "datetime" })

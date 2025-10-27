@@ -2,7 +2,7 @@
 import ClientLayout from "./ClientLayout"; // (Ajusta la ruta si es necesario)
 
 // 2. Importa SOLO el contenido de esta página
-import { BodySeleccionEventos } from "../../components/client/Body/BodySeleccionEventos"; // (Ajusta la ruta si es necesario)
+import { BodySeleccionEventos } from "../../components/client/Body/SeleccionEventos/BodySeleccionEventos"; // (Ajusta la ruta si es necesario)
 
 // (Ya no necesitas importar Header o Footer aquí)
 
