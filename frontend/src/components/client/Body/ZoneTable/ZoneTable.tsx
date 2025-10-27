@@ -1,7 +1,7 @@
 // ./ZoneTable/ZoneTable.tsx
 
 import React from "react";
-import type { Zone } from "../../../../../../models/Zone";
+import type { Zone } from "../../../../models/Zone";
 import ZoneRow from "./ZoneRow";
 
 interface ZoneTableProps {

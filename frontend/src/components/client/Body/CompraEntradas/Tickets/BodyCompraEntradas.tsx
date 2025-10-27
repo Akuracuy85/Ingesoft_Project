@@ -9,7 +9,7 @@ import type { SummaryItem } from "./SelectionSummaryTable";
 
 import DatosCompra from "../DatosCompra/DatosCompra"; // Asegúrate que la ruta sea correcta
 
-import type { Zone } from "../../../../../types/Zone";
+import type { Zone } from "../../../../../models/Zone";
 import type { Step } from "../../../../../types/Step";
 import { mockZonesData } from "../../../../../data/zonesMock";
 

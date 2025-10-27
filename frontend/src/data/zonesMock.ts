@@ -1,7 +1,7 @@
 // src/data/mockZones.ts
 
 // Importamos el tipo para asegurar que nuestros datos cumplen la estructura
-import type { Zone } from "../types/Zone"; 
+import type { Zone } from "../models/Zone"; 
 
 /**
  * Datos de prueba para las zonas del evento.
