@@ -1,7 +1,7 @@
 import React from "react";
 import { FeaturedEvent } from "./Banner/FeaturedEvent";
 import { EventList } from "./EventList/EventList";
-import { eventosMock } from "../../../data/eventosMock";
+import { eventosMock } from "../../../../data/eventosMock";
 
 export const BodySeleccionEventos: React.FC = () => {
   return (
