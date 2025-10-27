@@ -1,5 +1,11 @@
-import { PersonalInfo } from "@/pages/client/InformacionPersonal/InformacionPersonal.tsx"
+// @ts-ignore
+import ClientLayout from "./pages/client/ClientLayout.tsx";
+// @ts-ignore
+import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 
-export default function Page() {
-  return <PersonalInfo />
+
+function App() {
+  return <InformacionPersonal />;
 }
+
+export default App;
