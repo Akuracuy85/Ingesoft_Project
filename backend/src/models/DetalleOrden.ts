@@ -28,11 +28,13 @@ export class DetalleOrden {
   @Column({ type: "int" })
   cantidad: number;
 
-  @Column({ type: "decimal", precision: 10, scale: 2 })
-  precioUnitario: number; // Guardamos el precio al momento de la compra
+  // --- INICIO DE LA CORRECCIÓN ---
+  @Column({ type: "int" }) // <-- CAMBIADO DE 'decimall' A 'int'
+  precioUnitario: number; // S/ 250.00 -> 25000
 
-  @Column({ type: "decimal", precision: 10, scale: 2 })
-  subtotal: number;
+  @Column({ type: "int" }) // <-- CAMBIADO DE 'decimal' A 'int'
+  subtotal: number; // S/ 500.00 -> 50000
+  // --- FIN DE LA CORRECCIÓN ---
   
   // CAMBIO NUEVO: Almacenará los DNIs de los asistentes para esta zona.
   @Column({ type: "json", nullable: true })
