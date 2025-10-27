@@ -1,11 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos"; // 👈 importa la página principal
-import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 import { Routes, Route } from "react-router-dom";
 
-// 1. Importa TODAS las páginas que vas a usar
+// 1. AÑADE esta importación (la tenías en el primer ejemplo)
+import CompraDeEntradas from "./pages/client/CompraDeEntradas"; 
+
 import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos";
-import CompraDeEntradas from "./pages/client/CompraDeEntradas"; // 👈 Esta faltaba en tu versión
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 // Aquí importarías las páginas de Admin cuando las tengas
 
@@ -16,14 +15,18 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-50">
         <Routes>
-          {/* CLIENTE */}
+          {/* === CLIENTE === */}
           <Route path="/" element={<SeleccionDeEventos />} />
-          <Route path="/evento/:id" element={<></>} />
+          
+          {/* 2. USA el componente aquí en lugar de <></> */}
+          <Route path="/evento/:id" element={<CompraDeEntradas />} />
+          
           <Route path="/info" element={<InformacionPersonal />} />
 
-          {/* ADMIN */}
+          {/* === ADMIN === */}
           <Route path="/admin" element={<></>}>
-            <Route path="/admin/ejemplo" element={<></>} />
+            {/* 3. CORRECCIÓN: La ruta anidada no lleva el path del padre */}
+            <Route path="ejemplo" element={<></>} />
           </Route>
         </Routes>
       </div>
