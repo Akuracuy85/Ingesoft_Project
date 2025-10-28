@@ -1,6 +1,7 @@
-import { ChildEntity, Column } from "typeorm";
+import { ChildEntity, Column, OneToMany } from "typeorm";
 import { Usuario } from "./Usuario";
 import { Rol } from "../enums/Rol";
+import { Evento } from "./Evento";
 
 @ChildEntity()
 export class Organizador extends Usuario {
@@ -9,6 +10,8 @@ export class Organizador extends Usuario {
 
   @Column({ nullable: true })
   RazonSocial: string;
+  @OneToMany(() => Evento, (evento) => evento.organizador)
+  eventos: Evento[];
 
   constructor() {
     super();

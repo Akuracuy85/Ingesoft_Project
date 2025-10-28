@@ -1,4 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Documento } from "./Documento";
 import { EstadoEvento } from "../enums/EstadoEvento";
 import { Zona } from "./Zona";
@@ -6,6 +15,7 @@ import { Entrada } from "./Entrada";
 import { Artista } from "./Artista";
 import { Cola } from "./Cola";
 import { Calificacion } from "./Calificacion";
+import { Organizador } from "./Organizador";
 
 @Entity()
 export class Evento {
@@ -37,9 +47,14 @@ export class Evento {
   entradasVendidas: number;
   @Column()
   codigoPrivado: string;
-  @OneToOne(() => Documento, { nullable: true, onDelete: "CASCADE" })
+  // Documento único de términos que se elimina junto con el evento y soporta ediciones.
+  @OneToOne(() => Documento, {
+    nullable: true,
+    onDelete: "CASCADE",
+    cascade: ["insert", "update"],
+  })
   @JoinColumn()
-  terminosUso: Documento;
+  terminosUso?: Documento | null;
   @Column({ type: "longblob", nullable: true })
   imagenBanner: Buffer;
   @Column({ type: "longblob", nullable: true })
@@ -56,4 +71,15 @@ export class Evento {
   cola: Cola;
   @OneToMany(() => Calificacion, (calificacion) => calificacion.evento)
   calificaciones: Calificacion[];
+  @ManyToOne(() => Organizador, (organizador) => organizador.eventos, {
+    nullable: false,
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "organizadorId" })
+  organizador: Organizador;
+  // Colección de documentos adicionales ligados al evento (auto guarda/actualiza).
+  @OneToMany(() => Documento, (documento) => documento.evento, {
+    cascade: ["insert", "update"],
+  })
+  documentosRespaldo?: Documento[];
 }
