@@ -18,9 +18,42 @@ export class EventoController {
     return EventoController.instance;
   }
 
-  obtenerDatosBasicos = async (_req: Request, res: Response) => {
+  obtenerDatosBasicos = async (req: Request, res: Response) => {
+    const organizadorId = req.userId;
+
+    if (!organizadorId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
     try {
-      const eventos = await this.eventoService.obtenerDatosBasicos();
+      const eventos =
+        await this.eventoService.obtenerDatosBasicos(organizadorId);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventos,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  obtenerEventosDetallados = async (req: Request, res: Response) => {
+    const organizadorId = req.userId;
+
+    if (!organizadorId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    try {
+      const eventos = await this.eventoService.obtenerEventosDetallados(
+        organizadorId
+      );
       res.status(StatusCodes.OK).json({
         success: true,
         eventos,
@@ -31,9 +64,55 @@ export class EventoController {
   };
 
   crearEvento = async (req: Request, res: Response) => {
+    const organizadorId = req.userId;
+
+    if (!organizadorId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
     try {
-      const evento = await this.eventoService.crearEvento(req.body);
+      const evento = await this.eventoService.crearEvento(
+        req.body,
+        organizadorId
+      );
       res.status(StatusCodes.CREATED).json({
+        success: true,
+        eventoId: evento.id,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarEvento = async (req: Request, res: Response) => {
+    const organizadorId = req.userId;
+
+    if (!organizadorId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      const evento = await this.eventoService.actualizarEvento(
+        eventoId,
+        req.body,
+        organizadorId
+      );
+      res.status(StatusCodes.OK).json({
         success: true,
         eventoId: evento.id,
       });

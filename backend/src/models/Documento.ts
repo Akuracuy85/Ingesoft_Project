@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Evento } from "./Evento";
 
 @Entity()
 export class Documento {
@@ -12,4 +13,9 @@ export class Documento {
   tamano: number;
   @Column()
   url: string;
+  @ManyToOne(() => Evento, (evento) => evento.documentosRespaldo, {
+    nullable: true,
+    onDelete: "CASCADE",
+  })
+  evento?: Evento;
 }
