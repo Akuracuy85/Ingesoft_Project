@@ -13,6 +13,7 @@ export class Documento {
   tamano: number;
   @Column()
   url: string;
+  // Puede representar el documento de términos o cualquiera de respaldo asociado a un evento.
   @ManyToOne(() => Evento, (evento) => evento.documentosRespaldo, {
     nullable: true,
     onDelete: "CASCADE",

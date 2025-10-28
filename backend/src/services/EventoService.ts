@@ -36,6 +36,7 @@ export class EventoService {
   async obtenerDatosBasicos(organizadorId: number): Promise<EventoBasicoDto[]> {
     await this.obtenerOrganizador(organizadorId);
 
+    // Listado resumido para tableros: únicamente nombre, fecha y estado ordenados cronológicamente.
     try {
       const eventos =
         await this.eventoRepository.obtenerDatosBasicosPorOrganizador(
@@ -59,6 +60,7 @@ export class EventoService {
   ): Promise<EventoDetalleDto[]> {
     await this.obtenerOrganizador(organizadorId);
 
+    // Trae los eventos del organizador con todas las relaciones relevantes y los adapta al contrato del API.
     try {
       const eventos =
         await this.eventoRepository.obtenerEventosDetalladosPorOrganizador(
@@ -138,6 +140,7 @@ export class EventoService {
     this.validarDatosObligatorios(data);
     await this.obtenerOrganizador(organizadorId);
 
+    // Recuperamos el evento completo para asegurar propiedad y poder sincronizar relaciones hijas.
     const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
 
     if (!evento || evento.organizador.id !== organizadorId) {
@@ -204,6 +207,7 @@ export class EventoService {
     }
 
     if (!terminosDto) {
+      // Null explícito significa eliminar los términos actuales.
       if (evento.terminosUso?.id) {
         await this.eventoRepository.eliminarDocumentoPorId(
           evento.terminosUso.id
@@ -238,6 +242,7 @@ export class EventoService {
     documentosDto: DocumentoDto[]
   ) {
     const actuales = evento.documentosRespaldo ?? [];
+    // Se indexa por id para detectar qué documentos se actualizan, agregan o eliminan en esta edición.
     const documentosPorId = new Map<number, Documento>(
       actuales.filter((doc) => doc.id).map((doc) => [doc.id as number, doc])
     );
@@ -292,6 +297,7 @@ export class EventoService {
 
   private async sincronizarZonas(evento: Evento, zonasDto: ZonaDto[]) {
     const actuales = evento.zonas ?? [];
+    // Igual que con documentos, se indexan las zonas existentes para mantener consistencia y recalcular el aforo.
     const zonasPorId = new Map<number, Zona>(
       actuales.filter((zona) => zona.id).map((zona) => [zona.id as number, zona])
     );
@@ -343,6 +349,7 @@ export class EventoService {
     }
 
     evento.zonas = resultado;
+    // Se recalcula el aforo con las zonas vigentes, evitando datos obsoletos.
     evento.aforoTotal = resultado.reduce(
       (total, zona) => total + (zona.capacidad ?? 0),
       0

@@ -44,6 +44,7 @@ export class EventoRepository {
     return await this.repository.save(evento);
   }
 
+  // Obtiene todos los eventos del organizador con sus relaciones para listados completos.
   async obtenerEventosDetalladosPorOrganizador(
     organizadorId: number
   ): Promise<Evento[]> {
@@ -63,6 +64,7 @@ export class EventoRepository {
     });
   }
 
+  // Recupera el evento con relaciones mínimas necesarias para procesos de edición.
   async obtenerEventoDetalle(id: number): Promise<Evento | null> {
     return await this.repository.findOne({
       where: { id },

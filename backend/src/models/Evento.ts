@@ -39,6 +39,7 @@ export class Evento {
   entradasVendidas: number;
   @Column()
   codigoPrivado: string;
+  // Documento único de términos que se elimina junto con el evento y soporta ediciones.
   @OneToOne(() => Documento, {
     nullable: true,
     onDelete: "CASCADE",
@@ -68,6 +69,7 @@ export class Evento {
   })
   @JoinColumn({ name: "organizadorId" })
   organizador: Organizador;
+  // Colección de documentos adicionales ligados al evento (auto guarda/actualiza).
   @OneToMany(() => Documento, (documento) => documento.evento, {
     cascade: ["insert", "update"],
   })
