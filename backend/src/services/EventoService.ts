@@ -76,7 +76,9 @@ export class EventoService {
         descripcion: evento.descripcion,
         estado: evento.estado,
         fechaEvento: evento.fechaEvento.toISOString(),
-        lugar: evento.lugar,
+        departamento: evento.departamento,
+        provincia: evento.provincia,
+        distrito: evento.distrito,
         fechaPublicacion: evento.fechaPublicacion.toISOString(),
         aforoTotal: evento.aforoTotal,
         entradasVendidas: evento.entradasVendidas,
@@ -162,7 +164,9 @@ export class EventoService {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fechaEvento,
-        lugar: data.lugar.trim(),
+        departamento: data.departamento.trim(),
+        provincia: data.provincia.trim(),
+        distrito: data.distrito.trim(),
         estado,
         fechaPublicacion: new Date(),
         aforoTotal: 0,
@@ -223,7 +227,9 @@ export class EventoService {
     evento.descripcion = data.descripcion.trim();
     evento.estado = estado;
     evento.fechaEvento = fechaEvento;
-    evento.lugar = data.lugar.trim();
+    evento.departamento = data.departamento.trim();
+    evento.provincia = data.provincia.trim();
+    evento.distrito = data.distrito.trim();
 
     if (data.imagenPortada !== undefined) {
       evento.imagenBanner = data.imagenPortada
@@ -446,7 +452,16 @@ export class EventoService {
   }
 
   private validarDatosObligatorios(data: CrearEventoDto | ActualizarEventoDto) {
-    const campos = ["nombre", "descripcion", "fecha", "hora", "lugar", "estado"];
+    const campos = [
+      "nombre",
+      "descripcion",
+      "fecha",
+      "hora",
+      "departamento",
+      "provincia",
+      "distrito",
+      "estado",
+    ];
     for (const campo of campos) {
       if (!(data as any)[campo] || String((data as any)[campo]).trim() === "") {
         throw new CustomError(

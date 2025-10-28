@@ -8,7 +8,9 @@ export interface EventoDetalleDto {
   descripcion: string;
   estado: EstadoEvento;
   fechaEvento: string;
-  lugar: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
   fechaPublicacion: string;
   aforoTotal: number;
   entradasVendidas: number;

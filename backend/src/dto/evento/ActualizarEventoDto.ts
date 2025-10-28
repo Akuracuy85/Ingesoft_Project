@@ -7,7 +7,9 @@ export interface ActualizarEventoDto {
   descripcion: string;
   fecha: string; // formato YYYY-MM-DD
   hora: string; // formato HH:mm
-  lugar: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
   estado: EstadoEvento;
   imagenPortada?: string | null; // base64 opcional, null para eliminar
   terminosUso?: DocumentoDto | null;
