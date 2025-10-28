@@ -1,4 +1,8 @@
-import { EventoRepository } from "@/repositories/EventoRepository";
+import {
+  EventoRepository,
+  IFiltrosEvento,
+} from "@/repositories/EventoRepository";
+import { Evento } from "@/models/Evento";
 import { CustomError } from "@/types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { EventoBasicoDto } from "@/dto/evento/EventoBasicoDto";
@@ -13,7 +17,6 @@ import { Documento } from "@/models/Documento";
 import { DocumentoDto } from "@/dto/evento/DocumentoDto";
 import { ZonaDto } from "@/dto/evento/ZonaDto";
 import { Zona } from "@/models/Zona";
-import { Evento } from "@/models/Evento";
 import { EventoDetalleDto } from "@/dto/evento/EventoDetalleDto";
 
 export class EventoService {
@@ -102,6 +105,51 @@ export class EventoService {
     }
   }
 
+  /**
+   * Obtiene la lista de eventos publicados, aplicando filtros dinámicos.
+   */
+  async listarEventosPublicados(filtros: IFiltrosEvento): Promise<Evento[]> {
+    try {
+      const eventos = await this.eventoRepository.listarEventosFiltrados(
+        filtros
+      );
+
+      if (!eventos.length) {
+        throw new CustomError(
+          "No se encontraron eventos que coincidan con los filtros.",
+          StatusCodes.NOT_FOUND
+        );
+      }
+
+      return eventos;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener el listado de eventos",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Obtiene el detalle público de un evento por identificador.
+   */
+  async obtenerDetalleEvento(id: number): Promise<Evento> {
+    try {
+      const evento = await this.eventoRepository.buscarPorId(id);
+      if (!evento) {
+        throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+      }
+      return evento;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener el detalle del evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   async crearEvento(data: CrearEventoDto, organizadorId: number) {
     this.validarDatosObligatorios(data);
     const organizador = await this.obtenerOrganizador(organizadorId);
@@ -125,6 +173,27 @@ export class EventoService {
         organizador,
       });
     } catch (error) {
+      throw new CustomError(
+        "Error al crear el evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Crea un evento genérico (ej. flujos administrativos) aplicando valores por defecto.
+   */
+  async crearEventoPublico(data: Partial<Evento>): Promise<Evento> {
+    try {
+      const payload: Partial<Evento> = {
+        ...data,
+        entradasVendidas: data.entradasVendidas ?? 0,
+        gananciaTotal: data.gananciaTotal ?? 0,
+        estado: data.estado ?? EstadoEvento.BORRADOR,
+      };
+      return await this.eventoRepository.crearEvento(payload);
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al crear el evento",
         StatusCodes.INTERNAL_SERVER_ERROR
@@ -429,3 +498,5 @@ export class EventoService {
     return randomBytes(4).toString("hex").toUpperCase();
   }
 }
+
+export const eventoService = EventoService.getInstance();

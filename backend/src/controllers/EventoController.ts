@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { EventoService } from "@/services/EventoService";
 import { HandleResponseError } from "@/utils/Errors";
 import { StatusCodes } from "http-status-codes";
+import { IFiltrosEvento } from "@/repositories/EventoRepository";
 
 export class EventoController {
   private static instance: EventoController;
@@ -17,6 +18,46 @@ export class EventoController {
     }
     return EventoController.instance;
   }
+
+  /**
+   * Listado público de eventos publicados aplicando filtros opcionales.
+   */
+  listarPublicados = async (req: Request, res: Response) => {
+    try {
+      const filtros = req.query as IFiltrosEvento;
+      const eventos = await this.eventoService.listarEventosPublicados(filtros);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventos,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  /**
+   * Devuelve el detalle público de un evento por identificador.
+   */
+  obtenerPorId = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      const evento = await this.eventoService.obtenerDetalleEvento(eventoId);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        evento,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 
   obtenerDatosBasicos = async (req: Request, res: Response) => {
     const organizadorId = req.userId;

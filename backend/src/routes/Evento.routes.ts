@@ -4,16 +4,21 @@ import { sessionMiddleware } from "@/middlewares/sessionMiddleware";
 
 const router = Router();
 
-router.get(
-  "/",
-  sessionMiddleware.VerificarToken,
-  eventoController.obtenerEventosDetallados
-);
+// Público: listado de eventos publicados.
+router.get("/publicados", eventoController.listarPublicados);
+
+// Privado (organizador): gestión de sus propios eventos.
 router.get(
   "/basicos",
   sessionMiddleware.VerificarToken,
   eventoController.obtenerDatosBasicos
 );
+router.get(
+  "/",
+  sessionMiddleware.VerificarToken,
+  eventoController.obtenerEventosDetallados
+);
+router.get("/:id", eventoController.obtenerPorId);
 router.post(
   "/",
   sessionMiddleware.VerificarToken,
