@@ -30,29 +30,26 @@ export class EventoController {
 
 
   listarPublicados = async (req: Request, res: Response) => {
-      try {
-          // req.query contiene todos los filtros (ej. { departamento: 'Lima' })
-          const filtros: IFiltrosEvento = req.query;
-
-          // 1. Obtener las entidades de la base de datos (Ej: con 'nombre', 'fechaEvento', etc.)
-          const entidades = await this.eventoService.listarEventosPublicados(filtros);
-
-          // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
-          // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
-          const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
-
-          // 3. Enviar la respuesta con los DTOs
-          res.status(StatusCodes.OK).json({
-              success: true,
-              // Enviamos el array de DTOs mapeados
-              eventos: dtos, 
-          });
-          
-      } catch (error) {
-          // Manejo de errores centralizado
-          HandleResponseError(res, error);
-      }
-  };
+    try {
+        // req.query contiene todos los filtros (ej. { departamento: 'Lima' })
+        const filtros: IFiltrosEvento = req.query;
+         // 1. Obtener las entidades de la base de datos (Ej: con 'nombre', 'fechaEvento', etc.)
+        const entidades = await this.eventoService.listarEventosPublicados(filtros);
+        // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
+        // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
+        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
+        // 3. Enviar la respuesta con los DTOs
+        res.status(StatusCodes.OK).json({
+            success: true,
+            // Enviamos el array de DTOs mapeados
+            eventos: dtos, 
+        });
+        
+    } catch (error) {
+        // Manejo de errores centralizado
+        HandleResponseError(res, error);
+    }
+ };
 
   /**
    * Devuelve el detalle público de un evento por identificador.
