@@ -9,6 +9,7 @@ import ColaVirtual from "./pages/client/Eventos/ColaVirtual.tsx";
 import CompraDeEntradas from "./pages/client/CompraDeEntradas"; 
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
+import GestionEventos from "./pages/organizador/eventos/GestionEventos.tsx"
 
 
 const queryClient = new QueryClient();
@@ -35,6 +36,8 @@ function App() {
           {/* === ADMIN === */}
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
 
+          {/* === ORGANIZADOR === */}
+          <Route path="/organizador/eventos" element={<GestionEventos />} />
         </Routes>
       </div>
     </QueryClientProvider>
