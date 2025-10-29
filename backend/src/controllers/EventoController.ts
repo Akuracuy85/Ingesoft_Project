@@ -5,6 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import { IFiltrosEvento } from "@/repositories/EventoRepository";
 import { Evento } from "@/models/Evento";
 
+import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
+
 export class EventoController {
   private static instance: EventoController;
   private eventoService: EventoService;
@@ -23,19 +25,33 @@ export class EventoController {
   /**
    * Maneja la solicitud GET para listar eventos publicados (con filtros)
    */
-  listarPublicados = async (req: Request, res: Response) => {
-    try {
-      // ¡Aquí está la clave! req.query contiene todos los filtros
-      const filtros: IFiltrosEvento = req.query;
+// En tu EventoController.ts
 
-      const eventos = await this.eventoService.listarEventosPublicados(filtros);
-      res.status(StatusCodes.OK).json({
-        success: true,
-        eventos: eventos,
-      });
-    } catch (error) {
-      HandleResponseError(res, error);
-    }
+
+
+  listarPublicados = async (req: Request, res: Response) => {
+      try {
+          // req.query contiene todos los filtros (ej. { departamento: 'Lima' })
+          const filtros: IFiltrosEvento = req.query;
+
+          // 1. Obtener las entidades de la base de datos (Ej: con 'nombre', 'fechaEvento', etc.)
+          const entidades = await this.eventoService.listarEventosPublicados(filtros);
+
+          // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
+          // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
+          const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
+
+          // 3. Enviar la respuesta con los DTOs
+          res.status(StatusCodes.OK).json({
+              success: true,
+              // Enviamos el array de DTOs mapeados
+              eventos: dtos, 
+          });
+          
+      } catch (error) {
+          // Manejo de errores centralizado
+          HandleResponseError(res, error);
+      }
   };
 
   /**
