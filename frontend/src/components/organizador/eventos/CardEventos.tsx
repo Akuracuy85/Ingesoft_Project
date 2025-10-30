@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import { Calendar, MoreVertical, Plus } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
+import ModalEditarEvento from "./ModalEditarEvento";
 
 // Tipos para la tabla
 interface EventoItem {
   nombre: string;
   fecha: string;
   estado: EstadoEventoUI;
+  descripcion?: string;
+  hora?: string;
+  lugar?: string;
+  imagenNombre?: string | null;
 }
 
-// Datos de ejemplo
-const eventos: EventoItem[] = [
-  { nombre: "Concierto de Rock 2025", fecha: "2025-03-15", estado: "Publicado" },
-  { nombre: "Festival de Jazz", fecha: "2025-04-20", estado: "Borrador" },
-  { nombre: "Noche de Salsa", fecha: "2025-05-10", estado: "En revisión" },
+// Datos iniciales
+const initialEventos: EventoItem[] = [
+  { nombre: "Concierto de Rock 2025", fecha: "2025-03-15", estado: "Publicado", descripcion: "-", hora: "20:00", lugar: "Estadio" },
+  { nombre: "Festival de Jazz", fecha: "2025-04-20", estado: "Borrador", descripcion: "-", hora: "18:00", lugar: "Parque" },
+  { nombre: "Noche de Salsa", fecha: "2025-05-10", estado: "En revisión", descripcion: "-", hora: "21:00", lugar: "Club" },
 ];
 
 // Función para clases de badge según estado
@@ -31,25 +36,78 @@ function getBadgeClass(estado: EstadoEventoUI): string {
 }
 
 const CardEventos: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  // Estado de la lista
+  const [eventos, setEventos] = useState<EventoItem[]>([...initialEventos]);
 
-  const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+  // Modal crear
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const handleSave = (data: NuevoEventoForm) => {
-    // Mostrar alerta con los datos (por ahora)
-    const payload = {
+  // Modal editar
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  // Abrir crear
+  const handleOpenCreate = () => setIsCreateOpen(true);
+  const handleCloseCreate = () => setIsCreateOpen(false);
+
+  // Guardar desde crear
+  const handleSaveCreate = (data: NuevoEventoForm) => {
+    const nuevo: EventoItem = {
       nombre: data.nombre,
+      fecha: data.fecha || "",
+      estado: data.estado,
       descripcion: data.descripcion,
-      fecha: data.fecha,
       hora: data.hora,
       lugar: data.lugar,
-      estado: data.estado,
       imagenNombre: data.imagen?.name || null,
     };
-    alert(`Evento guardado:\n${JSON.stringify(payload, null, 2)}`);
-    handleClose();
+    setEventos((prev) => [nuevo, ...prev]);
+    alert(`Evento guardado:\n${JSON.stringify(nuevo, null, 2)}`);
+    handleCloseCreate();
   };
+
+  // Abrir editar para una fila concreta
+  const handleOpenEdit = (index: number) => {
+    setEditingIndex(index);
+    setIsEditOpen(true);
+  };
+  const handleCloseEdit = () => {
+    setEditingIndex(null);
+    setIsEditOpen(false);
+  };
+
+  // Guardar cambios de edición
+  const handleSaveEdit = (data: NuevoEventoForm) => {
+    if (editingIndex === null) return;
+    setEventos((prev) => {
+      const next = [...prev];
+      next[editingIndex] = {
+        ...next[editingIndex],
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        fecha: data.fecha,
+        hora: data.hora,
+        lugar: data.lugar,
+        estado: data.estado,
+        imagenNombre: data.imagen?.name || next[editingIndex].imagenNombre || null,
+      };
+      return next;
+    });
+    handleCloseEdit();
+  };
+
+  // Datos iniciales para el modal de edición en el shape de NuevoEventoForm
+  const editInitial: NuevoEventoForm | null = editingIndex !== null
+    ? {
+        nombre: eventos[editingIndex].nombre || "",
+        descripcion: eventos[editingIndex].descripcion || "",
+        fecha: eventos[editingIndex].fecha || "",
+        hora: eventos[editingIndex].hora || "",
+        lugar: eventos[editingIndex].lugar || "",
+        estado: eventos[editingIndex].estado,
+        imagen: null,
+      }
+    : null;
 
   return (
     <section className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
@@ -73,7 +131,7 @@ const CardEventos: React.FC = () => {
         {/* Derecha: botón "Nuevo evento" */}
         <button
           type="button"
-          onClick={handleOpen}
+          onClick={handleOpenCreate}
           className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -99,8 +157,8 @@ const CardEventos: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {eventos.map((ev) => (
-                <tr key={`${ev.nombre}-${ev.fecha}`} className="hover:bg-gray-50">
+              {eventos.map((ev, index) => (
+                <tr key={`${ev.nombre}-${ev.fecha}-${index}`} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
                   <td className="px-4 py-3 text-gray-700">{ev.fecha}</td>
                   <td className="px-4 py-3">
@@ -109,6 +167,7 @@ const CardEventos: React.FC = () => {
                   <td className="px-4 py-3 text-right">
                     <button
                       type="button"
+                      onClick={() => handleOpenEdit(index)}
                       className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
                       aria-label={`Acciones para ${ev.nombre}`}
                     >
@@ -122,8 +181,15 @@ const CardEventos: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal (componente separado) */}
-      <ModalCrearEvento open={isOpen} onClose={handleClose} onSave={handleSave} />
+      {/* Modales */}
+      <ModalCrearEvento open={isCreateOpen} onClose={handleCloseCreate} onSave={handleSaveCreate} />
+
+      <ModalEditarEvento
+        open={isEditOpen}
+        onClose={handleCloseEdit}
+        initialData={editInitial}
+        onSave={handleSaveEdit}
+      />
     </section>
   );
 };
