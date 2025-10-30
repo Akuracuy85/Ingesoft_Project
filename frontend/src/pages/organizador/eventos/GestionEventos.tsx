@@ -1,6 +1,6 @@
 import React from "react";
 import OrganizadorLayout from "../OrganizadorLayout";
-import CardEventos from "../../../components/organizador/CardEventos";
+import CardEventos from "../../../components/organizador/eventos/CardEventos";
 
 export default function GestionEventos(): React.ReactElement {
   return (

@@ -63,7 +63,10 @@ const CardEventos: React.FC = () => {
 
       {/* Contenido: lista + tabla */}
       <div className="mt-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Lista de eventos</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-medium text-gray-700">Lista de eventos</h3>
+          <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
