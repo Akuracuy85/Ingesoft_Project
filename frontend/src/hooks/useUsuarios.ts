@@ -7,12 +7,22 @@ export function useUsuarios() {
 
   const usersQuery = useQuery<User[]>({
     queryKey: ["users"],
-    queryFn: userService.getAll,
+    queryFn: async () => {
+      const data = await userService.getAll();
+      return data;
+    },
   });
 
   const createUser = useMutation({
-    mutationFn: userService.create,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    mutationFn: (userData: UserFormData) => userService.create(userData),
+    onSuccess: (data) => {
+      console.log("✅ Usuario creado:", data);
+      // ✅ Invalida la cache de usuarios para recargar la tabla
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error al crear usuario:", error);
+    },
   });
 
   const updateUser = useMutation({
@@ -22,7 +32,7 @@ export function useUsuarios() {
   });
 
   const deleteUser = useMutation({
-    mutationFn: (id: number) => userService.delete(id),
+    mutationFn: (id: number) => userService.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
   });
 
