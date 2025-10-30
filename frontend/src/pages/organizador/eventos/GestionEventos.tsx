@@ -1,5 +1,6 @@
 import React from "react";
 import OrganizadorLayout from "../OrganizadorLayout";
+import CardEventos from "../../../components/organizador/CardEventos";
 
 export default function GestionEventos(): React.ReactElement {
   return (
@@ -13,7 +14,8 @@ export default function GestionEventos(): React.ReactElement {
             Administra tus eventos, tarifas, términos y documentación
           </p>
         </div>
-        {/* Contenido funcional por implementar: listado, filtros, creación, etc. */}
+
+        <CardEventos />
       </div>
     </OrganizadorLayout>
   );
