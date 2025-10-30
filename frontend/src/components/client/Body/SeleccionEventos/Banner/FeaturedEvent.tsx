@@ -24,7 +24,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
     <section className="relative w-full h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-lg shadow-md">
       {/* Imagen de fondo */}
       <img
-        src={events[currentIndex].image}
+        src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"//{events[currentIndex].image}
         alt={events[currentIndex].title}
         // ✅ Añadimos 'key' para forzar a React a 
         // recargar la imagen con la transición
@@ -43,7 +43,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         </h2>
         <p className="text-lg md:text-xl mb-1">
           📅 {events[currentIndex].date}
-        </p>
+        </p>     
         <p className="text-lg md:text-xl mb-4">
           📍 {events[currentIndex].place}
         </p>
