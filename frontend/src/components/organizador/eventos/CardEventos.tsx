@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Calendar, MoreVertical, Plus } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Calendar, MoreVertical, Plus, Edit3, Trash2 } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
 
@@ -45,6 +45,22 @@ const CardEventos: React.FC = () => {
   // Modal editar
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  // Menú de acciones por fila
+  const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAbierto(null);
+      }
+    };
+    if (menuAbierto !== null) {
+      document.addEventListener("click", handleDocClick);
+    }
+    return () => document.removeEventListener("click", handleDocClick);
+  }, [menuAbierto]);
 
   // Abrir crear
   const handleOpenCreate = () => setIsCreateOpen(true);
@@ -165,14 +181,57 @@ const CardEventos: React.FC = () => {
                     <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(index)}
-                      className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
-                      aria-label={`Acciones para ${ev.nombre}`}
+                    <div
+                      className="relative inline-block text-left"
+                      ref={menuAbierto === index ? menuRef : null}
                     >
-                      <MoreVertical className="h-5 w-5" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuAbierto(menuAbierto === index ? null : index);
+                        }}
+                        className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
+                        aria-haspopup="menu"
+                        aria-expanded={menuAbierto === index}
+                        aria-label={`Acciones para ${ev.nombre}`}
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </button>
+
+                      {menuAbierto === index && (
+                        <div
+                          className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                          onClick={(e) => e.stopPropagation()}
+                          role="menu"
+                        >
+                          <button
+                            type="button"
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                            onClick={() => {
+                              setMenuAbierto(null);
+                              handleOpenEdit(index);
+                            }}
+                            role="menuitem"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                            onClick={() => {
+                              console.log("Eliminar evento", ev.nombre);
+                              setMenuAbierto(null);
+                            }}
+                            role="menuitem"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
