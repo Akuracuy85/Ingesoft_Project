@@ -1,12 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Calendar, MoreVertical, Plus } from "lucide-react";
+import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 
-// Tipos
-export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión";
-
+// Tipos para la tabla
 interface EventoItem {
   nombre: string;
-  fecha: string; // ISO o YYYY-MM-DD para el ejemplo
+  fecha: string;
   estado: EstadoEventoUI;
 }
 
@@ -32,6 +31,26 @@ function getBadgeClass(estado: EstadoEventoUI): string {
 }
 
 const CardEventos: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOpen = () => setIsOpen(true);
+  const handleClose = () => setIsOpen(false);
+
+  const handleSave = (data: NuevoEventoForm) => {
+    // Mostrar alerta con los datos (por ahora)
+    const payload = {
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      fecha: data.fecha,
+      hora: data.hora,
+      lugar: data.lugar,
+      estado: data.estado,
+      imagenNombre: data.imagen?.name || null,
+    };
+    alert(`Evento guardado:\n${JSON.stringify(payload, null, 2)}`);
+    handleClose();
+  };
+
   return (
     <section className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
       {/* Encabezado */}
@@ -54,6 +73,7 @@ const CardEventos: React.FC = () => {
         {/* Derecha: botón "Nuevo evento" */}
         <button
           type="button"
+          onClick={handleOpen}
           className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -101,6 +121,9 @@ const CardEventos: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Modal (componente separado) */}
+      <ModalCrearEvento open={isOpen} onClose={handleClose} onSave={handleSave} />
     </section>
   );
 };
