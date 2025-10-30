@@ -1,4 +1,3 @@
-// src/hooks/useUsuarios.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/userService";
 import type { User, UserFormData } from "../models/User";
@@ -28,9 +27,10 @@ export function useUsuarios() {
   });
 
   const toggleStatus = useMutation({
-    mutationFn: (id: number) => userService.toggleStatus(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
-  });
+  mutationFn: ({ id, currentStatus }: { id: number; currentStatus: string }) =>
+    userService.toggleStatus(id, currentStatus),
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+});
 
   return {
     usersQuery,
