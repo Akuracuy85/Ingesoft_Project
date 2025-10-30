@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { Search, Plus, Download } from "lucide-react";
-import AdminLayout from "../OrganizadorLayout"; // ✅ importa el layout
-
-import UserTable from "../../../components/admin/UserTable.js";
-import UserModal from "../../../components/admin/UserModal.js";
+import OrganizadorLayout from "../OrganizadorLayout"; // estructura visual base del panel de organizador
 
 // --- Tipos de usuario ---
 type UserRole = "Cliente" | "Organizador" | "Administrador";
@@ -150,14 +147,14 @@ export default function GestionEventos(): React.ReactElement {
   };
 
   return (
-    <AdminLayout activeItem="Usuarios">
+    <OrganizadorLayout activeItem="Gestión de Eventos">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Gestión de usuarios
           </h1>
           <p className="text-muted-foreground">
-            Administra las cuentas de clientes, organizadores y administradores del sistema.
+            Administra tus eventos, tarifas, términos y documentación
           </p>
         </div>
 
@@ -207,16 +204,6 @@ export default function GestionEventos(): React.ReactElement {
           </div>
         </div>
 
-        {/* Tabla */}
-        <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
-          <UserTable
-            users={filteredUsers}
-            onEdit={handleEditUser}
-            onToggleStatus={handleToggleStatus}
-            onDelete={handleDeleteUser}
-          />
-        </div>
-
         {/* Exportar */}
         <div className="mt-6 flex justify-end gap-3">
           <button
@@ -234,15 +221,7 @@ export default function GestionEventos(): React.ReactElement {
             Exportar PDF
           </button>
         </div>
-
-        {/* Modal */}
-        <UserModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveUser}
-          user={editingUser}
-        />
       </div>
-    </AdminLayout>
+    </OrganizadorLayout>
   );
 }
