@@ -1,53 +1,29 @@
 import React from "react";
-import {
-  Calendar,
-  Users,
-  FileText,
-  Settings,
- // 1. Importamos el tipo para los íconos de 'lucide-react'
-} from "lucide-react";
+import { Calendar, FileText, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-// --- 1. Definición de Tipos para los Datos ---
 
-// Definimos la estructura de un elemento del menú
 interface MenuItem {
   name: string;
-  icon: LucideIcon; // El icono es de tipo LucideIcon
+  icon: LucideIcon;
 }
 
-// Menú principal (la constante ahora usa el tipo MenuItem[])
 const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar },
-  { name: "Usuarios", icon: Users },
   { name: "Reportes", icon: FileText },
   { name: "Configuración", icon: Settings },
 ];
 
-// --- 2. Definición de Tipos para las Propiedades (Props) ---
-
-// Definimos la interfaz para las props que recibe el componente
-interface SidebarAdminProps {
-  // activeItem debe ser el nombre de uno de los elementos del menú
-  // Podemos usar un "union type" para restringir los valores válidos:
-  activeItem:
-    | "Gestión de Eventos"
-    | "Reportes"
-    | "Configuración";
-  // Alternativamente, si no quieres escribir todos los nombres: activeItem: string;
+interface SidebarOrganizadorProps {
+  activeItem: "Gestión de eventos" | "Reportes" | "Configuración";
 }
 
-// --- 3. Componente con Tipado ---
-
-// Asignamos las props tipadas (SidebarAdminProps) al componente
-const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
+const SidebarOrganizador: React.FC<SidebarOrganizadorProps> = ({ activeItem }) => {
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Logo */}
       <div className="p-6">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-lg text-sidebar-foreground">
-            Unite
-          </span>
+          <span className="font-semibold text-lg text-sidebar-foreground">Unite</span>
         </div>
       </div>
 
@@ -58,7 +34,6 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
         </p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
-            // Ya no necesitas 'const Icon = item.icon;' porque TypeScript ya sabe el tipo.
             const Icon = item.icon;
             const isActive = item.name === activeItem;
             return (
@@ -80,6 +55,6 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
       </nav>
     </aside>
   );
-}
+};
 
-export default SidebarAdmin;
+export default SidebarOrganizador;

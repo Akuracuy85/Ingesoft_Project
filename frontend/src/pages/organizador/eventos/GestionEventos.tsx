@@ -1,163 +1,19 @@
-import React, { useState } from "react";
-import { Search, Plus, Download } from "lucide-react";
-import OrganizadorLayout from "../OrganizadorLayout"; // estructura visual base del panel de organizador
-
-// --- Tipos de usuario ---
-type UserRole = "Cliente" | "Organizador" | "Administrador";
-type UserStatus = "Activo" | "Inactivo";
-type UserID = number;
-
-interface User {
-  id: UserID;
-  name: string;
-  email: string;
-  dni: string;
-  role: UserRole;
-  status: UserStatus;
-  lastAccess: string;
-}
-
-interface UserFormData {
-  name: string;
-  email: string;
-  dni: string;
-  role: UserRole;
-  status: UserStatus;
-}
-
-type FilterValue = UserRole | UserStatus | "all";
-
-// --- Datos iniciales ---
-const initialUsers: User[] = [
-  {
-    id: 1001,
-    name: "María López",
-    email: "maria@unite.com",
-    dni: "12345678A",
-    role: "Cliente",
-    status: "Activo",
-    lastAccess: "02/10/25",
-  },
-  {
-    id: 1002,
-    name: "Juan Pérez",
-    email: "jperez@unite.com",
-    dni: "87654321B",
-    role: "Organizador",
-    status: "Inactivo",
-    lastAccess: "15/09/25",
-  },
-  {
-    id: 1003,
-    name: "Ana García",
-    email: "ana.garcia@unite.com",
-    dni: "45678912C",
-    role: "Administrador",
-    status: "Activo",
-    lastAccess: "05/10/25",
-  },
-  {
-    id: 1004,
-    name: "Carlos Ruiz",
-    email: "cruiz@unite.com",
-    dni: "78912345D",
-    role: "Cliente",
-    status: "Activo",
-    lastAccess: "01/10/25",
-  },
-  {
-    id: 1005,
-    name: "Laura Martínez",
-    email: "lmartinez@unite.com",
-    dni: "32165498E",
-    role: "Organizador",
-    status: "Activo",
-    lastAccess: "04/10/25",
-  },
-];
+import React from "react";
+import OrganizadorLayout from "../OrganizadorLayout";
 
 export default function GestionEventos(): React.ReactElement {
-  const [users, setUsers] = useState<User[]>(initialUsers);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<FilterValue>("all");
-  const [statusFilter, setStatusFilter] = useState<FilterValue>("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.dni && user.dni.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesRole =
-      roleFilter === "all" || user.role === (roleFilter as UserRole);
-    const matchesStatus =
-      statusFilter === "all" || user.status === (statusFilter as UserStatus);
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
-  const handleCreateUser = (): void => {
-    setEditingUser(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditUser = (user: User): void => {
-    setEditingUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveUser = (userData: UserFormData): void => {
-    if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? { ...u, ...userData } : u)));
-    } else {
-      const newUser: User = {
-        ...userData,
-        id: Math.max(...users.map((u) => u.id)) + 1,
-        lastAccess: new Date().toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "2-digit",
-        }),
-      };
-      setUsers([...users, newUser]);
-    }
-    setIsModalOpen(false);
-  };
-
-  const handleToggleStatus = (userId: UserID): void => {
-    setUsers(
-      users.map((u) =>
-        u.id === userId
-          ? { ...u, status: u.status === "Activo" ? "Inactivo" : "Activo" }
-          : u
-      )
-    );
-  };
-
-  const handleDeleteUser = (userId: UserID): void => {
-    if (confirm("¿Deseas eliminar este usuario?")) {
-      setUsers(users.filter((u) => u.id !== userId));
-    }
-  };
-
-  const handleExport = (format: string): void => {
-    alert(`Exportando lista de usuarios como ${format.toUpperCase()}...`);
-  };
-
   return (
-    <OrganizadorLayout activeItem="Gestión de Eventos">
+    <OrganizadorLayout activeItem="Gestión de eventos">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Gestión de usuarios
+            Gestión de eventos
           </h1>
           <p className="text-muted-foreground">
             Administra tus eventos, tarifas, términos y documentación
           </p>
         </div>
-
+        {/* Contenido funcional por implementar: listado, filtros, creación, etc. */}
       </div>
     </OrganizadorLayout>
   );
