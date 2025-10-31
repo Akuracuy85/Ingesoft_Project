@@ -89,9 +89,13 @@ export class EventoRepository {
       where: { id },
       relations: {
         organizador: true,
-        zonas: true,
+        zonas: {
+          tarifaNormal: true,
+          tarifaPreventa: true,
+        },
         documentosRespaldo: true,
         terminosUso: true,
+        artista: true,
       },
     });
   }
@@ -131,11 +135,15 @@ export class EventoRepository {
    */
   async listarEventosFiltrados(filtros: IFiltrosEvento): Promise<Evento[]> {
     const qb = this.repository.createQueryBuilder("evento");
+    qb.distinct(true);
 
     qb.leftJoinAndSelect("evento.artista", "artista").leftJoinAndSelect(
       "artista.categoria",
       "categoria"
     );
+    qb.leftJoin("evento.zonas", "zona");
+    qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
+    qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
 
     qb.where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
 
@@ -174,25 +182,41 @@ export class EventoRepository {
       qb.andWhere("evento.fechaEvento < :fechaFin", { fechaFin });
     }
 
-    if (filtros.precioMin || filtros.precioMax) {
+    const precioMin =
+      filtros.precioMin !== undefined ? Number(filtros.precioMin) : undefined;
+    const precioMax =
+      filtros.precioMax !== undefined ? Number(filtros.precioMax) : undefined;
+    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
+    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
+
+    if (aplicarMin || aplicarMax) {
       qb.andWhere(
-        new Brackets((sqb) => {
-          sqb.where(
-            "EXISTS (SELECT 1 FROM zona z WHERE z.eventoId = evento.id " +
-              (filtros.precioMin ? "AND z.costo >= :precioMin " : "") +
-              (filtros.precioMax ? "AND z.costo <= :precioMax " : "") +
-              ")",
-            {
-              precioMin: filtros.precioMin
-                ? Number(filtros.precioMin)
-                : undefined,
-              precioMax: filtros.precioMax
-                ? Number(filtros.precioMax)
-                : undefined,
-            }
-          );
+        new Brackets((precioQb) => {
+          if (aplicarMin && aplicarMax) {
+            precioQb.where(
+              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio BETWEEN :precioMin AND :precioMax) OR " +
+                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
+            );
+          } else if (aplicarMin) {
+            precioQb.where(
+              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio >= :precioMin) OR " +
+                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
+            );
+          } else if (aplicarMax) {
+            precioQb.where(
+              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio <= :precioMax) OR " +
+                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
+            );
+          }
         })
       );
+
+      if (aplicarMin) {
+        qb.setParameter("precioMin", precioMin as number);
+      }
+      if (aplicarMax) {
+        qb.setParameter("precioMax", precioMax as number);
+      }
     }
 
     qb.orderBy("evento.fechaEvento", "ASC");
