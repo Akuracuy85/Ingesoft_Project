@@ -16,9 +16,6 @@ export class Zona {
   @Column({ type: "int", default: 0 })
   cantidadComprada: number;
 
-  @Column({ type: "int", default: 0 })
-  costo: number;
-
   @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
   @JoinColumn()
   tarifaNormal?: Tarifa | null;
