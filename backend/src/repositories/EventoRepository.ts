@@ -68,7 +68,10 @@ export class EventoRepository {
       where: { organizador: { id: organizadorId } },
       relations: {
         organizador: true,
-        zonas: true,
+        zonas: {
+          tarifaNormal: true,
+          tarifaPreventa: true,
+        },
         documentosRespaldo: true,
         terminosUso: true,
         artista: true,
@@ -200,7 +203,14 @@ export class EventoRepository {
   async buscarPorId(id: number): Promise<Evento | null> {
     return await this.repository.findOne({
       where: { id },
-      relations: ["zonas", "artista", "calificaciones"],
+      relations: {
+        zonas: {
+          tarifaNormal: true,
+          tarifaPreventa: true,
+        },
+        artista: true,
+        calificaciones: true,
+      },
     });
   }
 }
