@@ -3,6 +3,7 @@ import { Calendar, MoreVertical, Plus, Edit3, Trash2, X, ImageOff, Upload } from
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
+import ConfiguracionEvento from "./ConfiguracionEvento";
 
 // Tipos para la tabla
 interface EventoItem {
@@ -188,169 +189,174 @@ const CardEventos: React.FC = () => {
   };
 
   return (
-    <section className="bg-card border border-border rounded-lg p-6 shadow-sm relative">
-      {/* Encabezado fijo */}
-      {renderTopCard()}
+    <>
+      <section className="bg-card border border-border rounded-lg p-6 shadow-sm relative">
+        {/* Encabezado fijo */}
+        {renderTopCard()}
 
-      {/* Detalles del evento seleccionado */}
-      {eventoSeleccionado && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-4 relative">
-          {/* Botón cerrar */}
-          <button
-            type="button"
-            onClick={() => {
-              setEventoSeleccionado(null);
-              setSelectedIndex(null);
-            }}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            aria-label="Cerrar detalles"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          {/* Título + estado */}
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-gray-900">{eventoSeleccionado.nombre}</h2>
-            <span className={getBadgeClass(eventoSeleccionado.estado)}>{eventoSeleccionado.estado}</span>
-          </div>
-          <p className="text-sm text-gray-600 mb-4">{eventoSeleccionado.fecha}</p>
-
-          {/* Encabezado de portada con botón alineado a la derecha */}
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium">Imagen de portada del evento</h3>
+        {/* Detalles del evento seleccionado */}
+        {eventoSeleccionado && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-4 relative">
+            {/* Botón cerrar */}
             <button
               type="button"
-              className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
+              onClick={() => {
+                setEventoSeleccionado(null);
+                setSelectedIndex(null);
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              aria-label="Cerrar detalles"
             >
-              <Upload className="h-4 w-4" /> Subir portada
+              <X className="h-5 w-5" />
             </button>
+
+            {/* Título + estado */}
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-lg font-semibold text-gray-900">{eventoSeleccionado.nombre}</h2>
+              <span className={getBadgeClass(eventoSeleccionado.estado)}>{eventoSeleccionado.estado}</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">{eventoSeleccionado.fecha}</p>
+
+            {/* Encabezado de portada con botón alineado a la derecha */}
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-medium">Imagen de portada del evento</h3>
+              <button
+                type="button"
+                className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
+              >
+                <Upload className="h-4 w-4" /> Subir portada
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-3">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
+
+            {/* Área de imagen */}
+            {eventoSeleccionado.imagenNombre ? (
+              <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
+                <div className="text-sm text-gray-600">Portada: {eventoSeleccionado.imagenNombre}</div>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
+                <ImageOff className="h-8 w-8 mb-2" />
+                <p>No hay imagen de portada</p>
+              </div>
+            )}
           </div>
-          <p className="text-sm text-gray-500 mb-3">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
+        )}
 
-          {/* Área de imagen */}
-          {eventoSeleccionado.imagenNombre ? (
-            <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
-              <div className="text-sm text-gray-600">Portada: {eventoSeleccionado.imagenNombre}</div>
-            </div>
-          ) : (
-            <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
-              <ImageOff className="h-8 w-8 mb-2" />
-              <p>No hay imagen de portada</p>
-            </div>
-          )}
-        </div>
-      )}
+        {/* Contenido: lista + tabla */}
+        <div className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-700">Lista de eventos</h3>
+            <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
+          </div>
 
-      {/* Contenido: lista + tabla */}
-      <div className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-700">Lista de eventos</h3>
-          <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
-                <th className="px-4 py-3 font-medium">Nombre del evento</th>
-                <th className="px-4 py-3 font-medium">Fecha</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {eventos.map((ev, index) => (
-                <tr
-                  key={`${ev.nombre}-${ev.fecha}-${index}`}
-                  className={`${selectedIndex === index ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
-                  onClick={() => {
-                    setEventoSeleccionado(ev);
-                    setSelectedIndex(index);
-                  }}
-                >
-                  <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
-                  <td className="px-4 py-3 text-gray-700">{ev.fecha}</td>
-                  <td className="px-4 py-3">
-                    <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div
-                      className="relative inline-block text-left"
-                      ref={menuAbierto === index ? menuRef : null}
-                    >
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuAbierto(menuAbierto === index ? null : index);
-                        }}
-                        className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
-                        aria-haspopup="menu"
-                        aria-expanded={menuAbierto === index}
-                        aria-label={`Acciones para ${ev.nombre}`}
-                      >
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
-
-                      {menuAbierto === index && (
-                        <div
-                          className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                          onClick={(e) => e.stopPropagation()}
-                          role="menu"
-                        >
-                          <button
-                            type="button"
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                            onClick={() => {
-                              setMenuAbierto(null);
-                              handleOpenEdit(index);
-                            }}
-                            role="menuitem"
-                          >
-                            <Edit3 className="h-4 w-4" />
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
-                            onClick={() => {
-                              setEventoAEliminar({ index, nombre: ev.nombre });
-                              setMenuAbierto(null);
-                            }}
-                            role="menuitem"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Eliminar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
+                  <th className="px-4 py-3 font-medium">Nombre del evento</th>
+                  <th className="px-4 py-3 font-medium">Fecha</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium text-right">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {eventos.map((ev, index) => (
+                  <tr
+                    key={`${ev.nombre}-${ev.fecha}-${index}`}
+                    className={`${selectedIndex === index ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
+                    onClick={() => {
+                      setEventoSeleccionado(ev);
+                      setSelectedIndex(index);
+                    }}
+                  >
+                    <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
+                    <td className="px-4 py-3 text-gray-700">{ev.fecha}</td>
+                    <td className="px-4 py-3">
+                      <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="relative inline-block text-left"
+                        ref={menuAbierto === index ? menuRef : null}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuAbierto(menuAbierto === index ? null : index);
+                          }}
+                          className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
+                          aria-haspopup="menu"
+                          aria-expanded={menuAbierto === index}
+                          aria-label={`Acciones para ${ev.nombre}`}
+                        >
+                          <MoreVertical className="h-5 w-5" />
+                        </button>
+
+                        {menuAbierto === index && (
+                          <div
+                            className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                            onClick={(e) => e.stopPropagation()}
+                            role="menu"
+                          >
+                            <button
+                              type="button"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                              onClick={() => {
+                                setMenuAbierto(null);
+                                handleOpenEdit(index);
+                              }}
+                              role="menuitem"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                              onClick={() => {
+                                setEventoAEliminar({ index, nombre: ev.nombre });
+                                setMenuAbierto(null);
+                              }}
+                              role="menuitem"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Modales */}
-      <ModalCrearEvento open={isCreateOpen} onClose={handleCloseCreate} onSave={handleSaveCreate} />
+        {/* Modales */}
+        <ModalCrearEvento open={isCreateOpen} onClose={handleCloseCreate} onSave={handleSaveCreate} />
 
-      <ModalEditarEvento
-        open={isEditOpen}
-        onClose={handleCloseEdit}
-        initialData={editInitial}
-        onSave={handleSaveEdit}
-      />
+        <ModalEditarEvento
+          open={isEditOpen}
+          onClose={handleCloseEdit}
+          initialData={editInitial}
+          onSave={handleSaveEdit}
+        />
 
-      {/* Modal de confirmación de eliminación */}
-      <ConfirmarEliminacionModal
-        open={!!eventoAEliminar}
-        nombre={eventoAEliminar?.nombre || ""}
-        onCancel={() => setEventoAEliminar(null)}
-        onConfirm={confirmarEliminacion}
-      />
-    </section>
+        {/* Modal de confirmación de eliminación */}
+        <ConfirmarEliminacionModal
+          open={!!eventoAEliminar}
+          nombre={eventoAEliminar?.nombre || ""}
+          onCancel={() => setEventoAEliminar(null)}
+          onConfirm={confirmarEliminacion}
+        />
+      </section>
+
+      {/* Configuración del evento */}
+      {eventoSeleccionado && <ConfiguracionEvento />}
+    </>
   );
 };
 
