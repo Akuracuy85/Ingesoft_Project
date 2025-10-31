@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
+import UsuarioService from "@/services/UsuarioService";
 
 export const RegistroOrganizador = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,39 +16,66 @@ export const RegistroOrganizador = () => {
   const [dni, setDni] = useState("");
   const [ruc, setRuc] = useState("");
   const [razonSocial, setRazonSocial] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
   const [telefono, setTelefono] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Campos personales
+  const [nombres, setNombres] = useState("");
+  const [apellidoPaterno, setApellidoPaterno] = useState("");
+  const [apellidoMaterno, setApellidoMaterno] = useState("");
+  const [email, setEmail] = useState("");
 
   const navigate = useNavigate();
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
 
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setDni(value);
-  };
-  
-  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, ""); // solo números
-    setTelefono(value);
-  };
+  // Validadores simples
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDni(e.target.value.replace(/[^0-9]/g, ""));
+  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setTelefono(e.target.value.replace(/[^0-9]/g, ""));
+  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setRuc(e.target.value.replace(/[^0-9]/g, ""));
 
-  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setRuc(value);
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
-      captchaValido &&
-      aceptaTerminos &&
-      contraseñasCoinciden &&
-      password &&
-      dni &&
-      ruc &&
-      razonSocial
-    ) {
-      setShowPopup(true);
+      !captchaValido ||
+      !aceptaTerminos ||
+      !contraseñasCoinciden ||
+      !ruc ||
+      !razonSocial
+    )
+      return;
+
+    setLoading(true);
+    try {
+      const nuevoOrganizador = {
+        nombre: nombres,
+        apellidoPaterno,
+        apellidoMaterno,
+        dni,
+        celular: telefono,
+        email,
+        password,
+        rol: "ORGANIZADOR",
+        RUC: ruc,
+        RazonSocial: razonSocial,
+        activo: true,
+      };
+
+      const response = await UsuarioService.create(nuevoOrganizador);
+
+      if (response.success) {
+        setShowPopup(true);
+      } else {
+        alert(response.message || "Hubo un problema al registrar el organizador");
+      }
+    } catch (error) {
+      console.error("Error al registrar organizador:", error);
+      alert("Error al conectarse con el servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,7 +100,6 @@ export const RegistroOrganizador = () => {
             Registro de Organizador
           </h2>
 
-          {/* Volver al login */}
           <p className="text-center mt-6 text-gray-600">
             ¿Ya tienes cuenta?{" "}
             <Link to="/login" className="text-blue-600 hover:underline">
@@ -91,6 +118,8 @@ export const RegistroOrganizador = () => {
             <input
               type="text"
               placeholder="Ingresa tus nombres"
+              value={nombres}
+              onChange={(e) => setNombres(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
@@ -104,6 +133,8 @@ export const RegistroOrganizador = () => {
               <input
                 type="text"
                 placeholder="Ingresa tu apellido paterno"
+                value={apellidoPaterno}
+                onChange={(e) => setApellidoPaterno(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
             </div>
@@ -114,6 +145,8 @@ export const RegistroOrganizador = () => {
               <input
                 type="text"
                 placeholder="Ingresa tu apellido materno"
+                value={apellidoMaterno}
+                onChange={(e) => setApellidoMaterno(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
             </div>
@@ -127,14 +160,16 @@ export const RegistroOrganizador = () => {
               </label>
               <input
                 type="text"
-                placeholder="Ingresa tu DNI o Carnet de Extranjería"
+                placeholder="Ingresa tu DNI"
                 value={dni}
                 onChange={handleDniChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Teléfono</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Teléfono
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu número de teléfono"
@@ -153,6 +188,8 @@ export const RegistroOrganizador = () => {
             <input
               type="email"
               placeholder="Ingresa tu correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
@@ -268,6 +305,7 @@ export const RegistroOrganizador = () => {
           <button
             onClick={handleSubmit}
             disabled={
+              loading ||
               !captchaValido ||
               !aceptaTerminos ||
               !contraseñasCoinciden ||
@@ -284,12 +322,12 @@ export const RegistroOrganizador = () => {
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
           >
-            REGISTRAR ORGANIZADOR
+            {loading ? "Registrando..." : "REGISTRAR ORGANIZADOR"}
           </button>
         </div>
       </div>
 
-      {/* Popup de confirmación */}
+      {/* Popup */}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md w-[90%]">
