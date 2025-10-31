@@ -3,7 +3,7 @@ import type { User, UserFormData } from "../models/User";
 
 class UserService extends HttpClient {
   constructor() {
-    super("/users");
+    super("/usuario");
   }
 
   async getAll(): Promise<User[]> {
@@ -22,8 +22,9 @@ class UserService extends HttpClient {
   }
 
   async toggleStatus(id: number, currentStatus: string): Promise<User> {
-    const newStatus = currentStatus === "Activo" ? "Inactivo" : "Activo";
-    const res = await this.patch<User>(`/${id}`, { status: newStatus });
+    const endpoint =
+      currentStatus === "Activo" ? `/desactivar/${id}` : `/activar/${id}`; //Voy a confiar en Raul y el otro back
+    const res = await this.patch<User>(endpoint);
     return res;
   }
 

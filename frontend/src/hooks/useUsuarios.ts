@@ -37,10 +37,10 @@ export function useUsuarios() {
   });
 
   const toggleStatus = useMutation({
-  mutationFn: ({ id, currentStatus }: { id: number; currentStatus: string }) =>
+    mutationFn: ({ id, currentStatus }: { id: number; currentStatus: string }) =>
     userService.toggleStatus(id, currentStatus),
-  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
-});
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+  });
 
   return {
     usersQuery,
