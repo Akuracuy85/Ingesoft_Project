@@ -36,6 +36,7 @@
     "@tailwindcss/vite": "^4.1.12",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/react-google-recaptcha": "^2.1.9",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",

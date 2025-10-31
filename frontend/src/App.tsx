@@ -29,7 +29,7 @@ function App() {
           <Route path="/registro-organizador" element={<RegistroOrganizador />} />
           
           {/* 2. USA el componente aquí en lugar de <></> */}
-          <Route path="/evento/:id" element={<CompraDeEntradas />} />
+          <Route path="/eventos/:id/compra" element={<CompraDeEntradas />} />
           <Route path="/eventos" element={<SeleccionDeEventos />} />
           <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
           
