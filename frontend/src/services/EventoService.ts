@@ -69,6 +69,17 @@ class EventoService extends HttpClient {
         return respuesta; 
     }
     
+    /**
+     * @description Obtiene el detalle público de un evento por su ID.
+     * @param id El ID del evento
+     * @returns Un objeto con los datos completos del evento
+     */
+    async obtenerPorId(id: number): Promise<Event> {
+        if (!id) throw new Error("Se requiere un ID válido de evento");
+        const respuesta = await super.get(`/${id}`);
+        return respuesta.evento; // El backend devuelve { success, evento }
+    }
+
     // Aquí puedes añadir otros métodos como crearEvento, actualizarEvento, etc.
 }
 

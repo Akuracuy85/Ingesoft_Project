@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import mapaAsientos from "@/assets/EstadioImagen2.png";
@@ -9,6 +9,8 @@ import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 export const PaginaCompraEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
+  const navigate = useNavigate();
+
   const { evento, isLoading, error } = useEventoDetalle(eventoId);
 
   if (isLoading) {
@@ -27,13 +29,27 @@ export const PaginaCompraEvento: React.FC = () => {
     );
   }
 
-  // Si el backend devuelve base64 en evento.imagenBanner
+  // ✅ Imagen del banner en base64
   const bannerUrl = evento.imagenBanner
     ? `data:image/jpeg;base64,${evento.imagenBanner}`
     : undefined;
 
-  // Si el backend devuelve zonas (array con capacidad, costo, etc.)
+  // ✅ Zonas disponibles
   const zonas = evento.zonas || [];
+
+  // ✅ Hora obtenida desde fechaEvento
+  const horaEvento = new Date(evento.fechaEvento).toLocaleTimeString("es-PE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  // 🟠 Función para ir a la página de compra
+  const handleCompraClick = () => {
+    navigate(`/eventos/${eventoId}/compra`, {
+      state: { evento }, // Pasamos los datos del evento al flujo de compra
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -66,8 +82,9 @@ export const PaginaCompraEvento: React.FC = () => {
         </div>
       </header>
 
+      {/* ===== CONTENIDO PRINCIPAL ===== */}
       <main>
-        {/* ===== SECCIÓN 1: DETALLES DEL EVENTO ===== */}
+        {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
         <section
           className="relative bg-cover bg-center bg-no-repeat text-white px-6 py-50 md:px-24 min-h-[85vh]"
           style={{
@@ -96,16 +113,16 @@ export const PaginaCompraEvento: React.FC = () => {
                 <br />
                 {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
                 <br />
-                {evento.hora || "07:00 pm"}
+                {horaEvento}
               </p>
             </div>
           </div>
         </section>
 
-        {/* ===== SECCIÓN 2: MAPA Y PRECIOS ===== */}
+        {/* === SECCIÓN 2: MAPA Y PRECIOS === */}
         <div className="bg-[#fff4ea] px-4 pt-10 pb-16 md:px-24">
           <section className="flex flex-col md:flex-row items-start justify-between gap-12">
-            {/* Mapa de Asientos */}
+            {/* Mapa del lugar */}
             <div className="w-full md:w-1/2 flex justify-center p-4 bg-transparent rounded-lg shadow-none">
               {mapaAsientos ? (
                 <img
@@ -120,7 +137,7 @@ export const PaginaCompraEvento: React.FC = () => {
               )}
             </div>
 
-            {/* Tabla de precios dinámica */}
+            {/* Tabla de precios */}
             <div className="w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden mt-8 md:mt-25">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -138,13 +155,15 @@ export const PaginaCompraEvento: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {zonas.length > 0 ? (
-                    zonas.map((zona, index) => (
+                    zonas.map((zona: any, index: number) => (
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {zona.nombre}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          S/ {zona.costo.toFixed(2)}
+                          {zona.costo
+                            ? `S/ ${zona.costo.toFixed(2)}`
+                            : "Consultar tarifa"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                           {zona.capacidad}
@@ -167,7 +186,7 @@ export const PaginaCompraEvento: React.FC = () => {
           </section>
         </div>
 
-        {/* ===== SECCIÓN 3: Compra ===== */}
+        {/* === SECCIÓN 3: COMPRA === */}
         <div className="bg-white px-4 py-16 md:px-24">
           <section className="text-center py-16">
             <motion.h2
@@ -177,7 +196,8 @@ export const PaginaCompraEvento: React.FC = () => {
               transition={{ duration: 0.8, ease: "easeOut" }}
               viewport={{ once: false }}
             >
-              Consigue tus tickets para ver {evento.artista?.nombre || "al artista"} <br />
+              Consigue tus tickets para ver{" "}
+              {evento.artista?.nombre || "al artista"} <br />
               en {evento.distrito || "el lugar del evento"}
             </motion.h2>
 
@@ -188,7 +208,10 @@ export const PaginaCompraEvento: React.FC = () => {
               transition={{ duration: 0.8, ease: "easeOut" }}
               viewport={{ once: false }}
             >
-              <button className="px-12 py-4 bg-black text-white text-lg font-bold rounded-md hover:bg-gray-800 transition-colors">
+              <button
+                onClick={handleCompraClick}
+                className="px-12 py-4 bg-black text-white text-lg font-bold rounded-md hover:bg-gray-800 transition-colors"
+              >
                 Comprar Entrada
               </button>
             </motion.div>
