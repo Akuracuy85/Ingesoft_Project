@@ -72,9 +72,10 @@ export default class HttpClient {
   }
 
   async post<T = any>(url: string = '', data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const res = await this.client.post<ApiResponse<T>>(url, data, config);
-    return res.data as T;
-  }
+  const res = await this.client.post(url, data, config);
+  return res.data as T;
+}
+
 
   async put<T = any>(url: string = '', data?: any, config?: AxiosRequestConfig): Promise<T> {
     const res = await this.client.put<ApiResponse<T>>(url, data, config);

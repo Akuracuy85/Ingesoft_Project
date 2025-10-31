@@ -25,7 +25,7 @@ interface UserTableProps {
   // 'onEdit' recibe el objeto 'User' completo
   onEdit: (user: User) => void;
   // 'onToggleStatus' y 'onDelete' reciben el ID del usuario
-  onToggleStatus: (userId: User['id']) => void; 
+  onToggleStatus: (userId: number, status: string) => void;
   onDelete: (userId: User['id']) => void;
 }
 
@@ -91,7 +91,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus, on
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => onToggleStatus(user.id)}
+                      onClick={() => onToggleStatus(user.id, user.status)}
                       className={`${
                         user.status === "Activo"
                           ? "text-red-500 hover:text-red-700"
