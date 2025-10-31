@@ -5,6 +5,8 @@ import usuarioRoutes from "./Usuario.routes";
 import authRouter from "./Auth.routes";
 import eventoRoutes from "./Evento.routes";
 import ordenCompraRoutes from "./OrdenCompra.routes"; 
+import perfilRoutes from "./Perfil.routes";
+
 
 const uniteRouter = express.Router();
 
@@ -19,5 +21,6 @@ uniteRouter.use("/usuario", usuarioRoutes)
 uniteRouter.use("/auth", authRouter)
 uniteRouter.use("/evento", eventoRoutes) 
 uniteRouter.use("/orden", ordenCompraRoutes) 
+uniteRouter.use("/perfil", perfilRoutes)
 
 export default uniteRouter;
