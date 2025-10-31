@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FilterModal } from "./FilterModal";
+import { Link } from "react-router-dom";
 
 // --- 1. Definimos una interfaz para las 'props' ---
 // Haremos que el Header pueda recibir una propiedad opcional
@@ -47,12 +48,18 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
           )}
 
           {/* BOTONES DE AUTENTICACIÓN (Estos siempre se muestran) */}
-          <button className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition">
+          <Link
+            to="/login"
+            className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
+          >
             Iniciar sesión
-          </button>
-          <button className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition">
+          </Link>
+          <Link
+            to="/registro"
+            className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
+          >
             Registrarse
-          </button>
+          </Link>
         </div>
       </header>
 

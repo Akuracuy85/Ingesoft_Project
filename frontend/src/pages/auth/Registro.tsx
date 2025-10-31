@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
+import UsuarioService from "@/services/UsuarioService";
 
 export const Registro = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,27 +14,59 @@ export const Registro = () => {
   const [captchaValido, setCaptchaValido] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [dni, setDni] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
   const [telefono, setTelefono] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // NUEVOS CAMPOS:
+  const [nombres, setNombres] = useState("");
+  const [apellidoPaterno, setApellidoPaterno] = useState("");
+  const [apellidoMaterno, setApellidoMaterno] = useState("");
+  const [email, setEmail] = useState("");
 
   const navigate = useNavigate();
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
 
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, ""); 
+    const value = e.target.value.replace(/[^0-9]/g, "");
     setDni(value);
   };
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, ""); // solo números
+    const value = e.target.value.replace(/[^0-9]/g, "");
     setTelefono(value);
   };
 
-  const handleSubmit = () => {
-    if (captchaValido && aceptaTerminos && contraseñasCoinciden && password && dni) {
-      // Popup de registro exitoso
-      setShowPopup(true);
+  const handleSubmit = async () => {
+    if (!captchaValido || !aceptaTerminos || !contraseñasCoinciden) return;
+
+    setLoading(true);
+    try {
+      const nuevoUsuario = {
+        nombre: nombres,
+        apellidoPaterno,
+        apellidoMaterno,
+        dni,
+        celular: telefono,
+        email,
+        password,
+        rol: "CLIENTE",
+        activo: true,
+      };
+
+      const response = await UsuarioService.create(nuevoUsuario);
+
+      if (response.success) {
+        setShowPopup(true);
+      } else {
+        alert(response.message || "Hubo un problema al registrar el usuario");
+      }
+    } catch (error: any) {
+      console.error("Error al registrar usuario:", error);
+      alert("Error al conectarse con el servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,7 +87,9 @@ export const Registro = () => {
       {/* Contenido */}
       <div className="relative z-10 flex flex-1 justify-center items-center p-6 mt-20">
         <div className="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl p-10 w-[90%] max-w-5xl">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">Crear cuenta</h2>
+          <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">
+            Crear cuenta
+          </h2>
 
           {/* Volver al login */}
           <p className="text-center mt-6 text-gray-600">
@@ -70,6 +105,8 @@ export const Registro = () => {
             <input
               type="text"
               placeholder="Ingresa tus nombres"
+              value={nombres}
+              onChange={(e) => setNombres(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
@@ -77,18 +114,26 @@ export const Registro = () => {
           {/* Apellidos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Apellido Paterno</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Apellido Paterno
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu apellido paterno"
+                value={apellidoPaterno}
+                onChange={(e) => setApellidoPaterno(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Apellido Materno</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Apellido Materno
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu apellido materno"
+                value={apellidoMaterno}
+                onChange={(e) => setApellidoMaterno(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
             </div>
@@ -109,7 +154,9 @@ export const Registro = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Teléfono</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Teléfono
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu número de teléfono"
@@ -122,18 +169,24 @@ export const Registro = () => {
 
           {/* Correo */}
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Correo electrónico</label>
+            <label className="block text-gray-700 font-medium mb-2">
+              Correo electrónico
+            </label>
             <input
               type="email"
               placeholder="Ingresa tu correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
 
-          {/* Contraseña */}
+          {/* Contraseñas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="relative">
-              <label className="block text-gray-700 font-medium mb-2">Contraseña</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Contraseña
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Ingresa tu contraseña"
@@ -210,14 +263,19 @@ export const Registro = () => {
           {/* Botón registrar */}
           <button
             onClick={handleSubmit}
-            disabled={!captchaValido || !aceptaTerminos || !contraseñasCoinciden}
+            disabled={
+              loading ||
+              !captchaValido ||
+              !aceptaTerminos ||
+              !contraseñasCoinciden
+            }
             className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
               captchaValido && aceptaTerminos && contraseñasCoinciden
                 ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
           >
-            REGISTRAR
+            {loading ? "Registrando..." : "REGISTRAR"}
           </button>
         </div>
       </div>

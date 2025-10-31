@@ -11,7 +11,7 @@ import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionP
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
 import DetalleEvento from "./pages/client/Eventos/DetalleEvento";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
-
+import GestionEventos from "./pages/organizador/eventos/GestionEventos.tsx";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +38,9 @@ function App() {
 
           {/* === ADMIN === */}
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+
+          {/* === ORGANIZADOR === */}
+          <Route path="/organizador/eventos" element={<GestionEventos />} />
 
         </Routes>
       </div>
