@@ -5,7 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 
-export const Registro = () => {
+export const RegistroOrganizador = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -13,6 +13,8 @@ export const Registro = () => {
   const [captchaValido, setCaptchaValido] = useState(false);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [dni, setDni] = useState("");
+  const [ruc, setRuc] = useState("");
+  const [razonSocial, setRazonSocial] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [telefono, setTelefono] = useState("");
 
@@ -21,18 +23,30 @@ export const Registro = () => {
     password === confirmPassword || confirmPassword === "";
 
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, ""); 
+    const value = e.target.value.replace(/[^0-9]/g, "");
     setDni(value);
   };
-
+  
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, ""); // solo números
     setTelefono(value);
   };
 
+  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setRuc(value);
+  };
+
   const handleSubmit = () => {
-    if (captchaValido && aceptaTerminos && contraseñasCoinciden && password && dni) {
-      // Popup de registro exitoso
+    if (
+      captchaValido &&
+      aceptaTerminos &&
+      contraseñasCoinciden &&
+      password &&
+      dni &&
+      ruc &&
+      razonSocial
+    ) {
       setShowPopup(true);
     }
   };
@@ -54,7 +68,9 @@ export const Registro = () => {
       {/* Contenido */}
       <div className="relative z-10 flex flex-1 justify-center items-center p-6 mt-20">
         <div className="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl p-10 w-[90%] max-w-5xl">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">Crear cuenta</h2>
+          <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">
+            Registro de Organizador
+          </h2>
 
           {/* Volver al login */}
           <p className="text-center mt-6 text-gray-600">
@@ -63,6 +79,11 @@ export const Registro = () => {
               Ingresa aquí
             </Link>
           </p>
+
+          {/* === SECCIÓN 1: DATOS DEL REPRESENTANTE === */}
+          <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4 border-b border-gray-300 pb-2">
+            Datos del Representante
+          </h3>
 
           {/* Nombres */}
           <div className="mb-6">
@@ -77,7 +98,9 @@ export const Registro = () => {
           {/* Apellidos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Apellido Paterno</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Apellido Paterno
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu apellido paterno"
@@ -85,7 +108,9 @@ export const Registro = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Apellido Materno</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Apellido Materno
+              </label>
               <input
                 type="text"
                 placeholder="Ingresa tu apellido materno"
@@ -122,7 +147,9 @@ export const Registro = () => {
 
           {/* Correo */}
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Correo electrónico</label>
+            <label className="block text-gray-700 font-medium mb-2">
+              Correo electrónico
+            </label>
             <input
               type="email"
               placeholder="Ingresa tu correo electrónico"
@@ -178,6 +205,36 @@ export const Registro = () => {
             </div>
           </div>
 
+          {/* === SECCIÓN 2: DATOS DE LA ORGANIZACIÓN === */}
+          <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4 border-b border-gray-300 pb-2">
+            Datos de la Organización
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">RUC</label>
+              <input
+                type="text"
+                placeholder="Ingresa el RUC de la organización"
+                value={ruc}
+                onChange={handleRucChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Razón Social
+              </label>
+              <input
+                type="text"
+                placeholder="Ingresa la razón social"
+                value={razonSocial}
+                onChange={(e) => setRazonSocial(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              />
+            </div>
+          </div>
+
           {/* Captcha */}
           <div className="flex justify-center mt-6 mb-6">
             <ReCAPTCHA
@@ -210,14 +267,24 @@ export const Registro = () => {
           {/* Botón registrar */}
           <button
             onClick={handleSubmit}
-            disabled={!captchaValido || !aceptaTerminos || !contraseñasCoinciden}
+            disabled={
+              !captchaValido ||
+              !aceptaTerminos ||
+              !contraseñasCoinciden ||
+              !ruc ||
+              !razonSocial
+            }
             className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
-              captchaValido && aceptaTerminos && contraseñasCoinciden
+              captchaValido &&
+              aceptaTerminos &&
+              contraseñasCoinciden &&
+              ruc &&
+              razonSocial
                 ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
           >
-            REGISTRAR
+            REGISTRAR ORGANIZADOR
           </button>
         </div>
       </div>
@@ -230,7 +297,7 @@ export const Registro = () => {
               Registro exitoso
             </h3>
             <p className="text-gray-700 mb-6">
-              Tu cuenta ha sido creada correctamente.
+              Tu cuenta de organizador ha sido creada correctamente.
             </p>
             <button
               onClick={() => navigate("/login")}
@@ -245,4 +312,4 @@ export const Registro = () => {
   );
 };
 
-export default Registro;
+export default RegistroOrganizador;
