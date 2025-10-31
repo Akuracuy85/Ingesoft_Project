@@ -3,6 +3,9 @@ import { EventoService } from "@/services/EventoService";
 import { HandleResponseError } from "@/utils/Errors";
 import { StatusCodes } from "http-status-codes";
 import { IFiltrosEvento } from "@/repositories/EventoRepository";
+import { Evento } from "@/models/Evento";
+
+import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
 
 export class EventoController {
   private static instance: EventoController;
@@ -22,18 +25,31 @@ export class EventoController {
   /**
    * Listado público de eventos publicados aplicando filtros opcionales.
    */
+// En tu EventoController.ts
+
+
+
   listarPublicados = async (req: Request, res: Response) => {
     try {
-      const filtros = req.query as IFiltrosEvento;
-      const eventos = await this.eventoService.listarEventosPublicados(filtros);
-      res.status(StatusCodes.OK).json({
-        success: true,
-        eventos,
-      });
+        // req.query contiene todos los filtros (ej. { departamento: 'Lima' })
+        const filtros: IFiltrosEvento = req.query;
+         // 1. Obtener las entidades de la base de datos (Ej: con 'nombre', 'fechaEvento', etc.)
+        const entidades = await this.eventoService.listarEventosPublicados(filtros);
+        // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
+        // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
+        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
+        // 3. Enviar la respuesta con los DTOs
+        res.status(StatusCodes.OK).json({
+            success: true,
+            // Enviamos el array de DTOs mapeados
+            eventos: dtos, 
+        });
+        
     } catch (error) {
-      HandleResponseError(res, error);
+        // Manejo de errores centralizado
+        HandleResponseError(res, error);
     }
-  };
+ };
 
   /**
    * Devuelve el detalle público de un evento por identificador.
@@ -161,6 +177,45 @@ export class EventoController {
       HandleResponseError(res, error);
     }
   };
+
+
+// EventoController.ts
+
+  /**
+   * @description Devuelve los datos detallados de un evento necesarios para la compra (público).
+   * 🚨 CORRECCIÓN CLAVE: Aplica el Mapper y devuelve SOLO el DTO.
+   */
+obtenerDatosCompraPorId = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      // 1. Obtener la entidad usando el nuevo método del servicio que carga Zonas y Artista
+      const eventoEntidad = await this.eventoService.obtenerDatosParaCompra(eventoId);
+      
+      // 2. 🎯 APLICAR EL MAPEO A DTO 🎯
+      // Esto transforma la entidad a la estructura del frontend (title, image:base64, artistName, etc.)
+      const eventoDto = EventMapper.toPurchaseDTO(eventoEntidad as any); 
+
+      // 3. 🚨 RESPONDER DIRECTAMENTE CON EL DTO 🚨
+      // Esto elimina la envoltura { success: true, evento: ... }
+      return res.status(StatusCodes.OK).json(eventoDto); 
+
+    } catch (error) {
+      // Manejo de errores
+      HandleResponseError(res, error);
+    }
+  };
+
+
+
+
 }
 
 export const eventoController = EventoController.getInstance();

@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Evento } from "./Evento";
+import { Tarifa } from "./Tarifa";
 
 @Entity()
 export class Zona {
@@ -15,9 +16,13 @@ export class Zona {
   @Column({ type: "int", default: 0 })
   cantidadComprada: number;
 
-  // El costo se almacena en centimos para evitar perdidas por decimales.
-  @Column({ type: "int", default: 0 })
-  costo: number;
+  @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
+  @JoinColumn()
+  tarifaNormal?: Tarifa | null;
+
+  @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
+  @JoinColumn()
+  tarifaPreventa?: Tarifa | null;
 
   @ManyToOne(() => Evento, (evento) => evento.zonas)
   evento: Evento;

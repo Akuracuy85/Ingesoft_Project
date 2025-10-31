@@ -1,53 +1,69 @@
 import React from "react";
 import type { Step } from "../../../../types/Step";
 
-interface StepIndicatorProps {
-  step: Step;
-  isLast?: boolean; // Todavía lo mantenemos por si lo necesitas para otra cosa, pero no afectará la línea ahora.
-  isActive?: boolean;
+// 🚨 NUEVA INTERFAZ DE PROPIEDADES para el componente COMPLETO
+export interface StepIndicatorProps {
+    currentStep: number; // Índice del paso actual (0, 1, 2...)
+    steps: Step[]; // La lista completa de pasos
 }
 
-const StepIndicator: React.FC<StepIndicatorProps> = ({
-  step,
-  isActive,
-  isLast, // Lo mantenemos pero no lo usaremos para la línea
+// Subcomponente para un solo paso (opcional, pero ayuda a la limpieza)
+const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean; isLast: boolean }> = ({
+    step,
+    isActive,
+    isCompleted,
+    isLast,
 }) => {
-  return (
-    <div className="flex items-center gap-2 w-full mx-auto">
-      {/* Círculo con número o círculo relleno */}
-      <div
-        className={`relative flex-shrink-0 flex items-center justify-center 
-          w-8 h-8 rounded-full border-2 font-bold text-base
-          ${
-            isActive // Si está activo (DATOS DE COMPRA en tu imagen)
-              ? "border-gray-400 bg-white" // Borde gris, fondo blanco para el círculo principal
-              : "border-gray-400 bg-white" // Inactivo (TICKETS en tu imagen): Borde gris, fondo blanco
-          }
-        `}
-      >
-        {isActive ? (
-          // ✅ Círculo interno negro para el estado activo
-          <div className="w-4 h-4 rounded-full bg-black"></div>
-        ) : (
-          // ✅ Número para el estado inactivo (pero bordeado, no relleno)
-          <div className="text-black">{step.number ?? 1}</div>
-        )}
-      </div>
+    // Determinar el estilo
+    const circleClass = isCompleted
+        ? "bg-black text-white" // Completado (puede ser un checkmark)
+        : isActive
+        ? "border-2 border-black bg-white text-black" // Activo
+        : "border-2 border-gray-400 bg-white text-gray-500"; // Inactivo
 
-      {/* Bloque de texto + línea */}
-      <div className="flex flex-col flex-1">
-        <div
-          className={`font-medium text-lg mb-1 
-            ${isActive ? "text-black" : "text-gray-700"}`} // ✅ El texto activo es más oscuro
-        >
-          {step.title}
+    return (
+        <div className="flex items-center">
+            {/* Círculo */}
+            <div
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-base transition-colors duration-300 ${circleClass}`}
+            >
+                {isCompleted ? (
+                    '✓' // O icono de check
+                ) : (
+                    step.number ?? 1
+                )}
+            </div>
+
+            {/* Línea y Título */}
+            <div className="flex flex-col ml-2 flex-1 min-w-0">
+                <div className={`font-medium text-lg mb-1 ${isActive || isCompleted ? "text-black" : "text-gray-700"}`}>
+                    {step.title}
+                </div>
+                {/* La línea conectora solo si NO es el último paso */}
+                {!isLast && (
+                    <div className="h-1 w-full mt-1" style={{ backgroundColor: isCompleted ? 'black' : '#D1D5DB' }}></div>
+                )}
+            </div>
         </div>
-        
-        {/* ✅ La línea siempre se muestra (quitamos la condición !isLast) */}
-        <div className="h-1 bg-black w-full"></div>
-      </div>
-    </div>
-  );
+    );
+};
+
+
+// 🚀 COMPONENTE PRINCIPAL (Este es el que usas en BodyCompraEntradas)
+const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, steps }) => {
+    return (
+        <div className="flex justify-between w-full max-w-lg mx-auto mb-8">
+            {steps.map((step, index) => (
+                <SingleStep
+                    key={index}
+                    step={step}
+                    isActive={index === currentStep}
+                    isCompleted={index < currentStep}
+                    isLast={index === steps.length - 1}
+                />
+            ))}
+        </div>
+    );
 };
 
 export default StepIndicator;

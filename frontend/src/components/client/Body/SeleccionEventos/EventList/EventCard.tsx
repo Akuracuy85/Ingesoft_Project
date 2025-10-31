@@ -9,10 +9,10 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, image } = event;
+  const { title, date, place, image, time } = event;
 
   return (
-    <Link to={`evento/${event.id}`}>
+    <Link to={`${event.id}/detalle`}>
       {/* ✅ CAMBIOS AQUÍ:
         1. transition-all, duration-300, ease-in-out: Para una animación suave.
         2. hover:shadow-xl: Aumenta la sombra al pasar el mouse.
@@ -25,7 +25,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
                    hover:shadow-xl hover:scale-[1.03]"
       >
         <img
-          src={image}
+          src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2" //{image}
           alt={title}
           className="w-full h-[150px] object-cover"
         />
