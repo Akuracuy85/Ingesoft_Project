@@ -177,6 +177,45 @@ export class EventoController {
       HandleResponseError(res, error);
     }
   };
+
+
+// EventoController.ts
+
+  /**
+   * @description Devuelve los datos detallados de un evento necesarios para la compra (público).
+   * 🚨 CORRECCIÓN CLAVE: Aplica el Mapper y devuelve SOLO el DTO.
+   */
+obtenerDatosCompraPorId = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      // 1. Obtener la entidad usando el nuevo método del servicio que carga Zonas y Artista
+      const eventoEntidad = await this.eventoService.obtenerDatosParaCompra(eventoId);
+      
+      // 2. 🎯 APLICAR EL MAPEO A DTO 🎯
+      // Esto transforma la entidad a la estructura del frontend (title, image:base64, artistName, etc.)
+      const eventoDto = EventMapper.toPurchaseDTO(eventoEntidad as any); 
+
+      // 3. 🚨 RESPONDER DIRECTAMENTE CON EL DTO 🚨
+      // Esto elimina la envoltura { success: true, evento: ... }
+      return res.status(StatusCodes.OK).json(eventoDto); 
+
+    } catch (error) {
+      // Manejo de errores
+      HandleResponseError(res, error);
+    }
+  };
+
+
+
+
 }
 
 export const eventoController = EventoController.getInstance();

@@ -138,7 +138,7 @@ export class EventoService {
    */
   async obtenerDetalleEvento(id: number): Promise<Evento> {
     try {
-      const evento = await this.eventoRepository.buscarPorId(id);
+      const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
@@ -152,6 +152,7 @@ export class EventoService {
     }
   }
 
+  
   async crearEvento(data: CrearEventoDto, organizadorId: number) {
     this.validarDatosObligatorios(data);
     const organizador = await this.obtenerOrganizador(organizadorId);
@@ -384,7 +385,8 @@ export class EventoService {
         const zona = zonasPorId.get(zonaDto.id)!;
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.costo = zonaDto.costo;
+        zona.tarifaNormal = zonaDto.tarifaNormal;
+        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         if (zonaDto.cantidadComprada !== undefined) {
           zona.cantidadComprada = zonaDto.cantidadComprada;
         }
@@ -393,7 +395,8 @@ export class EventoService {
         const zona = new Zona();
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.costo = zonaDto.costo;
+        zona.tarifaNormal = zonaDto.tarifaNormal;
+        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         zona.cantidadComprada = zonaDto.cantidadComprada ?? 0;
         zona.evento = evento;
         nuevas.push(zona);
@@ -446,7 +449,8 @@ export class EventoService {
       id: zona.id,
       nombre: zona.nombre,
       capacidad: zona.capacidad,
-      costo: zona.costo,
+      tarifaNormal: zona.tarifaNormal,
+      tarifaPreventa: zona.tarifaPreventa,
       cantidadComprada: zona.cantidadComprada,
     };
   }
@@ -512,6 +516,36 @@ export class EventoService {
   private generarCodigoPrivado(): string {
     return randomBytes(4).toString("hex").toUpperCase();
   }
+
+/**
+   * Obtiene la entidad de Evento, INCLUYENDO las relaciones de Zonas y Artista,
+   * para ser utilizada en el mapeo a DTO para la vista de compra.
+   */
+  async obtenerDatosParaCompra(id: number): Promise<Evento> {
+    try {
+      // 🚨 Usamos el método que garantiza las relaciones necesarias para el DTO
+      const evento = await this.eventoRepository.buscarPorIdParaCompra(id); 
+
+      if (!evento) {
+        throw new CustomError("Evento no encontrado.", StatusCodes.NOT_FOUND);
+      }
+      
+      // Opcional pero recomendado: Asegurar que solo devolvemos eventos publicados
+      if (evento.estado !== EstadoEvento.PUBLICADO) {
+         throw new CustomError("Evento no disponible para la compra.", StatusCodes.BAD_REQUEST);
+      }
+
+      return evento;
+
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener los datos para la compra del evento.",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
 }
 
 export const eventoService = EventoService.getInstance();
