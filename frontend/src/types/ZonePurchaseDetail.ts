@@ -1,11 +1,18 @@
+// src/types/ZonePurchaseDetail.ts
+
+import { type Tarifa } from "../models/Tarifa"; // Importamos la nueva Tarifa
+
 /**
- * @description Estructura de Zona usada ESPECÍFICAMENTE para el proceso de compra.
- * Coincide directamente con el DTO de Zona enviado por el backend.
+ * @description Estructura de Zonas que se recibe del backend en el array zonasDisponibles.
+ * El campo 'costo' ya no existe; fue reemplazado por las tarifas.
  */
 export interface ZonePurchaseDetail {
     id: number;
-    nombre: string; // <-- El nombre real de la propiedad que envía el backend
-    capacidad: number; // Aforo total de esta zona
-    costo: number; // <-- El precio real de la propiedad que envía el backend
-    cantidadComprada: number; // Entradas ya vendidas en esta zona
+    nombre: string; // El nombre de la zona
+    capacidad: number;
+    cantidadComprada: number;
+    
+    // ✅ Las tarifas explícitas
+    tarifaNormal: Tarifa; 
+    tarifaPreventa: Tarifa; 
 }

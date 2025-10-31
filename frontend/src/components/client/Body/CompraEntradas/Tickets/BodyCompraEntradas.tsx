@@ -1,68 +1,76 @@
-// ./BodyCompraEntradas.tsx
-
 import React, { useState } from "react";
-// 🚨 CAMBIO CLAVE: Importar Hooks y Servicio
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-// ⚠️ ASEGÚRATE DE QUE LA RUTA A TU SERVICIO Y TIPOS SEA CORRECTA
+
 import EventoService from "../../../../../services/EventoService"; 
 import { type EventDetailsForPurchase } from "../../../../../services/EventoService"; 
 
-
+// Importaciones de Componentes y Tipos Locales
 import ZoneTable from "./ZoneTable/ZoneTable";
 import StepIndicator from "../StepIndicator"; 
 import Encabezado from "../../../../../assets/EstadioImagen.png"; 
 import SelectionSummaryTable from "./SelectionSummaryTable"; 
 import type { SummaryItem } from "./SelectionSummaryTable";
-
 import DatosCompra from "../DatosCompra/DatosCompra"; 
 
-import type { Zone } from "../../../../../models/Zone";
+// Importaciones de Tipos para la lógica
+import type { Zone } from "../../../../../models/Zone"; 
+import { type ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail"; 
 import type { Step } from "../../../../../types/Step";
-// ❌ ELIMINADO: import { mockZonesData } from "../../../../../data/zonesMock"; 
+
 
 const steps: Step[] = [
-  { title: "TICKETS" },
+  { title: "TICKETS", number: 1 }, 
   { title: "DATOS DE COMPRA", number: 2 },
 ];
-// ❌ ELIMINADO: const zones: Zone[] = mockZonesData; // Ahora se definirá dentro del componente
+
+// FUNCIÓN AUXILIAR: Se queda fuera porque no usa estados ni props
+const getActiveZonePrice = (zoneDetail: ZonePurchaseDetail): number => {
+    const now = new Date();
+    
+    if (zoneDetail.tarifaPreventa) {
+        const preventaFin = new Date(zoneDetail.tarifaPreventa.fechaFin);
+        
+        if (now < preventaFin) {
+            return zoneDetail.tarifaPreventa.precio;
+        }
+    }
+    
+    return zoneDetail.tarifaNormal.precio;
+};
 
 
 export const BodyCompraEntradas: React.FC = () => {
     
-    // 1. 🚨 CAMBIO CLAVE: Obtener el ID de la URL
     const { id } = useParams<{ id: string }>();
 
-    // 2. 🚨 CAMBIO CLAVE: Llamar al backend con useQuery
     const { data: eventDetails, isLoading, isError, error } = useQuery<EventDetailsForPurchase>({
         queryKey: ['eventPurchase', id], 
         queryFn: () => {
             if (!id) throw new Error("ID de evento no disponible.");
-            return EventoService.buscarDatosCompraPorId(id);
+            return EventoService.buscarDatosCompraPorId(id); 
         },
-        enabled: !!id, // Solo ejecuta si el ID existe
+        enabled: !!id, 
     });
     
-    // 3. 🚨 CAMBIO CLAVE: Definir 'zones' con la data del backend
-    // Usamos 'zonasDisponibles' que viene del tipo EventDetailsForPurchase
-    const zones: Zone[] = eventDetails?.zonasDisponibles || []; 
+    // Mapeo de datos (Tipado ya corregido)
+    const zonesToMap: ZonePurchaseDetail[] = eventDetails?.zonasDisponibles || [];
+
+    const zones: Zone[] = zonesToMap.map(detail => ({
+        id: detail.id,
+        nombre: detail.nombre,
+        capacidad: detail.capacidad,
+        cantidadComprada: detail.cantidadComprada,
+        costo: getActiveZonePrice(detail), 
+    }));
     
-// 🚨 PUNTO DE VERIFICACIÓN CLAVE: Muestra el estado en cada render
-    console.log("--- RENDERIZADO BodyCompraEntradas ---");
-    console.log("isLoading:", isLoading);
-    console.log("eventDetails (cargado):", !!eventDetails);
-    console.log("Número de zonas (prop a ZoneTable):", zones.length);
-    console.log("---------------------------------------");
-
-
+    // --- Estados del Componente ---
     const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
     const [selectionSummary, setSelectionSummary] = useState<SummaryItem[]>([]);
     const [currentStep, setCurrentStep] = useState(0);
     const [isUsingPointsFlow, setIsUsingPointsFlow] = useState(false); 
 
-    // --- Funciones (Handlers) ---
-    // (Se mantienen iguales, ya que usan la variable 'zones')
-
+    // 🚀 Funciones Handler (Definidas dentro del componente)
     const handleQuantityChange = (zoneName: string, newQuantity: number) => {
         setSelectedQuantities((prevQuantities) => ({
             ...prevQuantities,
@@ -78,7 +86,7 @@ export const BodyCompraEntradas: React.FC = () => {
                 newSummary.push({
                     zona: zone.nombre,
                     cantidad: cantidad,
-                    subtotal: zone.costo * cantidad,
+                    subtotal: zone.costo * cantidad, 
                 });
             }
         }
@@ -89,15 +97,14 @@ export const BodyCompraEntradas: React.FC = () => {
         setSelectionSummary((prevSummary) =>
             prevSummary.filter((item) => item.zona !== zoneName)
         );
-        handleQuantityChange(zoneName, 0);
+        handleQuantityChange(zoneName, 0); 
     };
     
     const handleAcceptSelection = () => {
-        console.log("Selección Aceptada, pasando al paso 2:", selectionSummary);
         setCurrentStep(1); 
     };
     
-    const handleGoBack = () => {
+    const handleGoBack = () => { 
         setCurrentStep(0);
     };
 
@@ -124,51 +131,54 @@ export const BodyCompraEntradas: React.FC = () => {
     return (
         <div className="w-full flex flex-col items-center bg-gray-50 px-8 py-6">
           
-          {/* Indicador de Pasos... (Se mantiene) */}
+          <StepIndicator currentStep={currentStep} steps={steps} />
 
-          {/* --- ✅ PASO 1: SELECCIÓN DE TICKETS --- */}
+          {/* --- PASO 1: SELECCIÓN DE TICKETS --- */}
           {currentStep === 0 && (
-            <React.Fragment>
-              {/* Encabezado */}
-              <img
-                src={Encabezado}
-                alt="Encabezado"
-                className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
-              />
+                // 🚨 CORRECCIÓN: Usamos React.Fragment una sola vez o implícito.
+                <React.Fragment> 
+                    
+                    {/* Encabezado */}
+                    <img
+                        src={Encabezado}
+                        alt="Encabezado"
+                        className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
+                    />
 
-              {/* Título (Ahora usa el nombre del evento del backend) */}
-              <h1 className="text-2xl font-semibold text-gray-800 my-4">
-                Compra tus entradas para **{eventDetails.title}** 🎟️
-              </h1>
+                    {/* Título */}
+                    <h1 className="text-2xl font-semibold text-gray-800 my-4">
+                        Compra tus entradas para **{eventDetails.title}** 🎟️
+                    </h1>
+                    
+                    {/* Tabla de Zonas */}
+                    <ZoneTable
+                        zones={zones} 
+                        selectedQuantities={selectedQuantities}
+                        onQuantityChange={handleQuantityChange}
+                    />
 
-              {/* Tabla de zonas: Ahora usa las 'zones' obtenidas del backend */}
-              <ZoneTable
-                zones={zones} // zones = eventDetails.zonasDisponibles
-                selectedQuantities={selectedQuantities}
-                onQuantityChange={handleQuantityChange}
-              />
+                    {/* Botón de Selección */}
+                    <button
+                        onClick={handleSubmitSelection}
+                        className="mt-6 bg-yellow-700 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-800"
+                    >
+                        {isSummaryVisible ? "Actualizar Selección" : "Agregar"}
+                    </button>
 
-              {/* Botón y Tabla Resumen... (Se mantienen) */}
-              <button
-                onClick={handleSubmitSelection}
-                className="mt-6 bg-yellow-700 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-800"
-              >
-                {isSummaryVisible ? "Actualizar Selección" : "Agregar"}
-              </button>
-
-              {isSummaryVisible && (
-                <div className="w-full flex flex-col items-center mt-10">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                    Tu Selección
-                  </h2>
-                  <SelectionSummaryTable
-                    items={selectionSummary}
-                    onDeleteItem={handleDeleteSummaryItem}
-                    onAcceptSelection={handleAcceptSelection}
-                  />
-                </div>
-              )}
-            </React.Fragment>
+                    {/* Tabla Resumen */}
+                    {isSummaryVisible && (
+                        <div className="w-full flex flex-col items-center mt-10">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                Tu Selección
+                            </h2>
+                            <SelectionSummaryTable
+                                items={selectionSummary}
+                                onDeleteItem={handleDeleteSummaryItem}
+                                onAcceptSelection={handleAcceptSelection}
+                            />
+                        </div>
+                    )}
+                </React.Fragment>
           )}
 
           {/* --- PASO 2: DATOS DE COMPRA --- */}

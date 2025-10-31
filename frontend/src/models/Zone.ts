@@ -1,16 +1,17 @@
-// ./src/types/zone.ts (Corregido)
+// ./src/types/zone.ts (Tipo que consume la tabla de zonas)
+// Importar Tarifa y ZonePurchaseDetail NO es necesario aquí, solo si vas a re-calcular.
 
 export interface Zone {
-  // Propiedad única y clave para React 'key'
-  id: number; 
+  id: number; 
+  nombre: string; 
   
-  // El nombre de la zona, que en el backend es 'nombre'
-  nombre: string; 
+  // 🚨 REQUERIDO: El campo 'costo' debe seguir aquí para que ZoneTable funcione.
+  // Lo calcularemos al mapear la data del backend.
+  costo: number; 
   
-  // El costo/precio, que en el backend es 'costo'
-  costo: number;
-  
-  // Otras propiedades que vienen en el DTO de zonasDisponibles
   capacidad: number;
   cantidadComprada: number;
+  
+  // Opcional: Podrías añadir las tarifas aquí si ZoneTable las necesitara directamente, 
+  // pero mantendremos este tipo simple.
 }

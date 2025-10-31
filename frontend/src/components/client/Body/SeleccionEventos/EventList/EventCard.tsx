@@ -12,7 +12,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const { title, date, place, image, time } = event;
 
   return (
-    <Link to={`evento/${event.id}`}>
+    <Link to={`${event.id}/compra`}>
       {/* ✅ CAMBIOS AQUÍ:
         1. transition-all, duration-300, ease-in-out: Para una animación suave.
         2. hover:shadow-xl: Aumenta la sombra al pasar el mouse.
