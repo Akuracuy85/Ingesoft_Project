@@ -7,6 +7,7 @@ const router = Router();
 // PUT /api/perfil
 router.put("/", sessionMiddleware.VerificarToken, perfilController.actualizarPerfil);
 router.get('/', sessionMiddleware.VerificarToken, perfilController.obtenerPerfil);
-router.delete("/tarjeta/:tarjetaId", perfilController.eliminarTarjeta);
+router.delete("/tarjeta/:tarjetaId", sessionMiddleware.VerificarToken, perfilController.eliminarTarjeta);
+router.get("/puntos", sessionMiddleware.VerificarToken, perfilController.obtenerPuntos);
 
 export default router;
