@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog";
-import { User, Mail, CreditCard, Calendar, Phone, FileText, Trash2, Plus, History } from "lucide-react";
+import { User, Mail, CreditCard, Phone, FileText, Trash2, Plus, History } from "lucide-react";
 import { clientUserService } from "../../../services/ClientUserService"; // ✅ tu servicio de usuario
 
 export default function InformacionPersonal() {
@@ -26,7 +26,6 @@ export default function InformacionPersonal() {
     fullName: "",
     email: "",
     dni: "",
-    birthDate: "",
     phone: "",
   });
 
@@ -55,7 +54,6 @@ export default function InformacionPersonal() {
           fullName: profile.name,
           email: profile.email,
           dni: profile.dni,
-          birthDate: profile.birthDate,
           phone: profile.phone,
         });
 
@@ -79,7 +77,6 @@ export default function InformacionPersonal() {
         name: userInfo.fullName,
         email: userInfo.email,
         dni: userInfo.dni,
-        birthDate: userInfo.birthDate,
         phone: userInfo.phone,
       });
       setShowSuccess(true);
@@ -89,7 +86,7 @@ export default function InformacionPersonal() {
     }
   };
 
-  // 🟢 Guardar o cambiar tarjeta
+  // Guardar o cambiar tarjeta
   const handleSaveCard = async () => {
     const newCard = { type: "VISA", lastFourDigits: "4582" };
     try {
@@ -101,7 +98,7 @@ export default function InformacionPersonal() {
     }
   };
 
-  // 🔴 Eliminar tarjeta
+  // Eliminar tarjeta
   const handleDeleteCard = async () => {
     try {
       await clientUserService.deletePaymentMethod(userId);
@@ -187,20 +184,6 @@ export default function InformacionPersonal() {
                       id="dni"
                       value={userInfo.dni}
                       onChange={(e) => setUserInfo({ ...userInfo, dni: e.target.value })}
-                      className="border-gray-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="birthDate" className="flex items-center gap-2 text-gray-700">
-                      <Calendar className="w-4 h-4" />
-                      Fecha de nacimiento
-                    </Label>
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      value={userInfo.birthDate}
-                      onChange={(e) => setUserInfo({ ...userInfo, birthDate: e.target.value })}
                       className="border-gray-300"
                     />
                   </div>

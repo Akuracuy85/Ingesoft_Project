@@ -5,7 +5,6 @@ export interface ClientProfile {
   name: string;
   email: string;
   dni: string;
-  birthDate: string;
   phone: string;
 }
 
