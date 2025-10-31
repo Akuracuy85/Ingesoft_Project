@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { Upload, FileText, X } from "lucide-react";
-
-interface Documento {
-  id: number;
-  nombre: string;
-  tipo: string;
-  estado: "Aprobado" | "Pendiente";
-}
+import type { Documento } from "@/models/Documento";
 
 export default function DocumentosCard() {
   const [documentos, setDocumentos] = useState<Documento[]>([
@@ -17,11 +11,11 @@ export default function DocumentosCard() {
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const nuevosDocs = Array.from(files).map((file, index) => ({
+      const nuevosDocs: Documento[] = Array.from(files).map((file, index) => ({
         id: Date.now() + index,
         nombre: file.name,
         tipo: file.name.split(".").pop()?.toUpperCase() || "DOC",
-        estado: "Pendiente" as const,
+        estado: "Pendiente",
       }));
       setDocumentos((prev) => [...prev, ...nuevosDocs]);
     }
