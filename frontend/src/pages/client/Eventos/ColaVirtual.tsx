@@ -1,36 +1,69 @@
 "use client"
 
 import ClientLayout from "../ClientLayout"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "../../../components/ui/button"
 import { Card } from "../../../components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
 import { Clock, Users, CheckCircle2 } from "lucide-react"
+import turnoColaService from "../../../services/TurnoColaService"
+import type { TurnoCola } from "../../../models/TurnoCola"
 
 export default function ColaVirtual() {
-  const [position, setPosition] = useState(356)
-  const [estimatedTime, setEstimatedTime] = useState(3)
-  const [totalInQueue, setTotalInQueue] = useState(1240)
-  const [progress, setProgress] = useState(71)
+  const [turno, setTurno] = useState<TurnoCola | null>(null)
+  const [totalInQueue, setTotalInQueue] = useState(0)
+  const [progress, setProgress] = useState(0)
   const [showValidationModal, setShowValidationModal] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Simula el avance de la cola
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPosition((prev) => {
-        if (prev > 1) {
-          const newPosition = prev - 1
-          setProgress(Math.max(5, 100 - (newPosition / 500) * 100))
-          setEstimatedTime(Math.ceil(newPosition / 120))
-          return newPosition
+    const fetchTurno = async () => {
+      try {
+        const data = await turnoColaService.getAll()
+        const miTurno = data[0] || {
+          id: 1,
+          posicion: 356,
+          ingreso: new Date().toISOString(),
+          estado: "en_cola",
         }
-        return prev
+        setTurno(miTurno)
+        setTotalInQueue(data.length || 1240)
+        setProgress(Math.max(5, 100 - (miTurno.posicion / 500) * 100))
+      } catch (error) {
+        console.error("Error al obtener turno:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTurno()
+  }, [])
+  useEffect(() => {
+    if (!turno) return
+
+    const interval = setInterval(() => {
+      setTurno((prev) => {
+        if (!prev) return prev
+        const nuevaPos = prev.posicion > 1 ? prev.posicion - 1 : 1
+        setProgress(Math.max(5, 100 - (nuevaPos / 500) * 100))
+        return { ...prev, posicion: nuevaPos }
       })
     }, 5000)
-    return () => clearInterval(interval)
-  }, [])
 
-  const canPurchase = position === 1
+    return () => clearInterval(interval)
+  }, [turno])
+
+  const canPurchase = turno?.posicion === 1
+
+  if (loading) {
+    return (
+      <ClientLayout>
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-muted-foreground animate-pulse">Cargando tu posición en la cola...</p>
+        </div>
+      </ClientLayout>
+    )
+  }
 
   return (
     <ClientLayout>
@@ -38,10 +71,10 @@ export default function ColaVirtual() {
         <main className="container mx-auto px-4 py-8 max-w-4xl">
           {/* Título */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 text-balance">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
               Tu posición en la cola virtual
             </h1>
-            <p className="text-muted-foreground text-balance max-w-2xl mx-auto leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Gracias por tu compra. Estás en la cola para acceder al evento. Mantén esta ventana abierta hasta que llegue tu turno.
             </p>
           </div>
@@ -50,13 +83,16 @@ export default function ColaVirtual() {
           <Card className="mb-8 p-6 sm:p-8 shadow-lg border-2">
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#D59B2C]/10 mb-4">
-                <span className="text-4xl font-bold text-[#D59B2C]">#{position}</span>
+                <span className="text-4xl font-bold text-[#D59B2C]">
+                  #{turno?.posicion ?? "-"}
+                </span>
               </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">Tu posición actual</h2>
               <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 <span>
-                  Tiempo estimado: {estimatedTime} {estimatedTime === 1 ? "minuto" : "minutos"}
+                  Tiempo estimado: {Math.ceil((turno?.posicion ?? 0) / 120)}{" "}
+                  {Math.ceil((turno?.posicion ?? 0) / 120) === 1 ? "minuto" : "minutos"}
                 </span>
               </div>
             </div>
@@ -93,6 +129,7 @@ export default function ColaVirtual() {
                 ? "bg-[#D59B2C] hover:bg-[#C08A25] text-white animate-pulse"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             }`}
+            onClick={() => setShowValidationModal(true)}
           >
             {canPurchase ? "Ingresar a la compra" : "Esperando tu turno..."}
           </Button>
@@ -108,8 +145,12 @@ export default function ColaVirtual() {
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 mb-4">
                 <CheckCircle2 className="w-10 h-10 text-success" />
               </div>
-              <p className="text-lg font-semibold text-foreground mb-2">Tu posición actual es #{position}</p>
-              <p className="text-sm text-muted-foreground">Se ha validado correctamente tu estado en la cola.</p>
+              <p className="text-lg font-semibold text-foreground mb-2">
+                Tu posición actual es #{turno?.posicion}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Se ha validado correctamente tu estado en la cola.
+              </p>
             </div>
             <Button
               onClick={() => setShowValidationModal(false)}
