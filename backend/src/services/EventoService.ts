@@ -385,7 +385,8 @@ export class EventoService {
         const zona = zonasPorId.get(zonaDto.id)!;
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.costo = zonaDto.costo;
+        zona.tarifaNormal = zonaDto.tarifaNormal;
+        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         if (zonaDto.cantidadComprada !== undefined) {
           zona.cantidadComprada = zonaDto.cantidadComprada;
         }
@@ -394,7 +395,8 @@ export class EventoService {
         const zona = new Zona();
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.costo = zonaDto.costo;
+        zona.tarifaNormal = zonaDto.tarifaNormal;
+        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         zona.cantidadComprada = zonaDto.cantidadComprada ?? 0;
         zona.evento = evento;
         nuevas.push(zona);
@@ -447,7 +449,8 @@ export class EventoService {
       id: zona.id,
       nombre: zona.nombre,
       capacidad: zona.capacidad,
-      costo: zona.costo,
+      tarifaNormal: zona.tarifaNormal,
+      tarifaPreventa: zona.tarifaPreventa,
       cantidadComprada: zona.cantidadComprada,
     };
   }

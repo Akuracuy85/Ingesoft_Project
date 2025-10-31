@@ -1,14 +1,21 @@
+import { Tarifa } from "../../models/Tarifa";
+
 /**
  * @description Estructura de Zona simplificada para la respuesta de compra.
  * Corresponde al tipo 'Zone' del frontend.
+ * 🚨 IMPORTANTE: Se eliminó 'costo' y se usaron las tarifas completas.
  */
-interface ZonaDTO {
+export interface ZonaDTO { 
     id: number;
     nombre: string;
     capacidad: number; // Aforo total de esta zona
-    costo: number; // Precio de la entrada en esta zona
-    cantidadComprada: number; // Entradas ya vendidas en esta zona (puede usarse para calcular disponibilidad)
+    cantidadComprada: number; // Entradas ya vendidas en esta zona
+    
+    // ✅ Propiedades que reemplazan a 'costo'
+    tarifaNormal: Tarifa;
+    tarifaPreventa: Tarifa;
 }
+
 
 /**
  * @description DTO de respuesta para la obtención de datos de un evento 

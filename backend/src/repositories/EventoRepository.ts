@@ -222,8 +222,12 @@ export class EventoRepository {
     return await this.repository.findOne({
       where: { id },
       relations: {
-        zonas: true, // Necesario para 'zonasDisponibles'
+        zonas: {
+          tarifaNormal: true,
+          tarifaPreventa: true
+        }, // Necesario para 'zonasDisponibles'
         artista: true, // Necesario para mapear 'artistName'
+
       },
     });
   }
