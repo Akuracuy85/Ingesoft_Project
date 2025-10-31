@@ -1,3 +1,4 @@
+import { AppDataSource } from "@/database/data-source";
 import {
   EventoRepository,
   IFiltrosEvento,
@@ -18,15 +19,21 @@ import { DocumentoDto } from "@/dto/evento/DocumentoDto";
 import { ZonaDto } from "@/dto/evento/ZonaDto";
 import { Zona } from "@/models/Zona";
 import { EventoDetalleDto } from "@/dto/evento/EventoDetalleDto";
+import { Artista } from "@/models/Artista";
+import { Repository } from "typeorm";
+import { TarifaDto } from "@/dto/evento/TarifaDto";
+import { Tarifa } from "@/models/Tarifa";
 
 export class EventoService {
   private static instance: EventoService;
   private eventoRepository: EventoRepository;
   private usuarioRepository: UsuarioRepository;
+  private artistaRepository: Repository<Artista>;
 
   private constructor() {
     this.eventoRepository = EventoRepository.getInstance();
     this.usuarioRepository = UsuarioRepository.getInstance();
+    this.artistaRepository = AppDataSource.getRepository(Artista);
   }
 
   public static getInstance(): EventoService {
@@ -156,6 +163,7 @@ export class EventoService {
   async crearEvento(data: CrearEventoDto, organizadorId: number) {
     this.validarDatosObligatorios(data);
     const organizador = await this.obtenerOrganizador(organizadorId);
+    const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
     const imagenBanner = this.convertirImagen(data.imagenPortada);
@@ -176,6 +184,7 @@ export class EventoService {
         imagenBanner,
         gananciaTotal: 0,
         organizador,
+        artista,
       });
     } catch (error) {
       throw new CustomError(
@@ -223,6 +232,7 @@ export class EventoService {
 
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    const artista = await this.obtenerArtistaValido(data.artistaId);
 
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
@@ -231,6 +241,7 @@ export class EventoService {
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
     evento.distrito = data.distrito.trim();
+    evento.artista = artista;
 
     if (data.imagenPortada !== undefined) {
       evento.imagenBanner = data.imagenPortada
@@ -272,6 +283,29 @@ export class EventoService {
     }
 
     return usuario as Organizador;
+  }
+
+  private async obtenerArtistaValido(artistaId: number): Promise<Artista> {
+    if (!Number.isInteger(artistaId) || artistaId <= 0) {
+      throw new CustomError(
+        "El identificador del artista no es válido",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const artista = await this.artistaRepository.findOne({
+      where: { id: artistaId },
+      relations: { categoria: true },
+    });
+
+    if (!artista) {
+      throw new CustomError(
+        "El artista seleccionado no existe",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    return artista;
   }
 
   private async actualizarTerminosUso(
@@ -385,20 +419,20 @@ export class EventoService {
         const zona = zonasPorId.get(zonaDto.id)!;
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.tarifaNormal = zonaDto.tarifaNormal;
-        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         if (zonaDto.cantidadComprada !== undefined) {
           zona.cantidadComprada = zonaDto.cantidadComprada;
         }
+        this.actualizarTarifaZona(zona, "tarifaNormal", zonaDto.tarifaNormal);
+        this.actualizarTarifaZona(zona, "tarifaPreventa", zonaDto.tarifaPreventa);
         idsRecibidos.add(zonaDto.id);
       } else {
         const zona = new Zona();
         zona.nombre = zonaDto.nombre.trim();
         zona.capacidad = zonaDto.capacidad;
-        zona.tarifaNormal = zonaDto.tarifaNormal;
-        zona.tarifaPreventa = zonaDto.tarifaPreventa;
         zona.cantidadComprada = zonaDto.cantidadComprada ?? 0;
         zona.evento = evento;
+        this.actualizarTarifaZona(zona, "tarifaNormal", zonaDto.tarifaNormal);
+        this.actualizarTarifaZona(zona, "tarifaPreventa", zonaDto.tarifaPreventa);
         nuevas.push(zona);
       }
     }
@@ -434,6 +468,65 @@ export class EventoService {
     );
   }
 
+  private actualizarTarifaZona(
+    zona: Zona,
+    propiedad: "tarifaNormal" | "tarifaPreventa",
+    tarifaDto?: TarifaDto | null
+  ) {
+    if (tarifaDto === undefined) {
+      return;
+    }
+
+    if (tarifaDto === null) {
+      zona[propiedad] = null;
+      return;
+    }
+
+    if (!tarifaDto.nombre || tarifaDto.nombre.trim() === "") {
+      throw new CustomError(
+        `El nombre de ${propiedad} es obligatorio`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    if (typeof tarifaDto.precio !== "number" || tarifaDto.precio < 0) {
+      throw new CustomError(
+        `El precio de ${propiedad} es inválido`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const fechaInicio = this.convertirFechaTarifa(
+      tarifaDto.fechaInicio,
+      `${propiedad}.fechaInicio`
+    );
+    const fechaFin = this.convertirFechaTarifa(
+      tarifaDto.fechaFin,
+      `${propiedad}.fechaFin`
+    );
+
+    if (fechaFin.getTime() < fechaInicio.getTime()) {
+      throw new CustomError(
+        `La fecha fin de ${propiedad} no puede ser menor que la fecha de inicio`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const tarifaExistente = zona[propiedad] as Tarifa | null | undefined;
+    const tarifa = tarifaExistente ?? new Tarifa();
+
+    if (tarifaDto.id) {
+      tarifa.id = tarifaDto.id;
+    }
+
+    tarifa.nombre = tarifaDto.nombre.trim();
+    tarifa.precio = tarifaDto.precio;
+    tarifa.fechaInicio = fechaInicio;
+    tarifa.fechaFin = fechaFin;
+
+    zona[propiedad] = tarifa;
+  }
+
   private mapearDocumentoDto(documento: Documento): DocumentoDto {
     return {
       id: documento.id,
@@ -449,9 +542,23 @@ export class EventoService {
       id: zona.id,
       nombre: zona.nombre,
       capacidad: zona.capacidad,
-      tarifaNormal: zona.tarifaNormal,
-      tarifaPreventa: zona.tarifaPreventa,
       cantidadComprada: zona.cantidadComprada,
+      tarifaNormal: this.mapearTarifaDto(zona.tarifaNormal),
+      tarifaPreventa: this.mapearTarifaDto(zona.tarifaPreventa),
+    };
+  }
+
+  private mapearTarifaDto(tarifa?: Tarifa | null): TarifaDto | null {
+    if (!tarifa) {
+      return null;
+    }
+
+    return {
+      id: tarifa.id,
+      nombre: tarifa.nombre,
+      precio: tarifa.precio,
+      fechaInicio: tarifa.fechaInicio.toISOString(),
+      fechaFin: tarifa.fechaFin.toISOString(),
     };
   }
 
@@ -461,6 +568,7 @@ export class EventoService {
       "descripcion",
       "fecha",
       "hora",
+      "artistaId",
       "departamento",
       "provincia",
       "distrito",
@@ -499,6 +607,35 @@ export class EventoService {
       );
     }
     return fechaEvento;
+  }
+
+  private convertirFechaTarifa(valor: string, campo: string): Date {
+    if (!valor || typeof valor !== "string") {
+      throw new CustomError(
+        `El campo ${campo} de la tarifa es obligatorio`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const normalizado = valor.trim();
+
+    if (!normalizado) {
+      throw new CustomError(
+        `El campo ${campo} de la tarifa es obligatorio`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const fecha = new Date(normalizado);
+
+    if (Number.isNaN(fecha.getTime())) {
+      throw new CustomError(
+        `El campo ${campo} de la tarifa no es válido`,
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    return fecha;
   }
 
   private convertirImagen(imagen?: string): Buffer | null {

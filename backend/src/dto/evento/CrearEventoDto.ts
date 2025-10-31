@@ -5,6 +5,7 @@ export interface CrearEventoDto {
   descripcion: string;
   fecha: string; // formato YYYY-MM-DD
   hora: string; // formato HH:mm
+  artistaId: number;
   departamento: string;
   provincia: string;
   distrito: string;
