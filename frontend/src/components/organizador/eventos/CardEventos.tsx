@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Calendar, MoreVertical, Plus, Edit3, Trash2 } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
+import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 
 // Tipos para la tabla
 interface EventoItem {
@@ -49,6 +50,9 @@ const CardEventos: React.FC = () => {
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Modal eliminar
+  const [eventoAEliminar, setEventoAEliminar] = useState<{ index: number; nombre: string } | null>(null);
 
   useEffect(() => {
     const handleDocClick = (e: MouseEvent) => {
@@ -110,6 +114,13 @@ const CardEventos: React.FC = () => {
       return next;
     });
     handleCloseEdit();
+  };
+
+  // Confirmar eliminación
+  const confirmarEliminacion = () => {
+    if (!eventoAEliminar) return;
+    setEventos((prev) => prev.filter((_, i) => i !== eventoAEliminar.index));
+    setEventoAEliminar(null);
   };
 
   // Datos iniciales para el modal de edición en el shape de NuevoEventoForm
@@ -221,7 +232,7 @@ const CardEventos: React.FC = () => {
                             type="button"
                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
                             onClick={() => {
-                              console.log("Eliminar evento", ev.nombre);
+                              setEventoAEliminar({ index, nombre: ev.nombre });
                               setMenuAbierto(null);
                             }}
                             role="menuitem"
@@ -248,6 +259,14 @@ const CardEventos: React.FC = () => {
         onClose={handleCloseEdit}
         initialData={editInitial}
         onSave={handleSaveEdit}
+      />
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmarEliminacionModal
+        open={!!eventoAEliminar}
+        nombre={eventoAEliminar?.nombre || ""}
+        onCancel={() => setEventoAEliminar(null)}
+        onConfirm={confirmarEliminacion}
       />
     </section>
   );
