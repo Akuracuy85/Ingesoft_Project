@@ -88,7 +88,7 @@ export const BodyDetalleEvento: React.FC = () => {
       <section
         className="relative bg-cover bg-center bg-no-repeat text-white px-6 py-50 md:px-24 min-h-[85vh]"
         style={{
-          backgroundImage: `url(${bannerUrl || "/placeholder-banner.jpg"})`,
+          backgroundImage: `url(https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2)`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60"></div>
