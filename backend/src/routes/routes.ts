@@ -1,5 +1,3 @@
-// CAMBIO: [2025-10-26] - Añadidas rutas de OrdenCompra
-// (No se requieren cambios)
 import express, { Request, Response } from "express";
 import usuarioRoutes from "./Usuario.routes";
 import authRouter from "./Auth.routes";
@@ -10,11 +8,11 @@ import perfilRoutes from "./Perfil.routes";
 
 const uniteRouter = express.Router();
 
-uniteRouter.get("/sas", (req: Request, res: Response) => {
-    res.json({
-        "success" : true,
-        "message" : "Las pantallas ya quedaron finas" 
-    })
+uniteRouter.get("/sas", (_req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: "Las pantallas ya quedaron finas",
+  });
 });
 
 uniteRouter.use("/usuario", usuarioRoutes)

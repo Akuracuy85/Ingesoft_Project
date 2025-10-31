@@ -1,28 +1,29 @@
-// CAMBIO: [2025-10-26] - Corregidos tipos de columna
-// Se especifican los tipos 'int' y 'decimal' para 'cantidadComprada' y 'costo'
-// para prevenir errores 'NaN' durante los cálculos.
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Evento } from "./Evento";
+import { Tarifa } from "./Tarifa";
 
 @Entity()
 export class Zona {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column()
-  nombre: string;
+  @Column()
+  nombre: string;
 
-  @Column({ type: "int" })
-  capacidad: number;
+  @Column({ type: "int" })
+  capacidad: number;
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  @Column({ type: "int", default: 0 }) // <-- CORREGIDO
-  cantidadComprada: number;
+  @Column({ type: "int", default: 0 })
+  cantidadComprada: number;
 
-  @Column({ type: "decimal", precision: 10, scale: 2, default: 0 }) // <-- CORREGIDO
-  costo: number;
-  // --- FIN DE LA CORRECCIÓN ---
+  @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
+  @JoinColumn()
+  tarifaNormal?: Tarifa | null;
 
-  @ManyToOne(() => Evento, (evento) => evento.zonas)
-  evento: Evento;
+  @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
+  @JoinColumn()
+  tarifaPreventa?: Tarifa | null;
+
+  @ManyToOne(() => Evento, (evento) => evento.zonas)
+  evento: Evento;
 }

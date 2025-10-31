@@ -1,91 +1,22 @@
 import React, { useState } from "react";
 import { Search, Plus, Download } from "lucide-react";
-import AdminLayout from "../AdminLayout"; // ✅ importa el layout
+import AdminLayout from "../AdminLayout";
 
-import UserTable from "../../../components/admin/UserTable.js";
-import UserModal from "../../../components/admin/UserModal.js";
-
-// --- Tipos de usuario ---
-type UserRole = "Cliente" | "Organizador" | "Administrador";
-type UserStatus = "Activo" | "Inactivo";
-type UserID = number;
-
-interface User {
-  id: UserID;
-  name: string;
-  email: string;
-  dni: string;
-  role: UserRole;
-  status: UserStatus;
-  lastAccess: string;
-}
-
-interface UserFormData {
-  name: string;
-  email: string;
-  dni: string;
-  role: UserRole;
-  status: UserStatus;
-}
-
-type FilterValue = UserRole | UserStatus | "all";
-
-// --- Datos iniciales ---
-const initialUsers: User[] = [
-  {
-    id: 1001,
-    name: "María López",
-    email: "maria@unite.com",
-    dni: "12345678A",
-    role: "Cliente",
-    status: "Activo",
-    lastAccess: "02/10/25",
-  },
-  {
-    id: 1002,
-    name: "Juan Pérez",
-    email: "jperez@unite.com",
-    dni: "87654321B",
-    role: "Organizador",
-    status: "Inactivo",
-    lastAccess: "15/09/25",
-  },
-  {
-    id: 1003,
-    name: "Ana García",
-    email: "ana.garcia@unite.com",
-    dni: "45678912C",
-    role: "Administrador",
-    status: "Activo",
-    lastAccess: "05/10/25",
-  },
-  {
-    id: 1004,
-    name: "Carlos Ruiz",
-    email: "cruiz@unite.com",
-    dni: "78912345D",
-    role: "Cliente",
-    status: "Activo",
-    lastAccess: "01/10/25",
-  },
-  {
-    id: 1005,
-    name: "Laura Martínez",
-    email: "lmartinez@unite.com",
-    dni: "32165498E",
-    role: "Organizador",
-    status: "Activo",
-    lastAccess: "04/10/25",
-  },
-];
+import UserTable from "../../../components/admin/UserTable";
+import UserModal from "../../../components/admin/UserModal";
+import { useUsuarios } from "../../../hooks/useUsuarios";
+import type { User, UserFormData, UserRole, UserStatus } from "../../../models/User";
 
 export default function AdminUsuarios(): React.ReactElement {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<FilterValue>("all");
-  const [statusFilter, setStatusFilter] = useState<FilterValue>("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | UserStatus>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const users = usersQuery.data ?? [];
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -93,10 +24,8 @@ export default function AdminUsuarios(): React.ReactElement {
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.dni && user.dni.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesRole =
-      roleFilter === "all" || user.role === (roleFilter as UserRole);
-    const matchesStatus =
-      statusFilter === "all" || user.status === (statusFilter as UserStatus);
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -113,35 +42,20 @@ export default function AdminUsuarios(): React.ReactElement {
 
   const handleSaveUser = (userData: UserFormData): void => {
     if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? { ...u, ...userData } : u)));
+      updateUser.mutate({ id: editingUser.id, data: userData });
     } else {
-      const newUser: User = {
-        ...userData,
-        id: Math.max(...users.map((u) => u.id)) + 1,
-        lastAccess: new Date().toLocaleDateString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "2-digit",
-        }),
-      };
-      setUsers([...users, newUser]);
+      createUser.mutate(userData);
     }
     setIsModalOpen(false);
   };
 
-  const handleToggleStatus = (userId: UserID): void => {
-    setUsers(
-      users.map((u) =>
-        u.id === userId
-          ? { ...u, status: u.status === "Activo" ? "Inactivo" : "Activo" }
-          : u
-      )
-    );
+  const handleToggleStatus = (userId: number, currentStatus: string): void => {
+    toggleStatus.mutate({ id: userId, currentStatus });
   };
 
-  const handleDeleteUser = (userId: UserID): void => {
+  const handleDeleteUser = (userId: number): void => {
     if (confirm("¿Deseas eliminar este usuario?")) {
-      setUsers(users.filter((u) => u.id !== userId));
+      deleteUser.mutate(userId);
     }
   };
 
@@ -178,7 +92,7 @@ export default function AdminUsuarios(): React.ReactElement {
 
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as FilterValue)}
+              onChange={(e) => setRoleFilter(e.target.value as "all" | UserRole)}
               className="border border-border rounded-md px-3 py-2 text-sm"
             >
               <option value="all">Todos los roles</option>
@@ -189,7 +103,7 @@ export default function AdminUsuarios(): React.ReactElement {
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as FilterValue)}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | UserStatus)}
               className="border border-border rounded-md px-3 py-2 text-sm"
             >
               <option value="all">Todos los estados</option>
@@ -209,12 +123,18 @@ export default function AdminUsuarios(): React.ReactElement {
 
         {/* Tabla */}
         <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
-          <UserTable
-            users={filteredUsers}
-            onEdit={handleEditUser}
-            onToggleStatus={handleToggleStatus}
-            onDelete={handleDeleteUser}
-          />
+          {usersQuery.isLoading ? (
+            <p className="text-center text-muted-foreground py-10">
+              Cargando usuarios...
+            </p>
+          ) : (
+            <UserTable
+              users={filteredUsers}
+              onEdit={handleEditUser}
+              onToggleStatus={(id, status) => handleToggleStatus(id, status)}
+              onDelete={handleDeleteUser}
+            />
+          )}
         </div>
 
         {/* Exportar */}
