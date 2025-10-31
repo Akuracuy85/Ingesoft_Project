@@ -1,19 +1,30 @@
+// src/components/Header.tsx
 import React, { useState } from "react";
-import { FilterModal } from "./FilterModal";
+import { FilterModal } from "./FilterModal"; // Asumo que este componente existe
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth"; // <-- ¡TU HOOK CORREGIDO!
+// Asegúrate de tener 'lucide-react' instalado o usa tus propios íconos
+import { User, LogOut } from "lucide-react"; 
 
-// --- 1. Definimos una interfaz para las 'props' ---
-// Haremos que el Header pueda recibir una propiedad opcional
 interface HeaderProps {
-  showFilterButton?: boolean; // '?' significa que es opcional
+  showFilterButton?: boolean;
 }
 
-// --- 2. Cambiamos la firma del componente ---
-// Recibimos la prop 'showFilterButton' y le damos un valor por defecto de 'false'
 export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
   const [showFilters, setShowFilters] = useState(false);
+  
+  // --- 1. USA EL CONTEXTO DE AUTENTICACIÓN ---
+  // Ahora 'isLoggedIn', 'user', 'logout' y 'isLoading' vienen del estado global
+  const { isLoggedIn, user, logout, isLoading } = useAuth();
 
   const toggleFilters = () => setShowFilters((prev) => !prev);
+
+  // Función para manejar el logout
+  const handleLogout = async () => {
+    await logout();
+    // No necesitas redirigir, el estado cambiará
+    // y el header se re-renderizará solo.
+  };
 
   return (
     <>
@@ -21,22 +32,24 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
       <header className="flex items-center justify-between w-full h-[102px] px-6 bg-white shadow-sm relative z-50">
         {/* LOGO */}
         <div className="flex items-center">
-          <img
-            className="w-[175px] h-[78px] object-contain"
-            alt="Logo Unite"
-            src="https://c.animaapp.com/mgx1kaihbC7QfN/img/logo-unite-actualizado-1.svg"
-          />
+          {/* Es buena idea enlazar el logo al home */}
+          <Link to="/"> 
+            <img
+              className="w-[175px] h-[78px] object-contain"
+              alt="Logo Unite"
+              src="https://c.animaapp.com/mgx1kaihbC7QfN/img/logo-unite-actualizado-1.svg"
+            />
+          </Link>
         </div>
 
         {/* 🔸 BOTONES DERECHA */}
-        <div className="flex items-center justify-end flex-1 gap-3">
+        <div className="flex items-center justify-end flex-1 gap-4">
           
-          {/* --- 3. Renderizado Condicional --- */}
-          {/* El botón SÓLO se muestra si showFilterButton es true */}
+          {/* BOTÓN DE FILTROS (Condicional - Tu lógica existente) */}
           {showFilterButton && (
             <button
               onClick={toggleFilters}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-md text-white hover:bg-indigo-700 transition mr-20"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-md text-white hover:bg-indigo-700 transition"
             >
               <img
                 className="w-5 h-5"
@@ -47,24 +60,57 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
             </button>
           )}
 
-          {/* BOTONES DE AUTENTICACIÓN (Estos siempre se muestran) */}
-          <Link
-            to="/login"
-            className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            to="/registro"
-            className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
-          >
-            Registrarse
-          </Link>
+          {/* --- 2. RENDERIZADO CONDICIONAL DE AUTH --- */}
+          {isLoading ? (
+            // Muestra un 'esqueleto' mientras verifica la sesión
+            <div className="flex gap-4">
+              <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse" />
+              <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse" />
+            </div>
+          ) : isLoggedIn ? (
+            // 3. Si ESTÁ logueado
+            <>
+              <Link 
+                to="/perfil" // Asume que tienes una ruta de perfil
+                className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition"
+              >
+                <User className="h-5 w-5" />
+                <span className="font-medium text-sm">
+                  {/* ¡Muestra el nombre del usuario! */}
+                  Hola, {user?.nombre}
+                </span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-md text-gray-700 font-medium text-sm hover:bg-gray-200 transition"
+              >
+                <LogOut className="h-4 w-4" />
+                Salir
+              </button>
+            </>
+          ) : (
+            // 4. Si NO ESTÁ logueado
+            <>
+              <Link
+                to="/login"
+                className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                to="/registro"
+                className="px-4 py-2 bg-indigo-600 rounded-md text-white font-medium text-sm hover:bg-indigo-700 transition"
+              >
+                Registrarse
+              </Link>
+            </>
+          )}
+          {/* --- FIN DEL RENDERIZADO CONDICIONAL --- */}
+
         </div>
       </header>
 
-      {/* --- 4. El Modal también es condicional --- */}
-      {/* Solo se puede mostrar el modal si el botón existe Y el estado es true */}
+      {/* MODAL DE FILTROS (Tu lógica existente) */}
       {showFilterButton && showFilters && (
         <FilterModal
           onClose={toggleFilters}
@@ -77,3 +123,4 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
     </>
   );
 };
+

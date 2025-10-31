@@ -8,7 +8,7 @@ export interface Zone {
   nombre: string;
   capacidad: number;
   cantidadComprada?: number;
-  tarifaNormal?: Partial<Tarifa> | null;
-  tarifaPreventa?: Partial<Tarifa> | null;
+  tarifaNormal: Tarifa;
+  tarifaPreventa: Tarifa;
 }
 // Nota: Usamos Partial<Tarifa> para permitir que la UI maneje solo `precio` y `descuento`.

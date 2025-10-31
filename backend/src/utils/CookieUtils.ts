@@ -4,7 +4,7 @@ import { Response } from "express";
 function CrearCookie(res: Response, nombre: string, valor: string, duracion: number, config?: object) {
   res.cookie(nombre, valor, {
     httpOnly: true,
-    secure: false,
+    secure: true, // <-- ¡CAMBIO CLAVE!
     sameSite: "none",
     ...config,
     maxAge: duracion,

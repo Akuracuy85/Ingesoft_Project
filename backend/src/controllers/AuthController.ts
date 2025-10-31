@@ -44,7 +44,7 @@ export class AuthController {
   Refresh = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: "No autorizado" });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: "No autorizado auth" });
     }
 
     try {

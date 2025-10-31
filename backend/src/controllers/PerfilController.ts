@@ -31,7 +31,7 @@ export class PerfilController {
         if (!userId) {
           return res.status(StatusCodes.UNAUTHORIZED).json({
             success: false,
-            message: "No autorizado",
+            message: "No autorizado perfil 1",
           });
         }
 
@@ -61,7 +61,7 @@ export class PerfilController {
                     // Aunque VerificarToken debería manejar esto, es buena práctica validarlo.
                     return res.status(StatusCodes.UNAUTHORIZED).json({
                         success: false,
-                        message: "No autorizado",
+                        message: "No autorizado perfil 2",
                     });
                 }
 
@@ -91,7 +91,7 @@ export class PerfilController {
                 if (!userId) {
                     return res.status(StatusCodes.UNAUTHORIZED).json({
                         success: false,
-                        message: "No autorizado",
+                        message: "No autorizado perfil 3",
                     });
                 }
                 
@@ -126,7 +126,7 @@ export class PerfilController {
                 if (!userId) {
                     return res.status(StatusCodes.UNAUTHORIZED).json({
                         success: false,
-                        message: "No autorizado",
+                        message: "No autorizado perfil 4",
                     });
                 }
 
