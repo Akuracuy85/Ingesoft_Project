@@ -1,5 +1,6 @@
 import { AppDataSource } from "@/database/data-source";
 import { Usuario } from "@/models/Usuario";
+import { Cliente } from "@/models/Cliente";
 import { Repository } from "typeorm";
 
 export class PerfilRepository {
@@ -70,6 +71,28 @@ export class PerfilRepository {
     });
     return usuario !== null && usuario.id !== id;
   }
+
+  /**
+     * Obtiene solo el campo 'puntos' para un cliente por su ID.
+     * Utiliza QueryBuilder para una consulta optimizada y segura con herencia.
+     * @param id - ID del cliente.
+     * @returns Un objeto plano con el campo 'puntos' o null.
+     */
+    async buscarSoloPuntos(id: number): Promise<{ puntos: number } | null> {
+        // 1. Obtener el repositorio específico de Cliente
+        const resultado = await this.repository 
+        .createQueryBuilder("usuario")
+        // Seleccionamos la columna 'puntos' de la tabla 'usuario' (que es t1)
+        .select("usuario.puntos", "puntos") 
+        // Filtramos por ID
+        .where("usuario.id = :id", { id })
+        // 🚨 Filtramos por el rol exacto que funciona en SQL
+        .andWhere("usuario.rol = :rol", { rol: 'CLIENTE' })
+        // Devolvemos el resultado sin intentar instanciar una entidad
+        .getRawOne();
+
+        return resultado || null;
+    }
   
 
 }

@@ -25,7 +25,6 @@ export class PerfilController {
    * Este método está protegido por el middleware de sesión.
    */
   actualizarPerfil = [
-    sessionMiddleware.VerificarToken, // Middleware para validar el token y extraer el userId
     async (req: Request, res: Response) => {
       try {
         const userId = req.userId; // Extraído del middleware
@@ -54,7 +53,6 @@ export class PerfilController {
      * Protegido por el middleware de sesión.
      */
     obtenerPerfil = [
-        sessionMiddleware.VerificarToken, // Middleware para validar el token y extraer el userId
         async (req: Request, res: Response) => {
             try {
                 const userId = req.userId; // Extraído del middleware
@@ -85,7 +83,6 @@ export class PerfilController {
     ];
 
     eliminarTarjeta = [
-        sessionMiddleware.VerificarToken, // Asegura que el usuario esté logueado
         async (req: Request, res: Response) => {
             try {
                 const userId = req.userId; // ID del dueño, extraído del token
@@ -115,6 +112,33 @@ export class PerfilController {
                 message: "Tarjeta eliminada correctamente."
                 }); 
                 
+            } catch (error) {
+                HandleResponseError(res, error);
+            }
+        },
+    ];
+
+    obtenerPuntos = [
+        async (req: Request, res: Response) => {
+            try {
+                const userId = req.userId; // Extraído del middleware
+
+                if (!userId) {
+                    return res.status(StatusCodes.UNAUTHORIZED).json({
+                        success: false,
+                        message: "No autorizado",
+                    });
+                }
+
+                // 1. Llamamos al servicio optimizado que solo trae el número de puntos
+                const puntos = await this.perfilService.obtenerPuntosCliente(userId);
+
+                // 2. Devolvemos la respuesta
+                res.status(StatusCodes.OK).json({
+                    success: true,
+                    data: { puntos: puntos }, // Formato explícito para el frontend
+                    message: "Puntos obtenidos correctamente",
+                });
             } catch (error) {
                 HandleResponseError(res, error);
             }

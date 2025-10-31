@@ -1,13 +1,33 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await login(email, password);
+      if (res.success) {
+        alert("Inicio de sesión correcto.");
+        navigate("/eventos"); // o la ruta que corresponda
+      } else {
+        alert("Credenciales inválidas");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error: Usuario o contraseña incorrectos.");
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 relative overflow-hidden">
@@ -35,45 +55,54 @@ export const Login = () => {
           Iniciar Sesión
         </h1>
 
-        {/* Campo de correo */}
-        <label htmlFor="email" className="block text-gray-800 font-medium mb-2">
-          Correo electrónico
-        </label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Ingresa tu correo"
-          className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-5 text-gray-900 focus:outline-none focus:border-blue-500 transition-all"
-        />
-
-        {/* Campo de contraseña */}
-        <label htmlFor="password" className="block text-gray-800 font-medium mb-2">
-          Contraseña
-        </label>
-        <div className="relative mb-5">
+        <form onSubmit={handleSubmit}>
+          {/* Campo de correo */}
+          <label htmlFor="email" className="block text-gray-800 font-medium mb-2">
+            Correo electrónico
+          </label>
           <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Ingresa tu contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-gray-900 focus:outline-none focus:border-blue-500 transition-all"
+            id="email"
+            type="email"
+            placeholder="Ingresa tu correo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-5 text-gray-900 focus:outline-none focus:border-blue-500 transition-all"
+            required
           />
-          {password.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-gray-600 hover:text-gray-900 cursor-pointer"
-            >
-              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-            </button>
-          )}
-        </div>
 
-        {/* Botón de ingresar */}
-        <button className="w-full bg-[#e58c00] hover:bg-[#d47d00] text-white font-semibold text-lg py-3 rounded-full transition-all cursor-pointer">
-          INGRESAR
-        </button>
+          {/* Campo de contraseña */}
+          <label htmlFor="password" className="block text-gray-800 font-medium mb-2">
+            Contraseña
+          </label>
+          <div className="relative mb-5">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Ingresa tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-gray-900 focus:outline-none focus:border-blue-500 transition-all"
+              required
+            />
+            {password.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-600 hover:text-gray-900 cursor-pointer"
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            )}
+          </div>
+
+          {/* Botón de ingresar */}
+          <button
+            type="submit"
+            className="w-full bg-[#e58c00] hover:bg-[#d47d00] text-white font-semibold text-lg py-3 rounded-full transition-all cursor-pointer"
+          >
+            INGRESAR
+          </button>
+        </form>
 
         {/* Enlaces inferiores */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm">

@@ -113,5 +113,23 @@ export class PerfilService {
         }
         await this.tarjetaRepository.eliminar(tarjetaId);
     }
+
+    /**
+     * Obtiene solo los puntos de fidelidad del cliente de forma optimizada.
+     * @param userId - ID del cliente.
+     * @returns El número de puntos.
+     */
+    public async obtenerPuntosCliente(userId: number): Promise<number> {
+        // Llama a la función optimizada del Repository que trae { puntos: X }
+        const resultado = await this.perfilRepository.buscarSoloPuntos(userId);
+
+        if (!resultado || typeof resultado.puntos !== 'number') {
+            // Si el ID no existe o no corresponde a un Cliente, lanzamos el error
+            throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
+        }
+
+        // El resultado es un objeto, devolvemos solo el valor numérico
+        return resultado.puntos; 
+    }
     
 }
