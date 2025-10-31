@@ -1,80 +1,82 @@
 import { useState } from "react";
 import { MapPin, Upload, Plus, Trash2, Save, ImageOff } from "lucide-react";
+import type { Zone } from "@/models/Zone";
+import type { Tarifa } from "@/models/Tarifa";
 
-interface Zona {
-  id: number;
-  nombre: string;
-  precio: number | "";
-  capacidad: number | "";
-  descuento: number | "";
-  color: string;
-}
-
-function generarColorAleatorio() {
-  // color suave aleatorio
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+type TarifaUI = Partial<Tarifa> & { precio?: number; descuento?: number };
 
 export default function ZonasYTarifasCard() {
-  const [zonas, setZonas] = useState<Zona[]>([
-    { id: 1, nombre: "VIP", precio: 150, capacidad: 100, descuento: 10, color: "#f59e0b" },
-    { id: 2, nombre: "Platea", precio: 80, capacidad: 300, descuento: 5, color: "#3b82f6" },
-    { id: 3, nombre: "General", precio: 40, capacidad: 500, descuento: 0, color: "#10b981" },
+  const [zones, setZones] = useState<Zone[]>([
+    {
+      id: 1,
+      nombre: "VIP",
+      capacidad: 100,
+      tarifaNormal: { precio: 150, descuento: 0 },
+      tarifaPreventa: { precio: 120, descuento: 10 },
+    },
+    {
+      id: 2,
+      nombre: "Platea",
+      capacidad: 300,
+      tarifaNormal: { precio: 80, descuento: 0 },
+      tarifaPreventa: { precio: 70, descuento: 5 },
+    },
   ]);
 
   const [mapa, setMapa] = useState<File | null>(null);
 
-  const handleAddZona = () => {
-    const nuevaZona: Zona = {
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      nombre: `Zona ${zonas.length + 1}`,
-      precio: "",
-      capacidad: "",
-      descuento: "",
-      color: generarColorAleatorio(),
+  const handleAddZone = () => {
+    const nuevaZona: Zone = {
+      nombre: `Zona ${zones.length + 1}`,
+      capacidad: 0,
+      tarifaNormal: { precio: 0, descuento: 0 },
+      tarifaPreventa: { precio: 0, descuento: 0 },
     };
-    setZonas((prev) => [...prev, nuevaZona]);
+    setZones((prev) => [...prev, nuevaZona]);
   };
 
-  const handleChange = (index: number, field: keyof Zona, value: string) => {
-    setZonas((prev) => {
+  const handleChangeTarifa = (
+    index: number,
+    tipo: "normal" | "preventa",
+    field: "precio" | "descuento",
+    value: string
+  ) => {
+    setZones((prev) => {
       const next = [...prev];
-      const item = next[index];
-      if (!item) return prev;
-      switch (field) {
-        case "precio":
-        case "capacidad":
-        case "descuento":
-          item[field] = value === "" ? "" : Number(value);
-          break;
-        case "nombre":
-        case "color":
-        default:
-          // @ts-expect-error asignación por campo string
-          item[field] = value;
-          break;
+      const tarifa = tipo === "normal" ? (next[index].tarifaNormal as TarifaUI | undefined) : (next[index].tarifaPreventa as TarifaUI | undefined);
+      if (!tarifa) {
+        // inicializar si no existe
+        const nueva: TarifaUI = { precio: 0, descuento: 0 };
+        if (tipo === "normal") next[index] = { ...next[index], tarifaNormal: nueva };
+        else next[index] = { ...next[index], tarifaPreventa: nueva };
       }
-      next[index] = { ...item };
+      // actualizar el valor (asegurando conversión numérica)
+      const tarifaObj = tipo === "normal" ? (next[index].tarifaNormal as TarifaUI) : (next[index].tarifaPreventa as TarifaUI);
+      tarifaObj[field] = value === "" ? 0 : Number(value);
+      next[index] = { ...next[index], tarifaNormal: next[index].tarifaNormal, tarifaPreventa: next[index].tarifaPreventa };
       return next;
     });
   };
 
-  const handleRemoveZona = (index: number) => {
-    setZonas((prev) => prev.filter((_, i) => i !== index));
+  const handleChangeCampo = (index: number, field: keyof Zone, value: string | number) => {
+    setZones((prev) => {
+      const next = [...prev];
+      // @ts-expect-error asignación dinámica
+      next[index][field] = field === "capacidad" ? Number(value) : value;
+      next[index] = { ...next[index] };
+      return next;
+    });
   };
+
+  const handleEliminar = (index: number) => setZones((prev) => prev.filter((_, i) => i !== index));
 
   const handleUploadMapa = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setMapa(e.target.files[0]);
   };
 
   const handleGuardar = () => {
-    alert("Configuración de zonas guardada correctamente.");
-    console.log("Zonas guardadas:", zonas);
+    console.log("Zonas guardadas:", zones);
+    alert("Configuración de zonas guardada correctamente");
   };
 
   return (
@@ -103,75 +105,59 @@ export default function ZonasYTarifasCard() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
             <tr>
-              <th className="text-left px-4 py-2">Zona</th>
-              <th className="text-left px-4 py-2">Precio</th>
-              <th className="text-left px-4 py-2">Capacidad</th>
-              <th className="text-left px-4 py-2">Descuento (%)</th>
-              <th className="text-left px-4 py-2">Color</th>
-              <th className="text-left px-4 py-2">Acciones</th>
+              <th className="px-4 py-2 text-left">Zona</th>
+              <th className="px-4 py-2 text-left">Capacidad</th>
+              <th className="px-4 py-2 text-left">Precio normal</th>
+              <th className="px-4 py-2 text-left">Precio preventa</th>
+              <th className="px-4 py-2 text-left">Descuento preventa (%)</th>
+              <th className="px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {zonas.map((z, i) => (
-              <tr key={z.id} className="border-t border-gray-200">
+            {zones.map((z, i) => (
+              <tr key={z.id || i} className="border-t border-gray-200">
                 <td className="px-4 py-2">
                   <input
                     type="text"
                     value={z.nombre}
-                    onChange={(e) => handleChange(i, "nombre", e.target.value)}
-                    className="border border-gray-300 rounded-md px-2 py-1 w-full text-sm"
-                    placeholder={`Zona ${i + 1}`}
-                  />
-                </td>
-                <td className="px-4 py-2">
-                  <input
-                    type="number"
-                    value={z.precio}
-                    onChange={(e) => handleChange(i, "precio", e.target.value)}
-                    className="border border-gray-300 rounded-md px-2 py-1 w-full text-sm"
-                    min={0}
-                    step={0.01}
-                    placeholder="0"
+                    onChange={(e) => handleChangeCampo(i, "nombre", e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-full"
                   />
                 </td>
                 <td className="px-4 py-2">
                   <input
                     type="number"
                     value={z.capacidad}
-                    onChange={(e) => handleChange(i, "capacidad", e.target.value)}
-                    className="border border-gray-300 rounded-md px-2 py-1 w-full text-sm"
-                    min={0}
-                    step={1}
-                    placeholder="0"
+                    onChange={(e) => handleChangeCampo(i, "capacidad", e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-full"
                   />
                 </td>
                 <td className="px-4 py-2">
                   <input
                     type="number"
-                    value={z.descuento}
-                    onChange={(e) => handleChange(i, "descuento", e.target.value)}
-                    className="border border-gray-300 rounded-md px-2 py-1 w-full text-sm"
-                    min={0}
-                    max={100}
-                    step={1}
-                    placeholder="0"
+                    value={z.tarifaNormal?.precio ?? ""}
+                    onChange={(e) => handleChangeTarifa(i, "normal", "precio", e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-full"
                   />
                 </td>
                 <td className="px-4 py-2">
                   <input
-                    type="color"
-                    value={z.color}
-                    onChange={(e) => handleChange(i, "color", e.target.value)}
-                    className="h-8 w-12 border border-gray-300 rounded-md cursor-pointer"
-                    aria-label={`Color de zona ${i + 1}`}
+                    type="number"
+                    value={z.tarifaPreventa?.precio ?? ""}
+                    onChange={(e) => handleChangeTarifa(i, "preventa", "precio", e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-full"
                   />
                 </td>
                 <td className="px-4 py-2">
-                  <button
-                    onClick={() => handleRemoveZona(i)}
-                    className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 text-sm"
-                    type="button"
-                    aria-label={`Eliminar zona ${i + 1}`}>
+                  <input
+                    type="number"
+                    value={z.tarifaPreventa?.descuento ?? ""}
+                    onChange={(e) => handleChangeTarifa(i, "preventa", "descuento", e.target.value)}
+                    className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                  />
+                </td>
+                <td className="px-4 py-2">
+                  <button onClick={() => handleEliminar(i)} className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm">
                     <Trash2 className="h-4 w-4" /> Eliminar
                   </button>
                 </td>
@@ -183,23 +169,12 @@ export default function ZonasYTarifasCard() {
 
       {/* Botones */}
       <div className="flex justify-between mt-4">
-        <button
-          onClick={handleAddZona}
-          className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600"
-          type="button"
-        >
+        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600">
           <Plus className="h-4 w-4" /> Agregar zona
         </button>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleGuardar}
-            className="bg-gray-900 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800"
-            type="button"
-          >
-            <Save className="h-4 w-4" /> Guardar configuración
-          </button>
-        </div>
+        <button onClick={handleGuardar} className="bg-gray-900 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
+          <Save className="h-4 w-4" /> Guardar configuración
+        </button>
       </div>
 
       {/* Vista previa del mapa (debajo) */}
@@ -215,4 +190,3 @@ export default function ZonasYTarifasCard() {
     </div>
   );
 }
-

@@ -10,4 +10,5 @@ export interface Tarifa {
     precio: number;
     fechaInicio: string; // ISO String
     fechaFin: string; // ISO String
+    descuento?: number; // Descuento opcional (añadido para UI de tarifas)
 }
