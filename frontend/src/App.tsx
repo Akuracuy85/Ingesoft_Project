@@ -9,6 +9,8 @@ import ColaVirtual from "./pages/client/Eventos/ColaVirtual.tsx";
 import CompraDeEntradas from "./pages/client/CompraDeEntradas"; 
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
+import DetalleEvento from "./pages/client/Eventos/DetalleEvento";
+import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
 
 
 const queryClient = new QueryClient();
@@ -24,10 +26,12 @@ function App() {
           <Route path="/restablecer" element={<RestablecerContraseña />} />
           <Route path="/nueva-contraseña" element={<NuevaContraseña />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/registro-organizador" element={<RegistroOrganizador />} />
           
           {/* 2. USA el componente aquí en lugar de <></> */}
           <Route path="/evento/:id" element={<CompraDeEntradas />} />
           <Route path="/eventos" element={<SeleccionDeEventos />} />
+          <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
           
           <Route path="/info" element={<InformacionPersonal />} />
           <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
