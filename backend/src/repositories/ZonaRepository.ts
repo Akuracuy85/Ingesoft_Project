@@ -26,8 +26,12 @@ export class ZonaRepository {
 
   async buscarMultiplesPorIds(ids: number[]): Promise<Zona[]> {
     if (ids.length === 0) return [];
+    
     return await this.repository
       .createQueryBuilder("zona")
+      // 🛑 CORRECCIÓN CLAVE: Usar leftJoinAndSelect para cargar las tarifas
+      .leftJoinAndSelect("zona.tarifaNormal", "tarifaNormal")
+      .leftJoinAndSelect("zona.tarifaPreventa", "tarifaPreventa")
       .where("zona.id IN (:...ids)", { ids })
       .getMany();
   }
