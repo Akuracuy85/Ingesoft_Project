@@ -203,6 +203,22 @@ export class EventoRepository {
       relations: ["zonas", "artista", "calificaciones"],
     });
   }
+
+/**
+   * @description Busca un evento por ID cargando las relaciones mínimas necesarias
+   * para el proceso de mapeo DTO de la vista de compra (Zonas y Artista).
+   */
+  async buscarPorIdParaCompra(id: number): Promise<Evento | null> {
+    return await this.repository.findOne({
+      where: { id },
+      relations: {
+        zonas: true, // Necesario para 'zonasDisponibles'
+        artista: true, // Necesario para mapear 'artistName'
+      },
+    });
+  }
+
+
 }
 
 export const eventoRepository = EventoRepository.getInstance();

@@ -26,7 +26,7 @@ function App() {
           <Route path="/registro" element={<Registro />} />
           
           {/* 2. USA el componente aquí en lugar de <></> */}
-          <Route path="/evento/:id" element={<CompraDeEntradas />} />
+          <Route path="/eventos/evento/:id" element={<CompraDeEntradas />} />
           <Route path="/eventos" element={<SeleccionDeEventos />} />
           
           <Route path="/info" element={<InformacionPersonal />} />

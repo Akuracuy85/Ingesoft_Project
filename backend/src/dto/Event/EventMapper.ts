@@ -1,7 +1,13 @@
+// src/dto/Event/EventMapper.ts
+
 import { Buffer } from 'buffer';
 import { EventListResponseDTO } from './EventListResponseDTO';
+import { EventDetailsForPurchaseDTO } from './EventDetailsForPurchaseDTO'; // <--- NUEVO DTO
 
+// ----------------------------------------------------------------------
 // --- DEFINICIONES DE TIPOS (INTERNAS AL MAPPER) ---
+// Se utilizan para tipar las entidades que vienen del Service/Repository.
+// ----------------------------------------------------------------------
 
 interface ArtistEntity {
     nombre: string;
@@ -25,6 +31,20 @@ interface EventEntity {
     imagenBanner: BinaryData; 
     mimeType?: string; 
     artista: ArtistEntity;
+}
+
+// Tipo para las Zonas (asumiendo que vienen de la entidad Zona del ORM)
+interface ZoneEntity {
+    id: number;
+    nombre: string;
+    capacidad: number; // Aforo de la zona
+    costo: number; // Precio
+    cantidadComprada: number; // Entradas ya vendidas en esta zona
+}
+
+// Entidad extendida para el mapeo de Compra
+interface EventEntityWithZones extends EventEntity {
+    zonas: ZoneEntity[]; 
 }
 
 // ----------------------------------------------------------------------
@@ -59,6 +79,9 @@ function bufferToBase64(binaryData: BinaryData, mimeType: string): string {
 
 export class EventMapper {
     
+    /**
+     * Mapea la entidad de Evento a la estructura de la lista de eventos.
+     */
     static toListDTO(entity: EventEntity): EventListResponseDTO {
         
         const eventDate = entity.fechaEvento;
@@ -93,6 +116,53 @@ export class EventMapper {
             place: place, 
             image: imageBase64, 
             artistName: entity.artista.nombre,
+        };
+    }
+
+    /**
+     * @description Transforma la entidad Evento (con Zonas) a la estructura 
+     * EventDetailsForPurchaseDTO, requerida para la vista de compra.
+     * @param entity La entidad de Evento (incluyendo zonas)
+     * @returns EventDetailsForPurchaseDTO.
+     */
+    static toPurchaseDTO(entity: EventEntityWithZones): EventDetailsForPurchaseDTO {
+        
+        const eventDate = entity.fechaEvento;
+        const mimeType = entity.mimeType || 'image/jpeg'; 
+
+        // 1. Mapeo de Propiedades Base (Mismos formatos que toListDTO)
+        const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeString = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const place = `${entity.distrito}, ${entity.provincia}`;
+        const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
+
+        // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)
+        const zonasDisponibles = entity.zonas.map(zona => ({
+            id: zona.id,
+            nombre: zona.nombre,
+            capacidad: zona.capacidad,
+            costo: zona.costo, // Precio
+            cantidadComprada: zona.cantidadComprada, 
+        }));
+        
+        // 3. Definición de límite de entradas
+        const LIMITE_COMPRA_POR_PERSONA = 10; 
+        
+        return {
+            id: entity.id,
+            title: entity.nombre,
+            description: entity.descripcion, 
+            
+            // Propiedades mapeadas
+            date: dateString, 
+            time: timeString, 
+            place: place,
+            image: imageBase64,
+            artistName: entity.artista.nombre,
+            
+            // Propiedades específicas de Compra
+            zonasDisponibles: zonasDisponibles, 
+            limiteEntradas: LIMITE_COMPRA_POR_PERSONA,
         };
     }
 }
