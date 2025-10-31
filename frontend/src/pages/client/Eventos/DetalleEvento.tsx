@@ -1,22 +1,39 @@
 import React from "react";
+import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import mapaAsientos from "@/assets/EstadioImagen2.png";
-import imagenBanner from "@/assets/artista-banner2.png";
-import { motion } from "framer-motion";
 import { Footer } from "@/components/client/Footer/Footer";
-import { Link } from "react-router-dom";
+import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 
 export const PaginaCompraEvento: React.FC = () => {
-  // Simulación de datos de precios
-  const precios = [
-    { zone: "PLATINUM CENTRAL", preventa: "S/ 550.00", general: "S/ 500.00" },
-    { zone: "LATERAL", preventa: "S/ 500.00", general: "S/ 450.00" },
-    { zone: "ORIENTE 1 / OCCIDENTE 1", preventa: "S/ 470.00", general: "S/ 420.00" },
-    { zone: "ORIENTE 2 / OCCIDENTE 2", preventa: "S/ 460.00", general: "S/ 380.00" },
-    { zone: "VIP", preventa: "S/ 440.00", general: "S/ 390.00" },
-    { zone: "PREFERENCIAL", preventa: "S/ 350.00", general: "S/ 300.00" },
-    { zone: "NORTE", preventa: "S/ 270.00", general: "S/ 220.00" },
-  ];
+  const { id } = useParams<{ id: string }>();
+  const eventoId = Number(id);
+  const { evento, isLoading, error } = useEventoDetalle(eventoId);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg">
+        Cargando evento...
+      </div>
+    );
+  }
+
+  if (error || !evento) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500 text-lg">
+        {error || "No se encontró el evento solicitado."}
+      </div>
+    );
+  }
+
+  // Si el backend devuelve base64 en evento.imagenBanner
+  const bannerUrl = evento.imagenBanner
+    ? `data:image/jpeg;base64,${evento.imagenBanner}`
+    : undefined;
+
+  // Si el backend devuelve zonas (array con capacidad, costo, etc.)
+  const zonas = evento.zonas || [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -31,7 +48,6 @@ export const PaginaCompraEvento: React.FC = () => {
             />
           </Link>
         </div>
-
 
         <div className="space-x-4">
           <Link
@@ -48,42 +64,43 @@ export const PaginaCompraEvento: React.FC = () => {
             Registrarse
           </Link>
         </div>
-
       </header>
 
       <main>
         {/* ===== SECCIÓN 1: DETALLES DEL EVENTO ===== */}
         <section
           className="relative bg-cover bg-center bg-no-repeat text-white px-6 py-50 md:px-24 min-h-[85vh]"
-          style={{ backgroundImage: `url(${imagenBanner})` }}
+          style={{
+            backgroundImage: `url(${bannerUrl || "/placeholder-banner.jpg"})`,
+          }}
         >
-          {/* Capa de oscurecimiento más suave */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60"></div>
 
-          {/* Información del concierto */}
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">
               <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
-                TOUR LÁMINA ONCE
-                <br />
+                {evento.nombre}
               </h1>
-                <h2 className="text-2xl md:text-4xl font-bold leading-tight drop-shadow-lg">
-                CUARTETO DE NOS
-                <br/>
+              <h2 className="text-2xl md:text-4xl font-bold leading-tight drop-shadow-lg">
+                {evento.artista?.nombre || "Artista invitado"}
               </h2>
               <p className="mt-6 text-lg md:text-xl text-gray-200">
-                <span className="font-semibold">SAB 08 NOV - DOM 09 NOV</span>
+                <span className="font-semibold">
+                  {new Date(evento.fechaEvento).toLocaleDateString("es-PE", {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
                 <br />
-                Lima, Perú
+                {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
                 <br />
-                Estadio Nacional
-                <br />
-                07:00pm
+                {evento.hora || "07:00 pm"}
               </p>
             </div>
           </div>
         </section>
-
 
         {/* ===== SECCIÓN 2: MAPA Y PRECIOS ===== */}
         <div className="bg-[#fff4ea] px-4 pt-10 pb-16 md:px-24">
@@ -103,64 +120,65 @@ export const PaginaCompraEvento: React.FC = () => {
               )}
             </div>
 
-            {/* Tabla de Precios */}
+            {/* Tabla de precios dinámica */}
             <div className="w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden mt-8 md:mt-25">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ZONA
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      PREVENTA
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      PRECIO
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      GENERAL
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      CAPACIDAD
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {precios.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.zone}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {item.preventa}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {item.general}
+                  {zonas.length > 0 ? (
+                    zonas.map((zona, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {zona.nombre}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          S/ {zona.costo.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {zona.capacidad}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="text-center py-6 text-gray-500 text-sm"
+                      >
+                        No hay zonas disponibles para este evento.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           </section>
         </div>
 
-        {/* ===== SECCIÓN 3: Compra de entradas ===== */}
+        {/* ===== SECCIÓN 3: Compra ===== */}
         <div className="bg-white px-4 py-16 md:px-24">
           <section className="text-center py-16">
             <motion.h2
               className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight mb-10"
-              initial={{ opacity: 0, y: 40 }}       // Comienza invisible y más abajo
-              whileInView={{ opacity: 1, y: 0 }}    // Aparece y sube al entrar al viewport
-              transition={{ duration: 0.8, ease: "easeOut" }}  // Duración y suavidad
-              viewport={{ once: false }}             // Solo se ejecuta una vez
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              viewport={{ once: false }}
             >
-              Consigue tus tickets para ver al CUARTETO DE NOS
-              <br />
-              en el Estadio Nacional
+              Consigue tus tickets para ver {evento.artista?.nombre || "al artista"} <br />
+              en {evento.distrito || "el lugar del evento"}
             </motion.h2>
 
             <motion.div
@@ -171,10 +189,7 @@ export const PaginaCompraEvento: React.FC = () => {
               viewport={{ once: false }}
             >
               <button className="px-12 py-4 bg-black text-white text-lg font-bold rounded-md hover:bg-gray-800 transition-colors">
-                PREVENTA
-              </button>
-              <button className="px-12 py-4 bg-black text-white text-lg font-bold rounded-md hover:bg-gray-800 transition-colors">
-                GENERAL
+                Comprar Entrada
               </button>
             </motion.div>
           </section>
