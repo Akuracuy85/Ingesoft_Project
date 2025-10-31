@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import ClientLayout from "../ClientLayout"
-import { useState } from "react"
-import { Button } from "../../../components/ui/button"
-import { Input } from "../../../components/ui/input"
-import { Label } from "../../../components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
+import ClientLayout from "../ClientLayout";
+import { useEffect, useState } from "react";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,46 +16,108 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../../../components/ui/alert-dialog"
-import { User, Mail, CreditCard, Calendar, Phone, FileText, Trash2, Plus, History } from "lucide-react"
+} from "../../../components/ui/alert-dialog";
+import { User, Mail, CreditCard, Phone, FileText, Trash2, Plus, History } from "lucide-react";
+import { clientUserService } from "../../../services/ClientUserService"; // ✅ tu servicio de usuario
 
 export default function InformacionPersonal() {
+  // 🔹 Datos del usuario
   const [userInfo, setUserInfo] = useState({
-    fullName: "María González",
-    email: "maria.gonzalez@email.com",
-    dni: "12345678",
-    birthDate: "1990-05-15",
-    phone: "+51 612 345 678",
-  })
+    fullName: "",
+    email: "",
+    dni: "",
+    phone: "",
+  });
 
-  const [savedCard, setSavedCard] = useState<{ type: string; lastFourDigits: string } | null>({
-    type: "VISA",
-    lastFourDigits: "4582",
-  })
+  const [savedCard, setSavedCard] = useState<{ type: string; lastFourDigits: string } | null>(null);
+  const [points, setPoints] = useState<number>(0);
+  const [pointsHistory, setPointsHistory] = useState<
+    { date: string; description: string; points: number; type: string }[]
+  >([]);
 
-  const [points] = useState(1250)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [showCardModal, setShowCardModal] = useState(false)
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-  const [showPointsHistory, setShowPointsHistory] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showPointsHistory, setShowPointsHistory] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleSaveChanges = () => {
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 3000)
+  const userId = "1"; //Cambiar Luego
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const profile = await clientUserService.getProfile(userId);
+        const pointsData = await clientUserService.getPoints(userId);
+        const cardData = await clientUserService.getPaymentMethod(userId);
+
+        setUserInfo({
+          fullName: profile.name,
+          email: profile.email,
+          dni: profile.dni,
+          phone: profile.phone,
+        });
+
+        setPoints(pointsData.totalPoints);
+        setPointsHistory(pointsData.history);
+        setSavedCard(cardData);
+      } catch (err) {
+        console.error("Error al obtener información personal:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // 🟡 Guardar cambios personales
+  const handleSaveChanges = async () => {
+    try {
+      await clientUserService.updateProfile(userId, {
+        name: userInfo.fullName,
+        email: userInfo.email,
+        dni: userInfo.dni,
+        phone: userInfo.phone,
+      });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      console.error("Error al actualizar datos:", err);
+    }
+  };
+
+  // Guardar o cambiar tarjeta
+  const handleSaveCard = async () => {
+    const newCard = { type: "VISA", lastFourDigits: "4582" };
+    try {
+      await clientUserService.savePaymentMethod(userId,newCard);
+      setSavedCard(newCard);
+      setShowCardModal(false);
+    } catch (err) {
+      console.error("Error al guardar tarjeta:", err);
+    }
+  };
+
+  // Eliminar tarjeta
+  const handleDeleteCard = async () => {
+    try {
+      await clientUserService.deletePaymentMethod(userId);
+      setSavedCard(null);
+      setShowDeleteAlert(false);
+    } catch (err) {
+      console.error("Error al eliminar tarjeta:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <ClientLayout>
+        <div className="flex items-center justify-center h-screen text-gray-600">
+          Cargando información personal...
+        </div>
+      </ClientLayout>
+    );
   }
-
-  const handleDeleteCard = () => {
-    setSavedCard(null)
-    setShowDeleteAlert(false)
-  }
-
-  const pointsHistory = [
-    { date: "2025-01-05", description: "Compra de entradas - Concierto de Rock", points: -200, type: "gasto" },
-    { date: "2025-01-03", description: "Bonificación por registro", points: +500, type: "ganancia" },
-    { date: "2024-12-28", description: "Compra de entradas - Festival de Jazz", points: -150, type: "gasto" },
-    { date: "2024-12-20", description: "Referido exitoso", points: +300, type: "ganancia" },
-    { date: "2024-12-15", description: "Mejora de posición en cola", points: -200, type: "gasto" },
-  ]
 
   return (
     <ClientLayout showFilterButton={false}>
@@ -122,20 +184,6 @@ export default function InformacionPersonal() {
                       id="dni"
                       value={userInfo.dni}
                       onChange={(e) => setUserInfo({ ...userInfo, dni: e.target.value })}
-                      className="border-gray-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="birthDate" className="flex items-center gap-2 text-gray-700">
-                      <Calendar className="w-4 h-4" />
-                      Fecha de nacimiento
-                    </Label>
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      value={userInfo.birthDate}
-                      onChange={(e) => setUserInfo({ ...userInfo, birthDate: e.target.value })}
                       className="border-gray-300"
                     />
                   </div>
@@ -237,7 +285,7 @@ export default function InformacionPersonal() {
         </div>
       </div>
 
-      {/* Dialogs & Alerts */}
+      {/* Modales */}
       <Dialog open={showCardModal} onOpenChange={setShowCardModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -268,13 +316,7 @@ export default function InformacionPersonal() {
             <Button variant="outline" onClick={() => setShowCardModal(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button
-              onClick={() => {
-                setSavedCard({ type: "VISA", lastFourDigits: "4582" })
-                setShowCardModal(false)
-              }}
-              className="flex-1 bg-[#D59B2C] hover:bg-[#C08A25] text-white"
-            >
+            <Button onClick={handleSaveCard} className="flex-1 bg-[#D59B2C] hover:bg-[#C08A25] text-white">
               Guardar tarjeta
             </Button>
           </div>
@@ -328,5 +370,5 @@ export default function InformacionPersonal() {
         </DialogContent>
       </Dialog>
     </ClientLayout>
-  )
+  );
 }
