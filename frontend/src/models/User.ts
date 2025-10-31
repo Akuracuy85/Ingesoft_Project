@@ -1,20 +1,24 @@
-export type UserRole = "Cliente" | "Organizador" | "Administrador";
-export type UserStatus = "Activo" | "Inactivo";
+export type Rol = "Cliente" | "Organizador" | "Administrador";
 
 export interface User {
   id: number;
-  name: string;
-  email: string;
   dni: string;
-  role: UserRole;
-  status: UserStatus;
-  lastAccess: string;
+  email: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  celular: string;
+  rol: Rol;
+  activo: boolean;
 }
 
 export interface UserFormData {
-  name: string;
-  email: string;
   dni: string;
-  role: UserRole;
-  status: UserStatus;
+  email: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  celular: string;
+  rol: Rol;
+  activo: boolean;
 }

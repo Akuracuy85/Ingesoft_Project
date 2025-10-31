@@ -1,81 +1,61 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
+import type { User, UserFormData, Rol } from "../../models/User";
 
-
-// --- 1. INTERFACES PARA DATOS Y ESTADO ---
-
-// 1.1. Interfaz para los datos del usuario (lo que se recibe/edita)
-interface User {
-  name: string;
-  email: string;
-  dni: string;
-  // Usamos "Union Types" para restringir los valores válidos
-  role: 'Cliente' | 'Organizador' | 'Administrador';
-  status: 'Activo' | 'Inactivo';
-}
-
-// 1.2. Interfaz para el estado del formulario (es igual a User, pero dni puede ser opcional/vacio)
-// En este caso, son idénticas, pero es buena práctica tenerlas separadas.
-interface UserFormData {
-  name: string;
-  email: string;
-  dni: string;
-  role: 'Cliente' | 'Organizador' | 'Administrador';
-  status: 'Activo' | 'Inactivo';
-}
-
-
-// --- 2. INTERFAZ PARA PROPIEDADES (PROPS) ---
-
-// 2. Interfaz para las propiedades que recibe el componente
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // La función onSave recibe los datos del formulario (UserFormData)
-  onSave: (data: UserFormData) => void; 
-  // 'user' es opcional y puede ser 'null' o un objeto 'User'
-  user: User | null; 
+  onSave: (data: UserFormData) => void;
+  user: User | null;
 }
 
-// --- 3. COMPONENTE CON TIPADO ---
-
-// Tipamos el componente con las props definidas
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) => {
-  
-  // Tipamos el estado inicial con UserFormData
   const initialFormData: UserFormData = {
-    name: "",
-    email: "",
+    nombre: "",
+    apellidoPaterno: "",
+    apellidoMaterno: "",
     dni: "",
-    role: "Cliente",
-    status: "Activo",
+    email: "",
+    celular: "",
+    rol: "Cliente",
+    activo: true,
   };
-  
+
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
 
-  // Efecto para inicializar el formulario cuando 'user' o 'isOpen' cambian
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name,
+        nombre: user.nombre,
+        apellidoPaterno: user.apellidoPaterno,
+        apellidoMaterno: user.apellidoMaterno,
+        dni: user.dni,
         email: user.email,
-        dni: user.dni || "",
-        role: user.role,
-        status: user.status,
+        celular: user.celular,
+        rol: user.rol,
+        activo: user.activo,
       });
     } else {
       setFormData(initialFormData);
     }
-    // Añadimos 'initialFormData' como dependencia si fuese una prop, pero aquí es constante
-  }, [user, isOpen]); 
+  }, [user, isOpen]);
 
-  // Tipamos el evento de envío del formulario
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "activo" ? value === "true" : value,
+    }));
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
 
-  if (!isOpen) return null; // no mostrar si está cerrado
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -84,67 +64,74 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
           {user ? "Editar usuario" : "Crear usuario"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Nombre completo</label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             <input
-              type="text"
-              value={formData.name}
-              // El evento 'e' en onChange no necesita ser tipado aquí, TypeScript lo infiere
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: María López"
-              className="w-full border border-border rounded-md px-3 py-2 text-sm"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              placeholder="Nombre"
+              className="border rounded-md px-3 py-2 col-span-2"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Correo electrónico</label>
             <input
+              name="apellidoPaterno"
+              value={formData.apellidoPaterno}
+              onChange={handleChange}
+              placeholder="Apellido paterno"
+              className="border rounded-md px-3 py-2 col-span-1"
+              required
+            />
+            <input
+              name="apellidoMaterno"
+              value={formData.apellidoMaterno}
+              onChange={handleChange}
+              placeholder="Apellido materno"
+              className="border rounded-md px-3 py-2 col-span-1"
+              required
+            />
+            <input
+              name="dni"
+              value={formData.dni}
+              onChange={handleChange}
+              placeholder="DNI"
+              className="border rounded-md px-3 py-2 col-span-2"
+              required
+            />
+            <input
+              name="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Ej: maria@unite.com"
-              className="w-full border border-border rounded-md px-3 py-2 text-sm"
+              onChange={handleChange}
+              placeholder="Correo electrónico"
+              className="border rounded-md px-3 py-2 col-span-2"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">DNI</label>
             <input
-              type="text"
-              value={formData.dni}
-              onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
-              placeholder="Ej: 12345678A"
-              className="w-full border border-border rounded-md px-3 py-2 text-sm"
+              name="celular"
+              value={formData.celular}
+              onChange={handleChange}
+              placeholder="Celular"
+              className="border rounded-md px-3 py-2 col-span-2"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Rol</label>
             <select
-              value={formData.role}
-              // Aseguramos que el valor de e.target.value coincida con los Union Types definidos
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
-              className="w-full border border-border rounded-md px-3 py-2 text-sm"
+              name="rol"
+              value={formData.rol}
+              onChange={handleChange}
+              className="border rounded-md px-3 py-2 col-span-2"
             >
               <option value="Cliente">Cliente</option>
               <option value="Organizador">Organizador</option>
               <option value="Administrador">Administrador</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Estado</label>
             <select
-              value={formData.status}
-              // Aseguramos que el valor de e.target.value coincida con los Union Types definidos
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as User['status'] })}
-              className="w-full border border-border rounded-md px-3 py-2 text-sm"
+              name="activo"
+              value={formData.activo ? "true" : "false"}
+              onChange={handleChange}
+              className="border rounded-md px-3 py-2 col-span-2"
             >
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
             </select>
           </div>
 
@@ -167,6 +154,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
       </div>
     </div>
   );
-}
+};
 
 export default UserModal;
