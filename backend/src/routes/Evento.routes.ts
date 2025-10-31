@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eventoController } from "@/controllers/EventoController";
-import { sessionMiddleware } from "@/middlewares/sessionMiddleware";
+import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 
 const router = Router();
 
