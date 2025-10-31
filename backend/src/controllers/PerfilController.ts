@@ -25,7 +25,6 @@ export class PerfilController {
    * Este método está protegido por el middleware de sesión.
    */
   actualizarPerfil = [
-    sessionMiddleware.VerificarToken, // Middleware para validar el token y extraer el userId
     async (req: Request, res: Response) => {
       try {
         const userId = req.userId; // Extraído del middleware
@@ -54,7 +53,6 @@ export class PerfilController {
      * Protegido por el middleware de sesión.
      */
     obtenerPerfil = [
-        sessionMiddleware.VerificarToken, // Middleware para validar el token y extraer el userId
         async (req: Request, res: Response) => {
             try {
                 const userId = req.userId; // Extraído del middleware
@@ -85,7 +83,6 @@ export class PerfilController {
     ];
 
     eliminarTarjeta = [
-        sessionMiddleware.VerificarToken, // Asegura que el usuario esté logueado
         async (req: Request, res: Response) => {
             try {
                 const userId = req.userId; // ID del dueño, extraído del token
@@ -122,7 +119,6 @@ export class PerfilController {
     ];
 
     obtenerPuntos = [
-        sessionMiddleware.VerificarToken, // Middleware para validar el token y extraer el userId
         async (req: Request, res: Response) => {
             try {
                 const userId = req.userId; // Extraído del middleware
