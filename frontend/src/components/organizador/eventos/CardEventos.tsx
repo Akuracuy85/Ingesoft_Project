@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Calendar, MoreVertical, Plus, Edit3, Trash2 } from "lucide-react";
+import { Calendar, MoreVertical, Plus, Edit3, Trash2, X, ImageOff, Upload } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
@@ -54,6 +54,10 @@ const CardEventos: React.FC = () => {
   // Modal eliminar
   const [eventoAEliminar, setEventoAEliminar] = useState<{ index: number; nombre: string } | null>(null);
 
+  // Selección de evento y resalte
+  const [eventoSeleccionado, setEventoSeleccionado] = useState<EventoItem | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   useEffect(() => {
     const handleDocClick = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -65,6 +69,16 @@ const CardEventos: React.FC = () => {
     }
     return () => document.removeEventListener("click", handleDocClick);
   }, [menuAbierto]);
+
+  // Mantener selección válida si cambia la lista
+  useEffect(() => {
+    if (selectedIndex !== null && (selectedIndex < 0 || selectedIndex >= eventos.length)) {
+      setSelectedIndex(null);
+      setEventoSeleccionado(null);
+    } else if (selectedIndex !== null) {
+      setEventoSeleccionado(eventos[selectedIndex]);
+    }
+  }, [eventos, selectedIndex]);
 
   // Abrir crear
   const handleOpenCreate = () => setIsCreateOpen(true);
@@ -120,6 +134,14 @@ const CardEventos: React.FC = () => {
   const confirmarEliminacion = () => {
     if (!eventoAEliminar) return;
     setEventos((prev) => prev.filter((_, i) => i !== eventoAEliminar.index));
+    // Si el eliminado es el seleccionado, limpiar selección
+    if (selectedIndex === eventoAEliminar.index) {
+      setSelectedIndex(null);
+      setEventoSeleccionado(null);
+    } else if (selectedIndex !== null && eventoAEliminar.index < selectedIndex) {
+      // Ajustar índice si se elimina un elemento anterior a la selección
+      setSelectedIndex((prev) => (prev !== null ? prev - 1 : null));
+    }
     setEventoAEliminar(null);
   };
 
@@ -136,9 +158,10 @@ const CardEventos: React.FC = () => {
       }
     : null;
 
-  return (
-    <section className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      {/* Encabezado */}
+  // Render del encabezado o detalles
+  const renderTopCard = () => {
+    // Siempre renderiza el encabezado principal
+    return (
       <div className="flex items-start justify-between gap-4">
         {/* Izquierda: ícono + títulos */}
         <div className="flex items-start gap-3">
@@ -146,12 +169,8 @@ const CardEventos: React.FC = () => {
             <Calendar className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Publicar y gestionar eventos
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Crea, edita y elimina eventos del sistema.
-            </p>
+            <h2 className="text-lg font-semibold text-gray-900">Publicar y gestionar eventos</h2>
+            <p className="text-sm text-gray-600 mt-1">Crea, edita y elimina eventos del sistema.</p>
           </div>
         </div>
 
@@ -165,6 +184,62 @@ const CardEventos: React.FC = () => {
           <span>Nuevo evento</span>
         </button>
       </div>
+    );
+  };
+
+  return (
+    <section className="bg-card border border-border rounded-lg p-6 shadow-sm relative">
+      {/* Encabezado fijo */}
+      {renderTopCard()}
+
+      {/* Detalles del evento seleccionado */}
+      {eventoSeleccionado && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-4 relative">
+          {/* Botón cerrar */}
+          <button
+            type="button"
+            onClick={() => {
+              setEventoSeleccionado(null);
+              setSelectedIndex(null);
+            }}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            aria-label="Cerrar detalles"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Título + estado */}
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-lg font-semibold text-gray-900">{eventoSeleccionado.nombre}</h2>
+            <span className={getBadgeClass(eventoSeleccionado.estado)}>{eventoSeleccionado.estado}</span>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">{eventoSeleccionado.fecha}</p>
+
+          {/* Encabezado de portada con botón alineado a la derecha */}
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">Imagen de portada del evento</h3>
+            <button
+              type="button"
+              className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
+            >
+              <Upload className="h-4 w-4" /> Subir portada
+            </button>
+          </div>
+          <p className="text-sm text-gray-500 mb-3">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
+
+          {/* Área de imagen */}
+          {eventoSeleccionado.imagenNombre ? (
+            <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
+              <div className="text-sm text-gray-600">Portada: {eventoSeleccionado.imagenNombre}</div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
+              <ImageOff className="h-8 w-8 mb-2" />
+              <p>No hay imagen de portada</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Contenido: lista + tabla */}
       <div className="mt-6">
@@ -185,13 +260,20 @@ const CardEventos: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {eventos.map((ev, index) => (
-                <tr key={`${ev.nombre}-${ev.fecha}-${index}`} className="hover:bg-gray-50">
+                <tr
+                  key={`${ev.nombre}-${ev.fecha}-${index}`}
+                  className={`${selectedIndex === index ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
+                  onClick={() => {
+                    setEventoSeleccionado(ev);
+                    setSelectedIndex(index);
+                  }}
+                >
                   <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
                   <td className="px-4 py-3 text-gray-700">{ev.fecha}</td>
                   <td className="px-4 py-3">
                     <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div
                       className="relative inline-block text-left"
                       ref={menuAbierto === index ? menuRef : null}
