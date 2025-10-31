@@ -39,7 +39,7 @@ export class PerfilService {
 
     public async actualizarPerfilUsuario(
         userId: number,
-        nuevosDatos: { nombre?: string; email?: string; password?: string; passwordActual?: string }
+        nuevosDatos: { nombre?: string; email?: string; celular?: string; password?: string; passwordActual?: string }
     ): Promise<void> {
         // 1. Determinar qué método de búsqueda usar
         // Si se intenta cambiar la contraseña, debemos cargar el hash actual para validar.
