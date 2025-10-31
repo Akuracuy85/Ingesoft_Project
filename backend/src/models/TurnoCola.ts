@@ -1,4 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+
+import { Cliente } from "./Cliente";
+import { Cola } from "./Cola";
 
 @Entity()
 export class TurnoCola {
@@ -10,4 +13,8 @@ export class TurnoCola {
   ingreso: Date;
   @Column()
   estado: string;
+  @ManyToOne(() => Cliente, { nullable: false, onDelete: "CASCADE" })
+  cliente: Cliente;
+  @ManyToOne(() => Cola, { nullable: false, onDelete: "CASCADE" })
+  cola: Cola;
 }
