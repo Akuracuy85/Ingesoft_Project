@@ -4,6 +4,7 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
+import EventoService from "@/services/EventoService";
 
 // Tipos para la tabla
 interface EventoItem {
@@ -15,13 +16,6 @@ interface EventoItem {
   lugar?: string;
   imagenNombre?: string | null;
 }
-
-// Datos iniciales
-const initialEventos: EventoItem[] = [
-  { nombre: "Concierto de Rock 2025", fecha: "2025-03-15", estado: "Publicado", descripcion: "-", hora: "20:00", lugar: "Estadio" },
-  { nombre: "Festival de Jazz", fecha: "2025-04-20", estado: "Borrador", descripcion: "-", hora: "18:00", lugar: "Parque" },
-  { nombre: "Noche de Salsa", fecha: "2025-05-10", estado: "En revisión", descripcion: "-", hora: "21:00", lugar: "Club" },
-];
 
 // Función para clases de badge según estado
 function getBadgeClass(estado: EstadoEventoUI): string {
@@ -37,9 +31,25 @@ function getBadgeClass(estado: EstadoEventoUI): string {
   }
 }
 
+// Mapeo de estado backend -> UI
+function mapEstadoToUI(estadoApi: string): EstadoEventoUI {
+  switch (estadoApi) {
+    case "PUBLICADO":
+      return "Publicado";
+    case "BORRADOR":
+      return "Borrador";
+    case "PENDIENTE_APROBACION":
+      return "En revisión";
+    default:
+      return "Borrador";
+  }
+}
+
 const CardEventos: React.FC = () => {
   // Estado de la lista
-  const [eventos, setEventos] = useState<EventoItem[]>([...initialEventos]);
+  const [eventos, setEventos] = useState<EventoItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal crear
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -58,6 +68,29 @@ const CardEventos: React.FC = () => {
   // Selección de evento y resalte
   const [eventoSeleccionado, setEventoSeleccionado] = useState<EventoItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  // Cargar desde backend al montar
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const resp = await EventoService.listarBasicosOrganizador();
+        const items: EventoItem[] = (resp.eventos || []).map((e: any) => ({
+          nombre: e.nombre,
+          fecha: typeof e.fecha === "string" ? e.fecha : new Date(e.fecha).toISOString().slice(0, 10),
+          estado: mapEstadoToUI(e.estado),
+        }));
+        setEventos(items);
+      } catch (err: any) {
+        console.error("Error cargando eventos:", err);
+        setError("No se pudieron cargar los eventos. Intenta nuevamente.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEventos();
+  }, []);
 
   useEffect(() => {
     const handleDocClick = (e: MouseEvent) => {
@@ -85,7 +118,7 @@ const CardEventos: React.FC = () => {
   const handleOpenCreate = () => setIsCreateOpen(true);
   const handleCloseCreate = () => setIsCreateOpen(false);
 
-  // Guardar desde crear
+  // Guardar desde crear (solo UI por ahora)
   const handleSaveCreate = (data: NuevoEventoForm) => {
     const nuevo: EventoItem = {
       nombre: data.nombre,
@@ -111,7 +144,7 @@ const CardEventos: React.FC = () => {
     setIsEditOpen(false);
   };
 
-  // Guardar cambios de edición
+  // Guardar cambios de edición (solo UI por ahora)
   const handleSaveEdit = (data: NuevoEventoForm) => {
     if (editingIndex === null) return;
     setEventos((prev) => {
@@ -131,7 +164,7 @@ const CardEventos: React.FC = () => {
     handleCloseEdit();
   };
 
-  // Confirmar eliminación
+  // Confirmar eliminación (solo UI)
   const confirmarEliminacion = () => {
     if (!eventoAEliminar) return;
     setEventos((prev) => prev.filter((_, i) => i !== eventoAEliminar.index));
@@ -193,6 +226,14 @@ const CardEventos: React.FC = () => {
       <section className="bg-card border border-border rounded-lg p-6 shadow-sm relative">
         {/* Encabezado fijo */}
         {renderTopCard()}
+
+        {/* Loading y error */}
+        {isLoading && (
+          <div className="mt-6 text-sm text-gray-600">Cargando eventos…</div>
+        )}
+        {error && !isLoading && (
+          <div className="mt-6 text-sm text-red-600">{error}</div>
+        )}
 
         {/* Detalles del evento seleccionado */}
         {eventoSeleccionado && (
@@ -332,6 +373,9 @@ const CardEventos: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            {!isLoading && !error && eventos.length === 0 && (
+              <div className="text-sm text-gray-500 p-4">No hay eventos para mostrar.</div>
+            )}
           </div>
         </div>
 
