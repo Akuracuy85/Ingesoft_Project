@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { Event } from "../../../../../models/Event";
+import { useNavigate } from "react-router-dom";
 
 interface FeaturedEventProps {
   events: Event[];
@@ -9,6 +10,8 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const total = events.length;
 
+   const navigate = useNavigate(); 
+
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
   };
@@ -16,6 +19,8 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
   const handleNext = () => {
     setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
   };
+
+  const event = events[currentIndex];
 
   // Pequeña optimización: no es necesario 'event = events[currentIndex]'
   // Puedes usar 'events[currentIndex]' directamente abajo.
@@ -49,10 +54,9 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         </p>
 
         {/* ✅ Botón con estado 'focus' */}
-        <button 
-          className="px-5 py-2 bg-indigo-600 rounded-md transition
-                     hover:bg-indigo-700 
-                     focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        <button
+          onClick={() => navigate(`/eventos/${event.id}/detalle`)}
+          className="px-5 py-2 bg-indigo-600 rounded-md hover:bg-indigo-700 transition cursor-pointer"
         >
           Ver detalles
         </button>
