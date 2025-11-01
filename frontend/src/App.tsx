@@ -9,7 +9,7 @@ import ColaVirtual from "./pages/client/Eventos/ColaVirtual.tsx";
 import CompraDeEntradas from "./pages/client/CompraDeEntradas"; 
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
-import DetalleEvento from "./pages/client/Eventos/DetalleEvento";
+import DetalleEvento from "./pages/client/DetalleEvento";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
 import GestionEventos from "./pages/organizador/eventos/GestionEventos.tsx";
 

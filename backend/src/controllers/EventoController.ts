@@ -185,7 +185,7 @@ export class EventoController {
    * @description Devuelve los datos detallados de un evento necesarios para la compra (público).
    * 🚨 CORRECCIÓN CLAVE: Aplica el Mapper y devuelve SOLO el DTO.
    */
-obtenerDatosCompraPorId = async (req: Request, res: Response) => {
+  obtenerDatosCompraPorId = async (req: Request, res: Response) => {
     const eventoId = Number(req.params.id);
 
     if (!Number.isInteger(eventoId) || eventoId <= 0) {

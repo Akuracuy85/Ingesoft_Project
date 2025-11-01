@@ -2,9 +2,11 @@ import React from "react";
 
 // 1. Definimos y exportamos el tipo de item del resumen
 export interface SummaryItem {
-  zona: string;
-  cantidad: number;
-  subtotal: number;
+  zona: string;
+  // ✅ ADICIÓN CLAVE: Necesitamos el ID para enviar al backend
+  zonaId: number; 
+  cantidad: number;
+  subtotal: number;
 }
 
 interface SelectionSummaryTableProps {

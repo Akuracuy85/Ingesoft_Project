@@ -2,29 +2,31 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import EventoService from "../../../../../services/EventoService"; 
-import { type EventDetailsForPurchase } from "../../../../../services/EventoService"; 
+import EventoService from "../../../../../services/EventoService";
+import { type EventDetailsForPurchase } from "../../../../../services/EventoService";
 
 // Importaciones de Componentes y Tipos Locales
 import ZoneTable from "./ZoneTable/ZoneTable";
-import StepIndicator from "../StepIndicator"; 
-import Encabezado from "../../../../../assets/EstadioImagen.png"; 
-import SelectionSummaryTable from "./SelectionSummaryTable"; 
+import StepIndicator from "../StepIndicator";
+import Encabezado from "../../../../../assets/EstadioImagen.png";
+import SelectionSummaryTable from "./SelectionSummaryTable";
 import type { SummaryItem } from "./SelectionSummaryTable";
-import DatosCompra from "../DatosCompra/DatosCompra"; 
+import DatosCompra from "../DatosCompra/DatosCompra";
 
 // Importaciones de Tipos para la lógica
+// ✅ Importamos el modelo 'Zone' que nos diste
 import type { Zone } from "../../../../../models/Zone"; 
-import { type ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail"; 
+import { type ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail";
 import type { Step } from "../../../../../types/Step";
 
 
 const steps: Step[] = [
-  { title: "TICKETS", number: 1 }, 
+  { title: "TICKETS", number: 1 },
   { title: "DATOS DE COMPRA", number: 2 },
 ];
 
-// FUNCIÓN AUXILIAR: Se queda fuera porque no usa estados ni props
+// FUNCIÓN AUXILIAR: Calcula el precio activo (preventa vs. normal)
+// Esta función está perfecta.
 const getActiveZonePrice = (zoneDetail: ZonePurchaseDetail): number => {
     const now = new Date();
     
@@ -45,32 +47,40 @@ export const BodyCompraEntradas: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const { data: eventDetails, isLoading, isError, error } = useQuery<EventDetailsForPurchase>({
-        queryKey: ['eventPurchase', id], 
+        queryKey: ['eventPurchase', id],
         queryFn: () => {
             if (!id) throw new Error("ID de evento no disponible.");
-            return EventoService.buscarDatosCompraPorId(id); 
+            return EventoService.buscarDatosCompraPorId(id);
         },
-        enabled: !!id, 
+        enabled: !!id,
     });
     
-    // Mapeo de datos (Tipado ya corregido)
+    // --- Mapeo de datos para la tabla de selección ---
     const zonesToMap: ZonePurchaseDetail[] = eventDetails?.zonasDisponibles || [];
 
+    // --- 🟢 CORRECCIÓN 1: Mapeo de Zonas ---
+    // Tu modelo 'Zone' (src/types/zone.ts) dice que 'tarifaNormal' 
+    // y 'tarifaPreventa' deben ser OBJETOS de tipo 'Tarifa', no un 'number'.
+    // El código anterior estaba asignando un 'number', lo cual violaba el modelo.
     const zones: Zone[] = zonesToMap.map(detail => ({
         id: detail.id,
         nombre: detail.nombre,
         capacidad: detail.capacidad,
         cantidadComprada: detail.cantidadComprada,
-        costo: getActiveZonePrice(detail), 
+        
+        // ❌ INCORRECTO ANTES: tarifaNormal: getActiveZonePrice(detail)
+        // ✅ CORRECTO: Pasamos el objeto 'Tarifa' completo
+        tarifaNormal: detail.tarifaNormal, 
+        tarifaPreventa: detail.tarifaPreventa,
     }));
     
     // --- Estados del Componente ---
     const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
     const [selectionSummary, setSelectionSummary] = useState<SummaryItem[]>([]);
     const [currentStep, setCurrentStep] = useState(0);
-    const [isUsingPointsFlow, setIsUsingPointsFlow] = useState(false); 
+    const [isUsingPointsFlow, setIsUsingPointsFlow] = useState(false);
 
-    // 🚀 Funciones Handler (Definidas dentro del componente)
+    // 🚀 Funciones Handler
     const handleQuantityChange = (zoneName: string, newQuantity: number) => {
         setSelectedQuantities((prevQuantities) => ({
             ...prevQuantities,
@@ -78,15 +88,31 @@ export const BodyCompraEntradas: React.FC = () => {
         }));
     };
 
+    // --- 🟢 CORRECCIÓN 2: Cálculo del Subtotal ---
+    // El código anterior iteraba sobre el array 'zones' (que estaba mal mapeado)
+    // e intentaba calcular el subtotal con 'zone.tarifaNormal.precio', lo cual fallaba.
+    //
+    // La forma correcta es iterar sobre el array original 'zonesToMap'
+    // y usar la función 'getActiveZonePrice' (que ya existe) para obtener el precio real.
     const handleSubmitSelection = () => {
         const newSummary: SummaryItem[] = [];
-        for (const zone of zones) {
-            const cantidad = selectedQuantities[zone.nombre] || 0;
+        
+        // ✅ Iteramos el array original 'zonesToMap'
+        for (const detail of zonesToMap) {
+            
+            // Obtenemos la cantidad seleccionada desde el estado
+            const cantidad = selectedQuantities[detail.nombre] || 0;
+            
             if (cantidad > 0) {
+                // ✅ Usamos el helper para obtener el precio real (preventa o normal)
+                const precioActivo = getActiveZonePrice(detail);
+
                 newSummary.push({
-                    zona: zone.nombre,
+                    zona: detail.nombre,
+                    zonaId: detail.id,
                     cantidad: cantidad,
-                    subtotal: zone.costo * cantidad, 
+                    // ✅ Usamos el precio activo para el subtotal
+                    subtotal: precioActivo * cantidad, 
                 });
             }
         }
@@ -97,14 +123,14 @@ export const BodyCompraEntradas: React.FC = () => {
         setSelectionSummary((prevSummary) =>
             prevSummary.filter((item) => item.zona !== zoneName)
         );
-        handleQuantityChange(zoneName, 0); 
+        handleQuantityChange(zoneName, 0);
     };
     
     const handleAcceptSelection = () => {
-        setCurrentStep(1); 
+        setCurrentStep(1);
     };
     
-    const handleGoBack = () => { 
+    const handleGoBack = () => {
         setCurrentStep(0);
     };
 
@@ -135,13 +161,12 @@ export const BodyCompraEntradas: React.FC = () => {
 
           {/* --- PASO 1: SELECCIÓN DE TICKETS --- */}
           {currentStep === 0 && (
-                // 🚨 CORRECCIÓN: Usamos React.Fragment una sola vez o implícito.
-                <React.Fragment> 
+                <React.Fragment>
                     
                     {/* Encabezado */}
                     <img
                         src={Encabezado}
-                        alt="Encabezado"
+                        alt="Encabezado del Evento"
                         className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
                     />
 
@@ -152,7 +177,7 @@ export const BodyCompraEntradas: React.FC = () => {
                     
                     {/* Tabla de Zonas */}
                     <ZoneTable
-                        zones={zones} 
+                        zones={zones} // <-- Ahora pasamos el array 'zones' correctamente tipado
                         selectedQuantities={selectedQuantities}
                         onQuantityChange={handleQuantityChange}
                     />
@@ -160,7 +185,7 @@ export const BodyCompraEntradas: React.FC = () => {
                     {/* Botón de Selección */}
                     <button
                         onClick={handleSubmitSelection}
-                        className="mt-6 bg-yellow-700 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-800"
+                        className="mt-6 bg-yellow-700 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-800 transition duration-150"
                     >
                         {isSummaryVisible ? "Actualizar Selección" : "Agregar"}
                     </button>
@@ -183,9 +208,10 @@ export const BodyCompraEntradas: React.FC = () => {
 
           {/* --- PASO 2: DATOS DE COMPRA --- */}
           {currentStep === 1 && (
-            <DatosCompra 
-              summaryItems={selectionSummary} 
-              onBack={handleGoBack} 
+            <DatosCompra
+              eventoId={eventDetails.id}
+              summaryItems={selectionSummary}
+              onBack={handleGoBack}
               isUsingPoints={isUsingPointsFlow}
             />
           )}
