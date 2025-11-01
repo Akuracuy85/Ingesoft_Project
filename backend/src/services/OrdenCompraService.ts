@@ -136,7 +136,7 @@ export class OrdenCompraService {
       );
 
       // 6. ✅ SIMULACIÓN DE PASARELA DE PAGO
-      const paymentUrl = `${process.env.PAYMENT_SIMULATION_URL}/checkout/${ordenGuardada.id}?amount=${totalPagado}`;
+      const paymentUrl = /*`${process.env.PAYMENT_SIMULATION_URL}/checkout/${ordenGuardada.id}?amount=${totalPagado}`*/ '/eventos';
       
       // Devolver la orden guardada y la URL
       return {

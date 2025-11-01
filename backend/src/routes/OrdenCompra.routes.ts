@@ -8,7 +8,7 @@ import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 const router = Router();
 
 // POST /api/orden
-router.post("/", ordenCompraController.crearOrden);
+router.post("/", sessionMiddleware.VerificarToken, ordenCompraController.crearOrden);
 
 // GET /api/orden/123
 router.get("/:id", sessionMiddleware.VerificarToken, ordenCompraController.obtenerOrdenPorId);

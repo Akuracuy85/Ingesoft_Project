@@ -29,14 +29,7 @@ export class OrdenCompraController {
    */
   crearOrden = async (req: Request, res: Response) => {
     try {
-      // 🛑 CORRECCIÓN PARA PRUEBAS SIN AUTENTICACIÓN:
-      // Asignamos un ID fijo para evitar el error 401 que surge al intentar
-      // leer req.userId (que está vacío sin el middleware de sesión).
-      // ⚠️ DEBE ser un ID de cliente válido que exista en tu base de datos.
-      const clienteId = 2; 
-      
-      // Omitimos la verificación `if (!req.userId)` ya que lo asignamos arriba.
-      
+      const clienteId = req.userId; 
       const dto = plainToClass(CrearOrdenDto, req.body);
       const errors = await validate(dto);
 
