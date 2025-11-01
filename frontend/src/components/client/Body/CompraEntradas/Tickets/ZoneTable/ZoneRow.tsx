@@ -26,7 +26,7 @@ const ZoneRow: React.FC<ZoneRowProps> = ({ zone, quantity, onQuantityChange }) =
       <span>{zone.nombre}</span>
       
       {/* ✅ CORRECCIÓN: Se usa (zone.precio ?? 0) para prevenir el error 'toFixed' si el precio es null/undefined */}
-      <span>S/ {(zone.costo ?? 0).toFixed(2)}</span> 
+      <span>S/ {(zone.tarifaNormal.precio ?? 0).toFixed(2)}</span> 
       
       <div className="flex items-center justify-center gap-2">
         <button
