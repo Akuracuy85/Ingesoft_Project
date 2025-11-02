@@ -4,17 +4,7 @@ import { motion } from "framer-motion";
 
 import mapaAsientos from "@/assets/EstadioImagen2.png";
 import { useEventoDetalle } from "@/hooks/useEventoDetalle";
-
-interface Tarifa {
-  tipo: string;
-  precio: number;
-}
-
-interface Zona {
-  id: number;
-  nombre: string;
-  tarifas?: Tarifa[];
-}
+import type { Zone } from "@/models/Zone";
 
 interface ArtistaDetalle {
   nombre: string;
@@ -28,7 +18,7 @@ interface EventoDetalle {
   provincia: string;
   distrito: string;
   artista: ArtistaDetalle | null;
-  zonas: Zona[];
+  zonas: Zone[];
 }
 
 export const BodyDetalleEvento: React.FC = () => {
@@ -60,12 +50,17 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const zonas = evento.zonas || [];
 
-  // Determinamos dinámicamente todos los tipos de tarifa existentes
   const tiposTarifas = Array.from(
-    new Set(
-      zonas.flatMap((z) => (z.tarifas ? z.tarifas.map((t) => t.tipo) : []))
-    )
-  );
+  new Set(
+    zonas.flatMap((z) => {
+      const tipos = [];
+      if (z.tarifaPreventa) tipos.push("Preventa");
+      if (z.tarifaNormal) tipos.push("Normal");
+      return tipos;
+    })
+  )
+);
+
 
   const horaEvento = new Date(evento.fechaEvento).toLocaleTimeString("es-PE", {
     hour: "2-digit",
@@ -73,7 +68,6 @@ export const BodyDetalleEvento: React.FC = () => {
     hour12: true,
   });
 
-  // Ahora el tipo de compra se pasa dinámicamente
   const handleCompraClick = (tipo: string) => {
     navigate(`/eventos/${eventoId}/compra`, {
       state: { evento, tipoTarifa: tipo },
@@ -136,17 +130,17 @@ export const BodyDetalleEvento: React.FC = () => {
           </div>
 
           {/* Tabla de tarifas dinámica */}
-          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md overflow-x-auto mt-12 lg:ml-[-40px]">
+          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md overflow-x-auto mt-16 ml-[-70px]">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ZONA
                   </th>
                   {tiposTarifas.map((tipo) => (
                     <th
                       key={tipo}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       {tipo}
                     </th>
@@ -156,25 +150,20 @@ export const BodyDetalleEvento: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {zonas.length > 0 ? (
                   zonas.map((zona) => (
-                    <tr key={zona.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={zona.id}>
+                      <td className="px-10 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                         {zona.nombre}
                       </td>
-                      {tiposTarifas.map((tipo) => {
-                        const tarifa = zona.tarifas?.find(
-                          (t) => t.tipo.toLowerCase() === tipo.toLowerCase()
-                        );
-                        return (
-                          <td
-                            key={tipo}
-                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
-                          >
-                            {tarifa
-                              ? `S/ ${tarifa.precio.toFixed(2)}`
-                              : "—"}
-                          </td>
-                        );
-                      })}
+                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                        {zona.tarifaPreventa
+                          ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
+                          : "—"}
+                      </td>
+                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                        {zona.tarifaNormal
+                          ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
+                          : "—"}
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -203,7 +192,7 @@ export const BodyDetalleEvento: React.FC = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: false }}
           >
-            Elige el tipo de entrada para{" "}
+            Compra tus entradas para{" "}
             {evento.artista?.nombre || "el artista"} <br />
             en {evento.distrito || "el lugar del evento"}
           </motion.h2>
