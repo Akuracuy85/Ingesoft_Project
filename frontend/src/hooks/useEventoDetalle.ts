@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import EventoService from "@/services/EventoService";
-import { type Event } from "@/models/Event";
+import type { Event } from "@/models/Event";
+import type { Zone } from "@/models/Zone";
 
 /**
  * Hook personalizado para obtener el detalle de un evento por su ID.
- * Permite múltiples tipos de tarifas dinámicas (Preventa, Normal, etc.)
  */
 export const useEventoDetalle = (id: number | string | undefined) => {
   const [evento, setEvento] = useState<Event | null>(null);
@@ -21,20 +21,15 @@ export const useEventoDetalle = (id: number | string | undefined) => {
 
         const data = await EventoService.obtenerPorId(Number(id));
 
-        const zonas = ((data as any).zonas || []).map((z: any) => {
-          const tarifas: { tipo: string; precio: number }[] = [];
-
-          Object.keys(z).forEach((key) => {
-            if (key.startsWith("tarifa") && z[key]?.precio) {
-              tarifas.push({
-                tipo: key.replace("tarifa", ""),
-                precio: z[key].precio,
-              });
-            }
-          });
-
-          return { ...z, tarifas };
-        });
+        // Convertimos las zonas al tipo Zone (ya con tarifas normales y preventas)
+        const zonas: Zone[] = ((data as any).zonas || []).map((z: any) => ({
+          id: z.id,
+          nombre: z.nombre,
+          capacidad: z.capacidad,
+          cantidadComprada: z.cantidadComprada,
+          tarifaNormal: z.tarifaNormal,
+          tarifaPreventa: z.tarifaPreventa,
+        }));
 
         setEvento({ ...(data as Event), zonas });
       } catch (err: any) {

@@ -1,10 +1,5 @@
 // src/models/Event.ts
-
-export interface ZonaTarifa {
-  id: number;
-  nombre: string;
-  tarifas: { tipo: string; precio: number }[];
-}
+import type { Zone } from "./Zone";
 
 export interface Event {
   id: number;
@@ -14,5 +9,5 @@ export interface Event {
   image: string;
   time: string;
 
-  zonas?: ZonaTarifa[];
+  zonas?: Zone[];
 }
