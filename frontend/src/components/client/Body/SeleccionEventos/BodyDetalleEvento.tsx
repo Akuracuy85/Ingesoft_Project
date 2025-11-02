@@ -1,17 +1,19 @@
 import React from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-// ❌ No importamos 'logoUnite' ni 'Footer', ya que viven en el Layout
+
 import mapaAsientos from "@/assets/EstadioImagen2.png";
 import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 
-// --- 1. Definimos los tipos específicos para este Body ---
+interface Tarifa {
+  tipo: string;
+  precio: number;
+}
 
-interface ZonaDetalle {
-  id: number; // Asumimos un ID para el 'key'
+interface Zona {
+  id: number;
   nombre: string;
-  costo: number;
-  capacidad: number;
+  tarifas?: Tarifa[];
 }
 
 interface ArtistaDetalle {
@@ -26,25 +28,20 @@ interface EventoDetalle {
   provincia: string;
   distrito: string;
   artista: ArtistaDetalle | null;
-  zonas: ZonaDetalle[];
+  zonas: Zona[];
 }
 
-
-// Renombramos el componente (antes PaginaCompraEvento)
 export const BodyDetalleEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
   const navigate = useNavigate();
 
-  // --- 2. Aplicamos el tipo al hook ---
-  // Hacemos un "type assertion" para decirle a TypeScript la forma de los datos
-  const { evento, isLoading, error } = useEventoDetalle(eventoId) as { 
-    evento: EventoDetalle | null; 
-    isLoading: boolean; 
-    error: string | null 
+  const { evento, isLoading, error } = useEventoDetalle(eventoId) as {
+    evento: EventoDetalle | null;
+    isLoading: boolean;
+    error: string | null;
   };
 
-  // --- El manejo de Carga y Error se queda aquí ---
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-lg">
@@ -61,12 +58,14 @@ export const BodyDetalleEvento: React.FC = () => {
     );
   }
 
-  // --- 3. Toda la lógica de la página se queda aquí ---
-  const bannerUrl = evento.imagenBanner
-    ? `data:image/jpeg;base64,${evento.imagenBanner}`
-    : undefined;
-
   const zonas = evento.zonas || [];
+
+  // Determinamos dinámicamente todos los tipos de tarifa existentes
+  const tiposTarifas = Array.from(
+    new Set(
+      zonas.flatMap((z) => (z.tarifas ? z.tarifas.map((t) => t.tipo) : []))
+    )
+  );
 
   const horaEvento = new Date(evento.fechaEvento).toLocaleTimeString("es-PE", {
     hour: "2-digit",
@@ -74,19 +73,18 @@ export const BodyDetalleEvento: React.FC = () => {
     hour12: true,
   });
 
-  const handleCompraClick = () => {
+  // Ahora el tipo de compra se pasa dinámicamente
+  const handleCompraClick = (tipo: string) => {
     navigate(`/eventos/${eventoId}/compra`, {
-      state: { evento },
+      state: { evento, tipoTarifa: tipo },
     });
   };
 
-  // --- 4. El JSX del return ahora SOLO incluye el <main> ---
-  // ❌ Se eliminaron las etiquetas <header> y <footer>
   return (
-    <main>
+    <main className="w-full overflow-x-hidden">
       {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
       <section
-        className="relative bg-cover bg-center bg-no-repeat text-white px-6 py-50 md:px-24 min-h-[85vh]"
+        className="relative bg-cover bg-center bg-no-repeat text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 py-32 min-h-[85vh] overflow-x-hidden overflow-y-hidden"
         style={{
           backgroundImage: `url(https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2)`,
         }}
@@ -119,11 +117,11 @@ export const BodyDetalleEvento: React.FC = () => {
         </div>
       </section>
 
-      {/* === SECCIÓN 2: MAPA Y PRECIOS === */}
-      <div className="bg-[#fff4ea] px-4 pt-10 pb-16 md:px-24">
-        <section className="flex flex-col md:flex-row items-start justify-between gap-12">
-          {/* Mapa del lugar */}
-          <div className="w-full md:w-1/2 flex justify-center p-4 bg-transparent rounded-lg shadow-none">
+      {/* === SECCIÓN 2: MAPA Y TARIFAS === */}
+      <div className="bg-[#fff4ea] px-4 md:px-12 pt-10 pb-16 w-full">
+        <section className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-24">
+          {/* Mapa */}
+          <div className="w-full lg:w-1/2 flex justify-center p-4 bg-transparent rounded-lg shadow-none">
             {mapaAsientos ? (
               <img
                 src={mapaAsientos}
@@ -137,44 +135,52 @@ export const BodyDetalleEvento: React.FC = () => {
             )}
           </div>
 
-          {/* Tabla de precios */}
-          <div className="w-full md:w-1/2 bg-white rounded-lg shadow-md overflow-hidden mt-8 md:mt-25">
+          {/* Tabla de tarifas dinámica */}
+          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md overflow-x-auto mt-12 lg:ml-[-40px]">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ZONA
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PRECIO
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CAPACIDAD
-                  </th>
+                  {tiposTarifas.map((tipo) => (
+                    <th
+                      key={tipo}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {tipo}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {zonas.length > 0 ? (
-                  // --- 3. Aplicamos el tipo ZonaDetalle y usamos un 'key' estable ---
-                  zonas.map((zona: ZonaDetalle) => (
+                  zonas.map((zona) => (
                     <tr key={zona.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {zona.nombre}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {zona.costo
-                          ? `S/ ${zona.costo.toFixed(2)}`
-                          : "Consultar tarifa"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {zona.capacidad}
-                      </td>
+                      {tiposTarifas.map((tipo) => {
+                        const tarifa = zona.tarifas?.find(
+                          (t) => t.tipo.toLowerCase() === tipo.toLowerCase()
+                        );
+                        return (
+                          <td
+                            key={tipo}
+                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                          >
+                            {tarifa
+                              ? `S/ ${tarifa.precio.toFixed(2)}`
+                              : "—"}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={1 + tiposTarifas.length}
                       className="text-center py-6 text-gray-500 text-sm"
                     >
                       No hay zonas disponibles para este evento.
@@ -188,7 +194,7 @@ export const BodyDetalleEvento: React.FC = () => {
       </div>
 
       {/* === SECCIÓN 3: COMPRA === */}
-      <div className="bg-white px-4 py-16 md:px-24">
+      <div className="bg-white px-4 md:px-12 py-16 w-full">
         <section className="text-center py-16">
           <motion.h2
             className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight mb-10"
@@ -197,24 +203,28 @@ export const BodyDetalleEvento: React.FC = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: false }}
           >
-            Consigue tus tickets para ver{" "}
-            {evento.artista?.nombre || "al artista"} <br />
+            Elige el tipo de entrada para{" "}
+            {evento.artista?.nombre || "el artista"} <br />
             en {evento.distrito || "el lugar del evento"}
           </motion.h2>
 
+          {/* Botones dinámicos por tipo de tarifa */}
           <motion.div
-            className="flex flex-col md:flex-row justify-center gap-8"
+            className="flex flex-wrap justify-center gap-6"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: false }}
           >
-            <button
-              onClick={handleCompraClick}
-              className="px-12 py-4 bg-black text-white text-lg font-bold rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Comprar Entrada
-            </button>
+            {tiposTarifas.map((tipo) => (
+              <button
+                key={tipo}
+                onClick={() => handleCompraClick(tipo)}
+                className="px-10 py-4 bg-black text-white text-lg font-semibold rounded-md hover:bg-gray-800 transition-colors"
+              >
+                Comprar {tipo}
+              </button>
+            ))}
           </motion.div>
         </section>
       </div>

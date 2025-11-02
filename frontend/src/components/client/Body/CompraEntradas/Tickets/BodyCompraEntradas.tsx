@@ -14,7 +14,7 @@ import type { SummaryItem } from "./SelectionSummaryTable";
 import DatosCompra from "../DatosCompra/DatosCompra";
 
 // Importaciones de Tipos para la lógica
-// ✅ Importamos el modelo 'Zone' que nos diste
+// Importamos el modelo 'Zone' que nos diste
 import type { Zone } from "../../../../../models/Zone"; 
 import { type ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail";
 import type { Step } from "../../../../../types/Step";

@@ -2,12 +2,22 @@ import { useState, useEffect } from "react";
 import EventoService from "@/services/EventoService";
 import { type Event } from "@/models/Event";
 
+interface ZonaTarifa {
+  id: number;
+  nombre: string;
+  tarifas: { tipo: string; precio: number }[];
+}
+
+interface EventConZonas extends Event {
+  zonas?: ZonaTarifa[];
+}
+
 /**
  * Hook personalizado para obtener el detalle de un evento por su ID.
- * Incluye zonas con precios mapeados desde tarifaNormal / tarifaPreventa.
+ * Permite múltiples tipos de tarifas dinámicas (Preventa, Normal, etc.)
  */
 export const useEventoDetalle = (id: number | string | undefined) => {
-  const [evento, setEvento] = useState<Event | null>(null);
+  const [evento, setEvento] = useState<EventConZonas | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,25 +29,26 @@ export const useEventoDetalle = (id: number | string | undefined) => {
         setIsLoading(true);
         setError(null);
 
-        // Llamada al backend
         const data = await EventoService.obtenerPorId(Number(id));
 
-        // 🟢 Mapeo de zonas con precios base (por ejemplo: tarifaNormal)
-        const zonasMapeadas = (data.zonas || []).map((z: any) => ({
-          ...z,
-          costo:
-            z.tarifaNormal?.precio ??
-            z.tarifaPreventa?.precio ??
-            0,
-        }));
+        // Tipamos explícitamente las zonas y tarifas
+        const zonas = ((data as any).zonas || []).map((z: any) => {
+          const tarifas: { tipo: string; precio: number }[] = [];
 
-        // 🟢 Crear objeto evento enriquecido
-        const eventoConZonas = {
-          ...data,
-          zonas: zonasMapeadas,
-        };
+          // Agregamos dinámicamente todas las tarifas que vengan del backend
+          Object.keys(z).forEach((key) => {
+            if (key.startsWith("tarifa") && z[key]?.precio) {
+              tarifas.push({
+                tipo: key.replace("tarifa", ""),
+                precio: z[key].precio,
+              });
+            }
+          });
 
-        setEvento(eventoConZonas);
+          return { ...z, tarifas };
+        });
+
+        setEvento({ ...(data as EventConZonas), zonas });
       } catch (err: any) {
         console.error("Error al cargar el detalle del evento:", err);
         setError("No se pudo cargar el detalle del evento. Intente nuevamente.");

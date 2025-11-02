@@ -23,7 +23,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
       </header>
 
       {/* CONTENIDO PRINCIPAL — Aquí se inyecta la página */}
-      <main className="flex-1 flex flex-col items-center justify-start w-full">
+      <main className="pt-[100px] flex-1 flex flex-col items-center justify-start w-full">
         {children}
       </main>
 

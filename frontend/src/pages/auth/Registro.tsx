@@ -18,7 +18,6 @@ export const Registro = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // NUEVOS CAMPOS:
   const [nombres, setNombres] = useState("");
   const [apellidoPaterno, setApellidoPaterno] = useState("");
   const [apellidoMaterno, setApellidoMaterno] = useState("");
@@ -28,18 +27,48 @@ export const Registro = () => {
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
 
+  // --- VALIDACIONES ---
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
     setDni(value);
   };
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 9);
     setTelefono(value);
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const esDniValido = dni.length === 8;
+  const esTelefonoValido = telefono.length === 9;
+  const esEmailValido = email.includes("@") && email.includes(".");
+  const todosLlenos =
+    nombres &&
+    apellidoPaterno &&
+    apellidoMaterno &&
+    dni &&
+    telefono &&
+    email &&
+    password &&
+    confirmPassword;
+
+  const puedeRegistrar =
+    todosLlenos &&
+    esDniValido &&
+    esTelefonoValido &&
+    esEmailValido &&
+    captchaValido &&
+    aceptaTerminos &&
+    contraseñasCoinciden;
+
   const handleSubmit = async () => {
-    if (!captchaValido || !aceptaTerminos || !contraseñasCoinciden) return;
+    if (!puedeRegistrar) {
+      alert("Por favor, completa todos los campos correctamente.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -107,8 +136,11 @@ export const Registro = () => {
               placeholder="Ingresa tus nombres"
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                nombres ? "border-gray-300" : "border-red-500"
+              }`}
             />
+
           </div>
 
           {/* Apellidos */}
@@ -122,8 +154,11 @@ export const Registro = () => {
                 placeholder="Ingresa tu apellido paterno"
                 value={apellidoPaterno}
                 onChange={(e) => setApellidoPaterno(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  apellidoPaterno ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!apellidoPaterno}
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">
@@ -134,8 +169,11 @@ export const Registro = () => {
                 placeholder="Ingresa tu apellido materno"
                 value={apellidoMaterno}
                 onChange={(e) => setApellidoMaterno(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  apellidoMaterno ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!apellidoMaterno}
             </div>
           </div>
 
@@ -147,11 +185,19 @@ export const Registro = () => {
               </label>
               <input
                 type="text"
-                placeholder="Ingresa tu DNI o Carnet de Extranjería"
+                placeholder="Ingresa tu DNI"
                 value={dni}
                 onChange={handleDniChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  esDniValido ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!esDniValido && dni.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Deben ser 8 caracteres numéricos
+                </p>
+              )}
+              {!dni}
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">
@@ -162,8 +208,16 @@ export const Registro = () => {
                 placeholder="Ingresa tu número de teléfono"
                 value={telefono}
                 onChange={handleTelefonoChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  esTelefonoValido ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!esTelefonoValido && telefono.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Deben ser 9 caracteres numéricos
+                </p>
+              )}
+              {!telefono}
             </div>
           </div>
 
@@ -176,9 +230,18 @@ export const Registro = () => {
               type="email"
               placeholder="Ingresa tu correo electrónico"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              onChange={handleEmailChange}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                email && esEmailValido ? "border-gray-300" : "border-red-500"
+              }`}
+
             />
+            {!esEmailValido && email.length > 0 && (
+              <p className="text-red-500 text-sm mt-1">
+                El correo no es válido
+              </p>
+            )}
+            {!email}
           </div>
 
           {/* Contraseñas */}
@@ -192,7 +255,9 @@ export const Registro = () => {
                 placeholder="Ingresa tu contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none ${
+                  password ? "border-gray-300" : "border-red-500"
+                }`}
               />
               <button
                 type="button"
@@ -201,6 +266,7 @@ export const Registro = () => {
               >
                 {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
+              {!password}
             </div>
 
             <div className="relative">
@@ -213,7 +279,7 @@ export const Registro = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`w-full px-4 py-3 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none border ${
-                  contraseñasCoinciden ? "border-gray-300" : "border-red-500"
+                  confirmPassword && contraseñasCoinciden ? "border-gray-300" : "border-red-500"
                 }`}
               />
               <button
@@ -263,14 +329,9 @@ export const Registro = () => {
           {/* Botón registrar */}
           <button
             onClick={handleSubmit}
-            disabled={
-              loading ||
-              !captchaValido ||
-              !aceptaTerminos ||
-              !contraseñasCoinciden
-            }
+            disabled={!puedeRegistrar || loading}
             className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
-              captchaValido && aceptaTerminos && contraseñasCoinciden
+              puedeRegistrar
                 ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
