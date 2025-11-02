@@ -26,6 +26,7 @@ export const Registro = () => {
   const navigate = useNavigate();
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
+  const esEmailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   // --- VALIDACIONES ---
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +45,6 @@ export const Registro = () => {
 
   const esDniValido = dni.length === 8;
   const esTelefonoValido = telefono.length === 9;
-  const esEmailValido = email.includes("@") && email.includes(".");
   const todosLlenos =
     nombres &&
     apellidoPaterno &&
@@ -59,7 +59,7 @@ export const Registro = () => {
     todosLlenos &&
     esDniValido &&
     esTelefonoValido &&
-    esEmailValido &&
+    esEmailValido && 
     captchaValido &&
     aceptaTerminos &&
     contraseñasCoinciden;
@@ -231,17 +231,16 @@ export const Registro = () => {
               placeholder="Ingresa tu correo electrónico"
               value={email}
               onChange={handleEmailChange}
+              required
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
                 email && esEmailValido ? "border-gray-300" : "border-red-500"
               }`}
-
             />
             {!esEmailValido && email.length > 0 && (
               <p className="text-red-500 text-sm mt-1">
                 El correo no es válido
               </p>
             )}
-            {!email}
           </div>
 
           {/* Contraseñas */}
