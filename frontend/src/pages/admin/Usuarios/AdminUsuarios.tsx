@@ -1,15 +1,44 @@
 import React, { useState } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, AlertTriangle } from "lucide-react";
 import AdminLayout from "../AdminLayout";
 
 import UserTable from "../../../components/admin/UserTable";
 import UserModal from "../../../components/admin/UserModal";
 import { useUsuarios } from "../../../hooks/useUsuarios";
+import { useAuth } from "@/hooks/useAuth";
 import type { User, UserFormData, Rol } from "../../../models/User";
 
+import { Navigate } from "react-router-dom";
 export default function AdminUsuarios(): React.ReactElement {
-  const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
+  const { user, isLoggedIn, isLoading } = useAuth();
+  const REQUIRED_ROLE: Rol = "ADMINISTRADOR";
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-lg">
+        Cargando autenticación...
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />; 
+  }
+  if (user?.rol !== REQUIRED_ROLE) {
+    return (
+      <AdminLayout activeItem="Usuarios">
+        <div className="max-w-xl mx-auto mt-20 p-6 bg-red-50 border border-red-200 rounded-lg shadow-md text-center">
+          <AlertTriangle className="h-10 w-10 text-red-600 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-red-700 mb-2">Acceso Denegado</h2>
+          <p className="text-red-600">
+            Tu cuenta tiene el rol de **{user?.rol ?? 'Usuario'}**. Solo los usuarios con rol **Administrador** pueden acceder a esta sección.
+          </p>
+          <Navigate to="/login" replace />;
+        </div>
+      </AdminLayout>
+    );
+  }
+  const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "Activo" | "Inactivo">("all");
@@ -18,7 +47,6 @@ export default function AdminUsuarios(): React.ReactElement {
 
   const users = usersQuery.data ?? [];
 
-  // 🔎 Filtrado adaptado al modelo del backend
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
