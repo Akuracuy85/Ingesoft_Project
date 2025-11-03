@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Plus, Download } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import AdminLayout from "../AdminLayout";
 
 import UserTable from "../../../components/admin/UserTable";
@@ -63,10 +63,6 @@ export default function AdminUsuarios(): React.ReactElement {
     if (confirm("¿Deseas eliminar este usuario?")) {
       deleteUser.mutate(userId);
     }
-  };
-
-  const handleExport = (format: string): void => {
-    alert(`Exportando lista de usuarios como ${format.toUpperCase()}...`);
   };
 
   return (
