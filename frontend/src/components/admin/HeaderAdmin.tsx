@@ -1,5 +1,4 @@
 import React from "react";
-import userIcon from "../../assets/Header_UserIcon.svg";
 import logo from "../../assets/Logo_Unite.svg";
 import { useAuth } from "@/hooks/useAuth";
 
