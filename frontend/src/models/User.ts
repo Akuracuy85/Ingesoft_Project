@@ -18,6 +18,7 @@ export interface UserFormData {
   nombre: string;
   apellidoPaterno: string;
   apellidoMaterno: string;
+  password: string;
   celular: string;
   rol: Rol;
   activo: boolean;

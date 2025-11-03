@@ -8,10 +8,14 @@ import { useUsuarios } from "../../../hooks/useUsuarios";
 import { useAuth } from "@/hooks/useAuth";
 import type { User, UserFormData, Rol } from "../../../models/User";
 
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
+
+// Contraseña por defecto para nuevos usuarios
+const DEFAULT_PASSWORD = "unite123";
+
 export default function AdminUsuarios(): React.ReactElement {
   const { user, isLoggedIn, isLoading } = useAuth();
-  const REQUIRED_ROLE: Rol = "ADMINISTRADOR";
+  const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
 
   if (isLoading) {
     return (
@@ -24,6 +28,8 @@ export default function AdminUsuarios(): React.ReactElement {
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />; 
   }
+  
+  // Lógica de Acceso Denegado
   if (user?.rol !== REQUIRED_ROLE) {
     return (
       <AdminLayout activeItem="Usuarios">
@@ -33,11 +39,17 @@ export default function AdminUsuarios(): React.ReactElement {
           <p className="text-red-600">
             Tu cuenta tiene el rol de **{user?.rol ?? 'Usuario'}**. Solo los usuarios con rol **Administrador** pueden acceder a esta sección.
           </p>
-          <Navigate to="/login" replace />;
+          <Link
+          to="/login"
+          className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out"
+        >
+          Ir a la página de Login
+        </Link>
         </div>
       </AdminLayout>
     );
   }
+  
   const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
@@ -47,18 +59,18 @@ export default function AdminUsuarios(): React.ReactElement {
 
   const users = usersQuery.data ?? [];
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users.filter((u) => {
     const matchesSearch =
-      user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.apellidoPaterno.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.apellidoMaterno.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.dni.toLowerCase().includes(searchQuery.toLowerCase());
+      u.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.apellidoPaterno.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.apellidoMaterno.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.dni.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRole = roleFilter === "all" || user.rol === roleFilter;
+    const matchesRole = roleFilter === "all" || u.rol === roleFilter;
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "Activo" ? user.activo : !user.activo);
+      (statusFilter === "Activo" ? u.activo : !u.activo);
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -77,7 +89,11 @@ export default function AdminUsuarios(): React.ReactElement {
     if (editingUser) {
       updateUser.mutate({ id: editingUser.id, data: userData });
     } else {
-      createUser.mutate(userData);
+      const newUserDataWithDefaultPassword: UserFormData = {
+        ...userData,
+        password: DEFAULT_PASSWORD,
+      };
+      createUser.mutate(newUserDataWithDefaultPassword);
     }
     setIsModalOpen(false);
   };
@@ -129,6 +145,7 @@ export default function AdminUsuarios(): React.ReactElement {
               <option value="all">Todos los roles</option>
               <option value="Cliente">Cliente</option>
               <option value="Organizador">Organizador</option>
+              {/* Nota: 'Administrador' aquí debe coincidir con el tipo Rol */}
               <option value="Administrador">Administrador</option>
             </select>
 
