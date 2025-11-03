@@ -145,25 +145,6 @@ export default function AdminUsuarios(): React.ReactElement {
             />
           )}
         </div>
-
-        {/* Exportar */}
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={() => handleExport("csv")}
-            className="border border-border text-muted-foreground rounded-md px-4 py-2 flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Exportar CSV
-          </button>
-          <button
-            onClick={() => handleExport("pdf")}
-            className="border border-border text-muted-foreground rounded-md px-4 py-2 flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Exportar PDF
-          </button>
-        </div>
-
         {/* Modal */}
         <UserModal
           isOpen={isModalOpen}
