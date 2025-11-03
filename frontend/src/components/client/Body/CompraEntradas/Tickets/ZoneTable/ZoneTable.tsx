@@ -16,7 +16,6 @@ const ZoneTable: React.FC<ZoneTableProps> = ({
   onQuantityChange,
 }) => {
     
-    // NOTA: Los console.log de diagnóstico han sido eliminados en la versión final limpia.
 
   return (
     <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow">
@@ -27,9 +26,8 @@ const ZoneTable: React.FC<ZoneTableProps> = ({
       </div>
       {zones.map((zone) => (
         <ZoneRow
-          key={zone.id} // ✅ CORRECCIÓN: Usar zone.id (el identificador único)
+          key={zone.id} 
           zone={zone}
-          // Se usa zone.zona para buscar la cantidad en el objeto de cantidades
           quantity={selectedQuantities[zone.nombre] || 0}
           onQuantityChange={onQuantityChange}
         />
