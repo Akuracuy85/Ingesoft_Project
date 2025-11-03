@@ -32,7 +32,6 @@ const HeaderAdmin: React.FC = () => {
 
       {/* Usuario actual */}
       <div className="flex items-center gap-3">
-        {/* --- B. MUESTRA EL NOMBRE DEL USUARIO --- */}
         <span className="text-sm text-foreground font-medium">
             Hola, {userName}
         </span>
