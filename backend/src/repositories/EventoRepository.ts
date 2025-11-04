@@ -14,8 +14,8 @@ export interface IFiltrosEvento {
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  categoriaId?: string;
-  artistaId?: string;
+  categoriaIds?: string;
+  artistaIds?: string;
   fechaInicio?: string;
   fechaFin?: string;
 }
@@ -167,18 +167,39 @@ export class EventoRepository {
       qb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
     }
 
-    if (filtros.artistaId) {
+    /*if (filtros.artistaId) {
       qb.andWhere("artista.id = :artistaId", {
         artistaId: Number(filtros.artistaId),
       });
-    }
+    }*/
+   if (filtros.artistaIds) {
+      // 1. Convierte el string "1,2,3" en un array de números [1, 2, 3]
+      const ids = filtros.artistaIds.split(',')
+                                  .map(id => Number(id.trim()))
+                                  .filter(Number.isFinite); // Filtra por si acaso viene un NaN
 
-    if (filtros.categoriaId) {
+      if (ids.length > 0) {
+        // 2. Usa el operador IN (...) de SQL
+        qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: ids });
+      }
+    }
+
+    /*if (filtros.categoriaId) {
       qb.andWhere("categoria.id = :categoriaId", {
         categoriaId: Number(filtros.categoriaId),
       });
-    }
+    }*/
+    if (filtros.categoriaIds) {
+      // 1. Convierte el string "1,2,3" en un array de números [1, 2, 3]
+      const ids = filtros.categoriaIds.split(',')
+                                    .map(id => Number(id.trim()))
+                                    .filter(Number.isFinite);
 
+      if (ids.length > 0) {
+        // 2. Usa el operador IN (...) de SQL
+        qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: ids });
+      }
+    }
     if (filtros.fechaInicio) {
       qb.andWhere("evento.fechaEvento >= :fechaInicio", {
         fechaInicio: filtros.fechaInicio,
