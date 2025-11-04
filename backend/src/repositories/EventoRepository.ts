@@ -9,13 +9,13 @@ export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
 
 // Filtros para las búsquedas públicas de eventos publicados.
 export interface IFiltrosEvento {
-  precioMin?: string;
-  precioMax?: string;
+  precioMin?: number;
+  precioMax?: number;
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  categoriaIds?: string;
-  artistaIds?: string;
+  categoriaIds?: number[];
+  artistaIds?: number[];
   fechaInicio?: string;
   fechaFin?: string;
 }
@@ -172,34 +172,17 @@ export class EventoRepository {
         artistaId: Number(filtros.artistaId),
       });
     }*/
-   if (filtros.artistaIds) {
-      // 1. Convierte el string "1,2,3" en un array de números [1, 2, 3]
-      const ids = filtros.artistaIds.split(',')
-                                  .map(id => Number(id.trim()))
-                                  .filter(Number.isFinite); // Filtra por si acaso viene un NaN
+   
 
-      if (ids.length > 0) {
-        // 2. Usa el operador IN (...) de SQL
-        qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: ids });
-      }
+     if (filtros.artistaIds && filtros.artistaIds.length > 0) {
+      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
     }
 
-    /*if (filtros.categoriaId) {
-      qb.andWhere("categoria.id = :categoriaId", {
-        categoriaId: Number(filtros.categoriaId),
-      });
-    }*/
-    if (filtros.categoriaIds) {
-      // 1. Convierte el string "1,2,3" en un array de números [1, 2, 3]
-      const ids = filtros.categoriaIds.split(',')
-                                    .map(id => Number(id.trim()))
-                                    .filter(Number.isFinite);
-
-      if (ids.length > 0) {
-        // 2. Usa el operador IN (...) de SQL
-        qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: ids });
-      }
+    // 🛑 LÓGICA DE IDs (MÁS SIMPLE)
+    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
+      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
     }
+
     if (filtros.fechaInicio) {
       qb.andWhere("evento.fechaEvento >= :fechaInicio", {
         fechaInicio: filtros.fechaInicio,
@@ -211,12 +194,10 @@ export class EventoRepository {
       qb.andWhere("evento.fechaEvento < :fechaFin", { fechaFin });
     }
 
-    const precioMin =
-      filtros.precioMin !== undefined ? Number(filtros.precioMin) : undefined;
-    const precioMax =
-      filtros.precioMax !== undefined ? Number(filtros.precioMax) : undefined;
-    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
-    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
+    const precioMin = filtros.precioMin;
+    const precioMax = filtros.precioMax;
+    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
+    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
 
     if (aplicarMin || aplicarMax) {
       qb.andWhere(
