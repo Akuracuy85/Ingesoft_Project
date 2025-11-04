@@ -4,7 +4,7 @@ import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 
 const router = Router();
 
-router.get("/getAllUser", sessionMiddleware.VerificarToken, usuarioController.obtenerTodos);
+router.get("/", sessionMiddleware.VerificarToken, usuarioController.obtenerTodos);
 
 router.get("/:id", usuarioController.obtenerPorId);
 
