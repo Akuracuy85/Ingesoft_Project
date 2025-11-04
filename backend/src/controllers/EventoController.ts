@@ -37,7 +37,7 @@ export class EventoController {
         const entidades = await this.eventoService.listarEventosPublicados(filtros);
         // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
         // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
-        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
+        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad as any)); 
         // 3. Enviar la respuesta con los DTOs
         res.status(StatusCodes.OK).json({
             success: true,
@@ -178,9 +178,19 @@ export class EventoController {
     }
   };
 
-
+  
 // EventoController.ts
-
+  obtenerFiltrosUbicacion = async (req: Request, res: Response) => {
+    try {
+      const filtros = await this.eventoService.obtenerFiltrosUbicacion();
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: filtros,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
   /**
    * @description Devuelve los datos detallados de un evento necesarios para la compra (público).
    * 🚨 CORRECCIÓN CLAVE: Aplica el Mapper y devuelve SOLO el DTO.
