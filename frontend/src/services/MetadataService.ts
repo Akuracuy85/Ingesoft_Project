@@ -1,103 +1,120 @@
-// src/services/MetadataService.ts (CORREGIDO)
+// src/services/MetadataService.ts (VERSIÓN CORREGIDA FINAL)
 
 import HttpClient from "./Client";
 
 // Interfaces para los datos que esperamos del backend
 export interface FilterOption {
-    id: string; // O number, si el backend usa IDs numéricos
+    id: string | number; 
     nombre: string;
 }
 
-// Interfaz específica para Ubicaciones
 export interface LocationOption {
-    id: string;
+    id: string | number;
     nombre: string;
 }
 
-class MetadataService extends HttpClient {
-    constructor() {
-        super("/metadata"); 
-    }
+// Interfaz para manejar la respuesta del backend
+interface ApiResponseData<T> {
+    success: boolean;
+    data: T;
+}
 
-    /**
-     * Obtiene la lista de categorías disponibles para filtrar eventos.
-     * Endpoint esperado: /api/metadata/categorias
-     */
+// Interfaz específica para el endpoint de Ubicaciones
+interface UbicacionesResponse {
+    [departamento: string]: {
+        [provincia: string]: string[]; // Array de nombres de distritos
+    };
+}
+
+// 🛑 ALMACÉN DE CACHÉ: Guarda el resultado anidado para evitar llamadas repetidas al BE
+let ubicacionesCache: UbicacionesResponse | null = null; 
+
+class MetadataService {
+    private client = new HttpClient(""); 
+
+    // --- MÉTODOS EXISTENTES (CATEGORÍAS Y ARTISTAS) ---
+    // ... (Mantener sin cambios) ...
+
     async getCategorias(): Promise<FilterOption[]> {
         try {
-            // El BE devuelve { categorias: [...] }
-            const respuesta = await this.get<{ categorias: FilterOption[] }>('/categorias');
-            return respuesta.categorias || [];
+            const respuesta = await this.client.get<ApiResponseData<FilterOption[]>>('/categoria'); 
+            return respuesta.data || [];
         } catch (error) {
             console.error("Error al obtener categorías:", error);
             return [];
         }
     }
 
-    /**
-     * Obtiene la lista de artistas disponibles para sugerencias de filtro.
-     * Endpoint esperado: /api/metadata/artistas
-     */
     async getArtistas(): Promise<FilterOption[]> {
         try {
-            // El BE devuelve { artistas: [...] }
-            const respuesta = await this.get<{ artistas: FilterOption[] }>('/artistas');
-            return respuesta.artistas || [];
+            const respuesta = await this.client.get<ApiResponseData<FilterOption[]>>('/artista');
+            return respuesta.data || [];
         } catch (error) {
             console.error("Error al obtener artistas:", error);
             return [];
         }
     }
 
-    /**
-     * Obtiene la lista principal de ubicaciones (Departamentos).
-     * Endpoint esperado: /api/metadata/ubicaciones/departamentos
-     */
+    // --- MÉTODOS DE UBICACIÓN ---
+
     async getDepartamentos(): Promise<LocationOption[]> {
         try {
-            // El BE devuelve { departamentos: [...] }
-            const respuesta = await this.get<{ departamentos: LocationOption[] }>('/ubicaciones/departamentos');
-            return respuesta.departamentos || [];
+            // 🛑 1. Usar caché si ya está llena
+            if (ubicacionesCache) {
+                // 🛑 CORRECCIÓN: Usar el NOMBRE como ID también en el caché
+                return Object.keys(ubicacionesCache).map((nombre) => ({ id: nombre, nombre: nombre }));
+            }
+            
+            const respuesta = await this.client.get<ApiResponseData<UbicacionesResponse>>('/evento/filtros/ubicaciones');
+            
+            // 2. Llenar la caché
+            ubicacionesCache = respuesta.data;
+            
+            // 3. Mapear las claves (nombres de departamento) a LocationOption
+            const departamentos: LocationOption[] = Object.keys(ubicacionesCache!).map((nombre) => ({
+                id: nombre, // 🛑 CRÍTICO: Usamos el NOMBRE como ID
+                nombre: nombre
+            }));
+
+            return departamentos;
+            
         } catch (error) {
             console.error("Error al obtener departamentos:", error);
             return [];
         }
     }
     
-    /**
-     * Obtiene la lista de provincias basadas en un Departamento ID.
-     * Endpoint esperado: /api/metadata/ubicaciones/provincias?departamentoId={id}
+    /**
+     * Obtiene las provincias para un departamento dado.
+     * @param departamentoNombre El nombre exacto del departamento seleccionado.
      */
-    async getProvincias(departamentoId: string): Promise<LocationOption[]> {
-        if (!departamentoId) return [];
-        try {
-            const path = '/ubicaciones/provincias';
-            const respuesta = await this.get<{ provincias: LocationOption[] }>(path, { 
-                params: { departamentoId } 
-            });
-            return respuesta.provincias || [];
-        } catch (error) {
-            console.error(`Error al obtener provincias para ${departamentoId}:`, error);
-            return [];
-        }
+    async getProvincias(departamentoNombre: string): Promise<LocationOption[]> {
+        if (!ubicacionesCache) await this.getDepartamentos(); 
+
+        const provinciasMap = ubicacionesCache?.[departamentoNombre];
+        if (!provinciasMap) return [];
+        
+        return Object.keys(provinciasMap).map((nombre) => ({
+            id: nombre, 
+            nombre: nombre,
+        }));
     }
 
-    /**
-     * Obtiene la lista de distritos basados en una Provincia ID.
-     * Endpoint esperado: /api/metadata/ubicaciones/distritos?provinciaId={id}
+    /**
+     * Obtiene los distritos para una provincia y departamento dados.
+     * @param departamentoNombre El nombre exacto del departamento.
+     * @param provinciaNombre El nombre exacto de la provincia seleccionada.
      */
-    async getDistritos(provinciaId: string): Promise<LocationOption[]> {
-        if (!provinciaId) return [];
-        try {
-            const path = '/ubicaciones/distritos';
-            const respuesta = await this.get<{ distritos: LocationOption[] }>(path, { 
-                params: { provinciaId } 
-            });
-            return respuesta.distritos || [];
-        } catch (error) {
-            console.error(`Error al obtener distritos para ${provinciaId}:`, error);
-            return [];
-        }
+    async getDistritos(departamentoNombre: string, provinciaNombre: string): Promise<LocationOption[]> {
+        if (!ubicacionesCache) await this.getDepartamentos(); 
+
+        const distritosArray = ubicacionesCache?.[departamentoNombre]?.[provinciaNombre];
+        if (!distritosArray) return [];
+        
+        return distritosArray.map((nombre) => ({
+            id: nombre, 
+            nombre: nombre,
+        }));
     }
 }
 

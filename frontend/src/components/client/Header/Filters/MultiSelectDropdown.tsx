@@ -1,46 +1,58 @@
-// src/components/Filters/MultiSelectDropdown.tsx (CORREGIDO)
+// src/components/Filters/MultiSelectDropdown.tsx
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown } from "lucide-react"; 
+
+// NUEVO TIPO: Ahora las opciones tienen ID y Nombre
+export interface MultiOption {
+    id: string;    // El valor que el BE espera (e.g., "2" o "5")
+    nombre: string; // El valor que el usuario ve (e.g., "Música Rock")
+}
 
 interface MultiSelectDropdownProps {
   label: string;
-  options: string[];
-  value: string[]; // lista seleccionada (desde el padre)
-  onChange: (val: string[]) => void; // callback al cambiar selección  
+  options: MultiOption[]; // Usa el nuevo tipo MultiOption
+  value: string[]; // Array de IDs seleccionados
+  onChange: (val: string[]) => void;
 }
 
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   label,
   options,
-  value, // 🛑 Añadir 'value' a la desestructuración
-  onChange, // 🛑 Añadir 'onChange' a la desestructuración
+  value, 
+  onChange, 
 }) => {
   const [open, setOpen] = useState(false);
-  // 🛑 Inicializar el estado interno 'selected' con el prop 'value'
-  const [selected, setSelected] = useState<string[]>(value); 
+  // El estado interno es la lista de IDs seleccionados
+  const [selectedIds, setSelectedIds] = useState<string[]>(value); 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 🛑 Sincronizar estado interno y externo
-  useEffect(() => {
-    setSelected(value);
-  }, [value]);
-  
-  // 🛑 Llamar a onChange del padre cuando el estado interno cambia
-  useEffect(() => {
-    onChange(selected);
-  }, [selected]); // 🛑 Dependency array solo incluye 'selected'
+  // Obtener los NOMBRES seleccionados para mostrar en la UI
+  const selectedNames = options
+    .filter((opt) => selectedIds.includes(opt.id))
+    .map((opt) => opt.nombre);
+  
+  // Sincronizar estado interno con el prop 'value'
+  useEffect(() => {
+    setSelectedIds(value);
+  }, [value]);
+  
+  // Llamar a onChange del padre cuando el estado interno cambia
+  useEffect(() => {
+    onChange(selectedIds); 
+  }, [selectedIds, onChange]); 
 
 
-  const toggleOption = (option: string) => {
-    setSelected((prev) =>
-      prev.includes(option)
-        ? prev.filter((item) => item !== option)
-        : [...prev, option]
+  // Alternar por ID (usamos useCallback para evitar re-renderizados innecesarios)
+  const toggleOption = useCallback((id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
     );
-  };
+  }, []);
 
-  // 🔹 Cierra el dropdown si se hace clic fuera
+  // Cierra el dropdown si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current?.contains(event.target as Node)) return;
@@ -51,6 +63,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
+
   return (
     <div className="mb-6 relative multi-dropdown" ref={dropdownRef}>
       <h3 className="text-lg font-medium mb-2">{label}</h3>
@@ -60,22 +73,23 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         className="border border-gray-300 rounded p-2 cursor-pointer flex flex-wrap gap-2 min-h-[44px] items-center justify-between"
         onClick={() => setOpen(!open)}
       >
-        {/* Contenido seleccionado */}
+        {/* Contenido seleccionado: Muestra NOMBRES */}
         <div className="flex flex-wrap gap-2 flex-1">
-          {selected.length === 0 && (
+          {selectedIds.length === 0 && (
             <span className="text-gray-400">Selecciona...</span>
           )}
-          {selected.map((item) => (
+          {selectedNames.map((name) => (
             <span
-              key={item}
+              key={name}
               className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex items-center gap-1"
             >
-              {item}
+              {name}
               <button
                 className="text-sm font-bold"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleOption(item);
+                    const idToRemove = options.find(opt => opt.nombre === name)?.id;
+                    if (idToRemove) toggleOption(idToRemove);
                 }}
               >
                 ✕
@@ -84,7 +98,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           ))}
         </div>
 
-        {/* 🔽 Flechita del dropdown */}
+        {/* Flechita */}
         <ChevronDown
           className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
             open ? "rotate-180" : "rotate-0"
@@ -97,16 +111,16 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         <div className="absolute mt-2 w-full border border-gray-300 bg-white rounded shadow-lg max-h-48 overflow-y-auto z-10">
           {options.map((option) => (
             <label
-              key={option}
+              key={option.id}
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
             >
               <input
                 type="checkbox"
-                checked={selected.includes(option)}
-                onChange={() => toggleOption(option)}
+                checked={selectedIds.includes(option.id)}
+                onChange={() => toggleOption(option.id)}
                 className="accent-indigo-600"
               />
-              <span>{option}</span>
+              <span>{option.nombre}</span>
             </label>
           ))}
         </div>
