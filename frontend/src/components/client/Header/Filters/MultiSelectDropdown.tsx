@@ -3,17 +3,19 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown } from "lucide-react"; 
 
-// NUEVO TIPO: Ahora las opciones tienen ID y Nombre
+// TIPO DE OPCIÓN
 export interface MultiOption {
-    id: string;    // El valor que el BE espera (e.g., "2" o "5")
-    nombre: string; // El valor que el usuario ve (e.g., "Música Rock")
+    id: string;
+    nombre: string;
 }
 
 interface MultiSelectDropdownProps {
   label: string;
-  options: MultiOption[]; // Usa el nuevo tipo MultiOption
-  value: string[]; // Array de IDs seleccionados
+  options: MultiOption[];
+  value: string[];
   onChange: (val: string[]) => void;
+  // 🛑 CORRECCIÓN: Agregar la propiedad 'disabled'
+  disabled?: boolean;
 }
 
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
@@ -21,6 +23,8 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   options,
   value, 
   onChange, 
+  // 🛑 CORRECCIÓN: Desestructurar la propiedad 'disabled' con valor por defecto
+  disabled = false, 
 }) => {
   const [open, setOpen] = useState(false);
   // El estado interno es la lista de IDs seleccionados
@@ -65,13 +69,15 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
 
   return (
-    <div className="mb-6 relative multi-dropdown" ref={dropdownRef}>
+    // 🛑 RENDERIZADO: Aplicar estilos de deshabilitado si 'disabled' es true
+    <div className={`mb-6 relative multi-dropdown ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={dropdownRef}>
       <h3 className="text-lg font-medium mb-2">{label}</h3>
 
       {/* Selector visible */}
       <div
         className="border border-gray-300 rounded p-2 cursor-pointer flex flex-wrap gap-2 min-h-[44px] items-center justify-between"
-        onClick={() => setOpen(!open)}
+        // 🛑 RENDERIZADO: Bloquear el clic si está deshabilitado
+        onClick={() => !disabled && setOpen(!open)}
       >
         {/* Contenido seleccionado: Muestra NOMBRES */}
         <div className="flex flex-wrap gap-2 flex-1">
@@ -86,10 +92,12 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               {name}
               <button
                 className="text-sm font-bold"
+                // 🛑 RENDERIZADO: Bloquear el clic del botón si está deshabilitado
                 onClick={(e) => {
                   e.stopPropagation();
-                    const idToRemove = options.find(opt => opt.nombre === name)?.id;
-                    if (idToRemove) toggleOption(idToRemove);
+                    if (disabled) return; // Salir si está deshabilitado
+                  const idToRemove = options.find(opt => opt.nombre === name)?.id;
+                  if (idToRemove) toggleOption(idToRemove);
                 }}
               >
                 ✕
@@ -117,8 +125,10 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               <input
                 type="checkbox"
                 checked={selectedIds.includes(option.id)}
-                onChange={() => toggleOption(option.id)}
+                // 🛑 RENDERIZADO: Bloquear el cambio de checkbox si está deshabilitado
+                onChange={() => !disabled && toggleOption(option.id)}
                 className="accent-indigo-600"
+                disabled={disabled} // También deshabilitar el input nativo
               />
               <span>{option.nombre}</span>
             </label>

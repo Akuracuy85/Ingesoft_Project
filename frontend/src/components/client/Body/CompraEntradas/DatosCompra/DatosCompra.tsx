@@ -222,7 +222,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             ① Identificación de Asistentes
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Coloque los números de identificación (**DNI de 8 dígitos**) de las personas que asistirán al evento:
+            Coloque los números de identificación (DNI de 8 dígitos) de las personas que asistirán al evento:
           </p>
           <div className="space-y-4">
             {/* Lógica de loop de V2 (correcta) */}
@@ -315,7 +315,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
               {/* ✅ Texto de V1 (con markdown) */}
-              Declaro que he leído y acepto los **términos y condiciones** de Unite.
+              Declaro que he leído y acepto los términos y condiciones de Unite.
             </label>
           </div>
           <button

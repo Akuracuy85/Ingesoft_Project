@@ -1,24 +1,26 @@
-// src/context/FilterContext.tsx
+// src/context/FilterContext.tsx (CORREGIDO Y FINAL)
 
 import React, { createContext, useState, useContext, type ReactNode, useMemo } from 'react';
-import type { FiltersType } from '../types/FiltersType'; 
+import type { FiltersType } from '../types/FiltersType'; 
 import type { LocationType } from '../types/LocationType';
-import type { DateRangeType } from '../types/DateRangeType';
+// NO importamos DateRangeType ni PriceRangeType aquí, ya que el valor inicial será null
 
-// --- VALORES INICIALES ---
-const initialFilters: FiltersType = {
-    priceRange: null,
-    location: { departamento: null, provincia: null, distrito: null } as LocationType, 
-    categories: [],
-    artists: [],
-    dateRange: { start: null, end: null } as DateRangeType,
+// --- VALORES INICIALES CORREGIDOS ---
+// 🛑 IMPORTANTE: Si el componente PriceRangeInput espera 'null' para mostrar guiones,
+// debemos inicializar priceRange y dateRange como 'null' directamente.
+export const initialFilters: FiltersType = {
+    priceRange: null, // 🛑 CORREGIDO: Inicializar como null para indicar "vacío"
+    location: { departamento: null, provincia: null, distrito: null } as LocationType, 
+    categories: [], 
+    artists: [],    
+    dateRange: null, // 🛑 CORREGIDO: Inicializar como null para indicar "vacío"
 };
 
 // --- INTERFAZ DEL CONTEXTO ---
 interface FilterContextType {
     filters: FiltersType;
     setFilters: React.Dispatch<React.SetStateAction<FiltersType>>;
-    resetFilters: () => void;
+    resetFilters: () => void; 
 }
 
 // 1. Crear el Contexto
@@ -42,14 +44,15 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     const [filters, setFilters] = useState<FiltersType>(initialFilters);
 
     const resetFilters = () => {
-        setFilters(initialFilters);
+        // Restablece el estado a la configuración inicial
+        setFilters(initialFilters); 
     };
 
     const contextValue = useMemo(() => ({
         filters,
         setFilters,
-        resetFilters,
-    }), [filters]);
+        resetFilters, 
+    }), [filters]); 
 
     return (
         <FilterContext.Provider value={contextValue}>

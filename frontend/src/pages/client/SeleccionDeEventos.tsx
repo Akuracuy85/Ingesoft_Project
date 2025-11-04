@@ -1,19 +1,37 @@
-// 1. Importa el LAYOUT (el marco)
+// src/pages/SeleccionDeEventos.tsx (CORREGIDO Y FINAL)
+
+import React from 'react';
 import ClientLayout from "./ClientLayout"; 
-
 import { BodySeleccionEventos } from "../../components/client/Body/SeleccionEventos/BodySeleccionEventos"; 
-
-
+import { useEventos } from "../../hooks/useEventos"; // LLAMADA A USEEVENTOS AQUÍ
 
 export const SeleccionDeEventos = () => {
-  return (
-    <ClientLayout showFilterButton={true}>
-      
+  // LLAMA A useEventos Y OBTÉN TODO EL ESTADO Y LA FUNCIÓN DE RECARGA
+  const { 
+    events, 
+    featuredEvents, 
+    isLoading, 
+    error, 
+    filters, // Se necesita para la lógica en el Body
+    fetchEvents // La función clave para recargar
+  } = useEventos(); 
 
-      <BodySeleccionEventos />
+  return (
+    // PASA fetchEvents AL CLIENTLAYOUT PARA QUE EL HEADER LO USE
+    <ClientLayout 
+        showFilterButton={true}
+        onApplyNewFilters={fetchEvents} // Aquí se inyecta la función de recarga
+    >
+      
+      {/* PASA TODOS LOS DATOS Y FILTROS AL BODY */}
+      <BodySeleccionEventos 
+        events={events}
+        featuredEvents={featuredEvents} 
+        isLoading={isLoading}
+        error={error}
+        filters={filters} 
+      />
 
     </ClientLayout>
   );
 };
-
-// export default SeleccionDeEventos; 

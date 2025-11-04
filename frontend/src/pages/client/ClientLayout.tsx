@@ -1,30 +1,32 @@
-// src/layouts/ClientLayout.tsx (CORREGIDO)
+// src/layouts/ClientLayout.tsx (LIMPIO Y FINAL)
 
 import React from "react";
 import type { ReactNode } from "react";
 import { Header } from "../../components/client/Header/Header";
 import { Footer } from "../../components/client/Footer/Footer";
-// 🛑 IMPORTAR EL FILTER PROVIDER
-import { FilterProvider } from "../../context/FilterContext"; // Asegúrate de que la ruta sea correcta
+import { type FiltersType } from "../../types/FiltersType"; 
 
-// 1. Añadimos la prop a la interfaz del Layout
 interface ClientLayoutProps {
   children: ReactNode;
   showFilterButton?: boolean;
+  // Acepta la función de recarga
+  onApplyNewFilters?: (filters: FiltersType) => void;
 }
 
-// 2. Recibimos la prop
 const ClientLayout: React.FC<ClientLayoutProps> = ({
   children,
   showFilterButton = false,
+  onApplyNewFilters, 
 }) => {
   return (
-    // 🛑 ENVOLVER TODO EL CONTENIDO CON EL FILTERPROVIDER
-    <FilterProvider>
-      <div className="flex flex-col min-h-screen bg-white">
-        
+    // 🛑 El comentario problemático fue eliminado o movido fuera del return
+    <div className="flex flex-col min-h-screen bg-white">
+        
         <header className="flex top-0 left-0 w-full z-50 bg-white shadow">
-          <Header showFilterButton={showFilterButton} />
+          <Header 
+                showFilterButton={showFilterButton} 
+                onApplyNewFilters={onApplyNewFilters} 
+            />
         </header>
 
         <main className="pt-[100px] flex-1 flex flex-col items-center justify-start w-full">
@@ -35,7 +37,6 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
           <Footer />
         </footer>
       </div>
-    </FilterProvider>
   );
 };
 

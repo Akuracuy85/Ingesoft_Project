@@ -1,21 +1,24 @@
-// src/components/Header.tsx
-import React, { useState } from "react";
+// src/components/Header.tsx (CORREGIDO Y FINAL)
+
+import React, { useState, useCallback } from "react";
 import { FilterModal } from "./FilterModal"; 
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth"; 
 import { User, LogOut } from "lucide-react"; 
-import { useFilters } from '../../../context/FilterContext'; // 🛑 CAMBIO CLAVE
+import { useFilters } from '../../../context/FilterContext'; 
+import { type FiltersType } from "../../../types/FiltersType"; 
 
 interface HeaderProps {
   showFilterButton?: boolean;
+  onApplyNewFilters?: (filters: FiltersType) => void; 
 }
 
-export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
+export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onApplyNewFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
   
   const { isLoggedIn, user, logout, isLoading } = useAuth();
   
-  // 🛑 OBTENER LA FUNCIÓN PARA ACTUALIZAR LOS FILTROS GLOBALES
+  // Obtener la función para actualizar el estado global del contexto
   const { setFilters } = useFilters(); 
 
   const toggleFilters = () => setShowFilters((prev) => !prev);
@@ -23,6 +26,19 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
   const handleLogout = async () => {
     await logout();
   };
+    
+  // 🛑 HANDLER CORREGIDO: Función que recibe los filtros del modal y los aplica al Contexto
+  const handleApplyFilters = useCallback((filters: FiltersType) => {
+    // 1. **CLAVE**: Guardar los filtros completos (incluidos los artistas) en el contexto global.
+    setFilters(filters);
+    
+    // 2. Disparar el callback adicional, si existe.
+    if (onApplyNewFilters) {
+        onApplyNewFilters(filters);
+    }
+    // NOTA: El cierre del modal (toggleFilters) lo hace internamente el modal llamando a onClose.
+  }, [setFilters, onApplyNewFilters]);
+
 
   return (
     <>
@@ -56,6 +72,7 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
             </button>
           )}
 
+          {/* ... Lógica de Auth ... */}
           {isLoading ? (
             <div className="flex gap-4">
               <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse" />
@@ -103,11 +120,8 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
       {showFilterButton && showFilters && (
         <FilterModal
           onClose={toggleFilters}
-          // 🛑 FUNCIÓN CORREGIDA
-          onApplyFilters={(filters) => {
-            setFilters(filters); // Guardar filtros
-            toggleFilters(); // Cerrar modal
-          }}
+          // 🛑 SE CORRIGE ESTO: Se pasa el handler que actualiza el contexto
+          onApplyFilters={handleApplyFilters} 
         />
       )}
     </>

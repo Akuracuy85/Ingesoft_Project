@@ -214,12 +214,12 @@ export const BodyCompraEntradas: React.FC = () => {
                     />
 
                     <h1 className="text-2xl font-semibold text-gray-800 my-4">
-                        Compra tus entradas para **{eventDetails.title}** 🎟️
+                        Compra tus entradas para {eventDetails.title}
                     </h1>
 
                     {/* ✅ AÑADIDO: Mensaje de límite de compra */}
                     <div className="text-center mb-4 text-orange-600 font-medium p-2 border border-orange-300 bg-orange-50 rounded">
-                        Máximo de **{MAX_TICKETS}** entradas por compra.
+                        Máximo de {MAX_TICKETS} entradas por compra.
                     </div>
 
                     {/* ✅ MODIFICADO: Pasar el límite restante a ZoneTable */}
