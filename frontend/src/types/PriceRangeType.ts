@@ -1,4 +1,6 @@
+// src/types/PriceRangeType.ts
+
 export type PriceRangeType = {
-  from: string;
-  to: string;
+  min: string; // Mejor como string para evitar problemas de formato decimal antes de enviar a BE
+  max: string; // Mejor como string para evitar problemas de formato decimal antes de enviar a BE
 };

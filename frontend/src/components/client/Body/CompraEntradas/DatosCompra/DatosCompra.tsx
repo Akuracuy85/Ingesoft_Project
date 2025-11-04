@@ -1,6 +1,6 @@
 // ./DatosCompra.tsx
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react"; // ✅ Importar useMemo para la validación de duplicados
 // ✅ Ruta de importación corregida (como en V2)
 import type { SummaryItem } from "../Tickets/SelectionSummaryTable";
 import ResumenCompra from "./ResumenCompra";
@@ -23,6 +23,9 @@ interface Attendee {
   label: string;
 }
 
+// --- CONSTANTE DE VALIDACIÓN ---
+const DNI_LENGTH = 8;
+
 // ✅ Props de V1 (completas, con eventoId)
 const DatosCompra: React.FC<DatosCompraProps> = ({
   eventoId,
@@ -34,6 +37,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   // --- Estados ---
   // ✅ Estados de V1 (incluye isLoading)
   const [dniValues, setDniValues] = useState<Record<string, string>>({});
+  const [dniErrors, setDniErrors] = useState<Record<string, string>>({}); // ✅ Nuevo estado para manejar errores de DNI
   const [conadisCodes, setConadisCodes] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,10 +59,36 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
     att.zona.toUpperCase().includes("CONADIS")
   );
 
+  // --- Validación de Duplicados (se recalcula al cambiar dniValues) ---
+  const duplicateDnis = useMemo(() => {
+    const dnis: string[] = Object.values(dniValues).filter(dni => dni.length === DNI_LENGTH);
+    const counts: Record<string, number> = {};
+    dnis.forEach(dni => {
+      counts[dni] = (counts[dni] || 0) + 1;
+    });
+    return new Set(Object.keys(counts).filter(dni => counts[dni] > 1));
+  }, [dniValues]);
+
   // --- Handlers ---
-  // ✅ Handlers explícitos (como en V2, pero compatibles con V1)
+  // ✅ MODIFICADO: Valida que solo sean dígitos y que no exceda los 8.
   const handleDniChange = (id: string, value: string) => {
-    setDniValues((prev) => ({ ...prev, [id]: value }));
+    // 1. Restricción de entrada: solo números
+    const numericValue = value.replace(/\D/g, ''); 
+    
+    // 2. Restricción de longitud: máximo 8 dígitos
+    const finalValue = numericValue.slice(0, DNI_LENGTH);
+
+    // 3. Actualizar estado
+    setDniValues((prev) => ({ ...prev, [id]: finalValue }));
+
+    // 4. Limpiar error si se arregla
+    if (finalValue.length === DNI_LENGTH) {
+      setDniErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[id];
+        return newErrors;
+      });
+    }
   };
 
   const handleConadisChange = (id: string, value: string) => {
@@ -66,7 +96,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   };
 
   // --- Submit Handler ---
-  // ✅ Lógica COMPLETA de V1 para el envío
+  // ✅ MODIFICADO: Añade la validación de 8 dígitos y duplicados
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
@@ -74,18 +104,56 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
       return;
     }
 
-    // 1. Validaciones básicas antes de enviar
-    const allDnisFilled = allAttendees.every(att => dniValues[att.id] && dniValues[att.id].trim() !== '');
-    if (!allDnisFilled) {
-        alert("Por favor, complete todos los campos de DNI.");
-        return;
+    // --- 1. Validaciones EN FORMULARIO (8 dígitos y unicidad) ---
+    let formValid = true;
+    const newErrors: Record<string, string> = {};
+    const enteredDnis = new Set<string>();
+    const duplicateDnisOnSubmit = new Set<string>();
+
+    // a. Validar longitud y existencia
+    allAttendees.forEach(att => {
+      const dni = dniValues[att.id] ? dniValues[att.id].trim() : '';
+      
+      if (dni.length === 0) {
+        newErrors[att.id] = "El DNI es obligatorio.";
+        formValid = false;
+      } else if (dni.length !== DNI_LENGTH) {
+        newErrors[att.id] = `El DNI debe tener ${DNI_LENGTH} dígitos.`;
+        formValid = false;
+      } else {
+        // b. Validar unicidad
+        if (enteredDnis.has(dni)) {
+          duplicateDnisOnSubmit.add(dni);
+          formValid = false;
+        }
+        enteredDnis.add(dni);
+      }
+    });
+
+    // c. Asignar errores de duplicados (a todas las entradas que usen el DNI duplicado)
+    if (duplicateDnisOnSubmit.size > 0) {
+      allAttendees.forEach(att => {
+        const dni = dniValues[att.id] ? dniValues[att.id].trim() : '';
+        if (duplicateDnisOnSubmit.has(dni)) {
+          newErrors[att.id] = `El DNI ${dni} ya ha sido ingresado para otro asistente.`;
+        }
+      });
     }
+
+    setDniErrors(newErrors);
+
+    if (!formValid) {
+      alert("Por favor, corrige los errores en los campos de DNI.");
+      return;
+    }
+    // --- Fin de Validaciones ---
 
     setIsLoading(true);
 
-    // 2. Mapear DNI por Zona
+    // 2. Mapear DNI por Zona (La lógica de mapeo se mantiene igual)
     const dnisPorZona: Record<string, string[]> = allAttendees.reduce((acc, attendee) => {
       const dni = dniValues[attendee.id];
+      // Nota: Aquí no se necesita validar `dni` ya que `formValid` garantiza que están llenos y son de 8 dígitos
       if (dni) {
         if (!acc[attendee.zona]) {
           acc[attendee.zona] = [];
@@ -96,8 +164,6 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
     }, {} as Record<string, string[]>);
 
     // Construir el array 'items' del DTO usando los zonaId del SummaryItem
-    // NOTA: La lógica de V1 recolecta CONADIS pero no los envía en el payload.
-    // Se mantiene esa lógica aquí.
     const items = summaryItems.map(summaryItem => {
       const dnis = dnisPorZona[summaryItem.zona] || [];
 
@@ -131,14 +197,13 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   };
 
   // --- Renderizado ---
-  // ✅ JSX Base de V2
   return (
     // (Añadí py-8 de V1 para mantener el espaciado)
     <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row gap-8 py-8">
-      
+        
       {/* Columna Izquierda: Formulario (Diseño V2) */}
       <form onSubmit={handleSubmit} className="flex-1">
-        
+          
         {/* Flecha para volver (Diseño V2) */}
         <button
           type="button"
@@ -157,7 +222,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             ① Identificación de Asistentes
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            Coloque los números de identificación (DNI) de las personas que asistirán al evento:
+            Coloque los números de identificación (**DNI de 8 dígitos**) de las personas que asistirán al evento:
           </p>
           <div className="space-y-4">
             {/* Lógica de loop de V2 (correcta) */}
@@ -169,24 +234,39 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
                 <div className="space-y-3 pl-2">
                   {allAttendees
                     .filter((attendee) => attendee.zona === zoneItem.zona)
-                    .map((attendee) => (
-                      <div key={attendee.id}>
-                        <label htmlFor={`dni-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                          {attendee.label}
-                        </label>
-                        <input
-                          type="text"
-                          id={`dni-${attendee.id}`}
-                          value={dniValues[attendee.id] || ""}
-                          // ✅ Handler de V2 (compatible con V1)
-                          onChange={(e) => handleDniChange(attendee.id, e.target.value)}
-                          placeholder="Ingrese DNI"
-                          // ✅ Clases de V2
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-700 focus:border-yellow-700"
-                          required // DNI es requerido (lógica V1)
-                        />
-                      </div>
-                    ))}
+                    .map((attendee) => {
+                      const hasError = !!dniErrors[attendee.id]; // ✅ Identificar si hay error
+                      const isDuplicate = duplicateDnis.has(dniValues[attendee.id]) && dniValues[attendee.id].length === DNI_LENGTH; // ✅ Resaltar duplicados
+
+                      return (
+                        <div key={attendee.id}>
+                          <label htmlFor={`dni-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                            {attendee.label}
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric" // ✅ Sugerir teclado numérico
+                            pattern="[0-9]*" // ✅ Patrón para solo números (para navegadores)
+                            maxLength={DNI_LENGTH} // ✅ Limitar longitud en el input
+                            id={`dni-${attendee.id}`}
+                            value={dniValues[attendee.id] || ""}
+                            onChange={(e) => handleDniChange(attendee.id, e.target.value)}
+                            placeholder={`Ingrese DNI de ${DNI_LENGTH} dígitos`}
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none 
+                                        ${hasError || isDuplicate ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-yellow-700 focus:border-yellow-700'}`} // ✅ Estilos de error/duplicado
+                            required // DNI es requerido (lógica V1)
+                          />
+                          {/* ✅ Mensaje de error visible */}
+                          {hasError && (
+                            <p className="mt-1 text-sm text-red-600">{dniErrors[attendee.id]}</p>
+                          )}
+                          {/* ✅ Mensaje de duplicado en tiempo real (si no hay un error específico de handleSubmit) */}
+                          {!hasError && isDuplicate && (
+                             <p className="mt-1 text-sm text-orange-600">Este DNI está repetido.</p>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             ))}
@@ -212,11 +292,9 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
                     type="text"
                     id={`conadis-${attendee.id}`}
                     value={conadisCodes[attendee.id] || ""}
-                    // ✅ Handler de V2
                     onChange={(e) => handleConadisChange(attendee.id, e.target.value)}
                     placeholder="Ingrese código"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-700 focus:border-yellow-700"
-                    // ✅ ELIMINADO 'required' de V2, para coincidir con la lógica de V1 (CONADIS es opcional)
                   />
                 </div>
               ))}
@@ -242,8 +320,8 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
           </div>
           <button
             type="submit"
-            // ✅ Lógica de 'disabled' de V1
-            disabled={!termsAccepted || isLoading}
+            // ✅ Lógica de 'disabled' de V1 (Ahora también deshabilitado si hay errores visibles)
+            disabled={!termsAccepted || isLoading || Object.keys(dniErrors).length > 0} 
             // ✅ Clases de V1 (con transition)
             className="w-full bg-yellow-700 text-white px-6 py-3 rounded-lg shadow font-semibold hover:bg-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
           >

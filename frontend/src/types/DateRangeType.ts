@@ -1,4 +1,6 @@
+// src/types/DateRangeType.ts
+
 export type DateRangeType = {
-  start: Date | null;
-  end: Date | null;
+  start: string | null; // Formato ISO, ej: 'YYYY-MM-DD'
+  end: string | null;  // Formato ISO, ej: 'YYYY-MM-DD'
 };

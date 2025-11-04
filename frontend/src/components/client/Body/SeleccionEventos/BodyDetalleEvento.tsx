@@ -193,7 +193,7 @@ export const BodyDetalleEvento: React.FC = () => {
             viewport={{ once: false }}
           >
             Compra tus entradas para{" "}
-            {evento.artista?.nombre || "el artista"} <br />
+            {evento.nombre || "el artista"} <br />
             en {evento.distrito || "el lugar del evento"}
           </motion.h2>
 
