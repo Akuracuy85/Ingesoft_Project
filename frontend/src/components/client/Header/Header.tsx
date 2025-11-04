@@ -1,11 +1,11 @@
-// src/components/Header.tsx (CORREGIDO Y FINAL)
+// src/components/Header.tsx (FINAL CON RESETEO DE LOGO)
 
 import React, { useState, useCallback } from "react";
 import { FilterModal } from "./FilterModal"; 
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth"; 
 import { User, LogOut } from "lucide-react"; 
-import { useFilters } from '../../../context/FilterContext'; 
+import { useFilters } from '../../../context/FilterContext'; // 🛑 NECESARIO
 import { type FiltersType } from "../../../types/FiltersType"; 
 
 interface HeaderProps {
@@ -18,26 +18,22 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
   
   const { isLoggedIn, user, logout, isLoading } = useAuth();
   
-  // Obtener la función para actualizar el estado global del contexto
-  const { setFilters } = useFilters(); 
+  // 🛑 OBTENEMOS la función resetFilters del Contexto
+  const { setFilters, resetFilters } = useFilters(); 
 
   const toggleFilters = () => setShowFilters((prev) => !prev);
 
   const handleLogout = async () => {
     await logout();
   };
-    
-  // 🛑 HANDLER CORREGIDO: Función que recibe los filtros del modal y los aplica al Contexto
-  const handleApplyFilters = useCallback((filters: FiltersType) => {
-    // 1. **CLAVE**: Guardar los filtros completos (incluidos los artistas) en el contexto global.
-    setFilters(filters);
-    
-    // 2. Disparar el callback adicional, si existe.
-    if (onApplyNewFilters) {
-        onApplyNewFilters(filters);
-    }
-    // NOTA: El cierre del modal (toggleFilters) lo hace internamente el modal llamando a onClose.
-  }, [setFilters, onApplyNewFilters]);
+    
+  const handleApplyFilters = useCallback((filters: FiltersType) => {
+    setFilters(filters);
+    
+    if (onApplyNewFilters) {
+        onApplyNewFilters(filters);
+    }
+  }, [setFilters, onApplyNewFilters]);
 
 
   return (
@@ -46,7 +42,11 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
       <header className="fixed top-0 left-0 w-full h-[102px] px-6 bg-white/90 backdrop-blur-md shadow-md flex items-center justify-between z-50">
         {/* LOGO */}
         <div className="flex items-center">
-          <Link to="/"> 
+          <Link 
+                to="/" 
+                // 🛑 SOLUCIÓN: Llama a resetFilters ANTES de navegar a "/"
+                onClick={resetFilters} 
+            > 
             <img
               className="w-[175px] h-[78px] object-contain"
               alt="Logo Unite"
@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
           </Link>
         </div>
 
-        {/* 🔸 BOTONES DERECHA */}
+        {/* 🔸 BOTONES DERECHA (Se mantiene sin cambios) */}
         <div className="flex items-center justify-end flex-1 gap-4">
           
           {showFilterButton && (
@@ -120,7 +120,6 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
       {showFilterButton && showFilters && (
         <FilterModal
           onClose={toggleFilters}
-          // 🛑 SE CORRIGE ESTO: Se pasa el handler que actualiza el contexto
           onApplyFilters={handleApplyFilters} 
         />
       )}
