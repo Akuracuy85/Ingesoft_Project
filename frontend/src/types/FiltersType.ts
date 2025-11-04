@@ -1,13 +1,20 @@
-// src/types/FiltersType.ts
+// src/types/FiltersType.ts (Definición corregida)
 
-import type { PriceRangeType } from "./PriceRangeType";
-import type { LocationType } from "./LocationType";
-import type { DateRangeType } from "./DateRangeType";
+import type { PriceRangeType } from './PriceRangeType'; 
+import type { LocationType } from './LocationType';
+import type { DateRangeType } from './DateRangeType';
 
 export type FiltersType = {
-  priceRange: PriceRangeType | null;
+  // Permite que PriceRange sea el objeto con min/max O que sea null si no se usa
+  priceRange: PriceRangeType | null; 
+  
+  // Location siempre debe tener una estructura aunque los campos internos sean nulos/vacíos
   location: LocationType;
-  categories: string[]; // Asume nombres o IDs para enviar al BE
-  artists: string[];      // Asume nombres o IDs para enviar al BE
-  dateRange: DateRangeType;
+  
+  // Listas de IDs/Nombres seleccionados (siempre un array, vacío si no hay selección)
+  categories: string[]; 
+  artists: string[]; 
+  
+  // 🛑 CORRECCIÓN: Permite que DateRange sea el objeto con start/end O que sea null
+  dateRange: DateRangeType | null; 
 };
