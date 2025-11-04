@@ -124,12 +124,12 @@ export class EventoService {
         filtros
       );
 
-      if (!eventos.length) {
+      /*if (!eventos.length) {
         throw new CustomError(
           "No se encontraron eventos que coincidan con los filtros.",
           StatusCodes.NOT_FOUND
         );
-      }
+      }*/
 
       return eventos;
     } catch (error) {
