@@ -141,11 +141,15 @@ export class EventoRepository {
       "artista.categoria",
       "categoria"
     );
-    qb.leftJoin("evento.zonas", "zona");
-    qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
-    qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
-
-    qb.where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
+    // qb.leftJoin("evento.zonas", "zona");
+    // qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
+    // qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
+    
+    
+    qb.leftJoinAndSelect("evento.zonas", "zona");
+    qb.leftJoinAndSelect("zona.tarifaNormal", "tarifaNormal");
+    qb.leftJoinAndSelect("zona.tarifaPreventa", "tarifaPreventa");
+    
 
     if (filtros.departamento) {
       qb.andWhere("evento.departamento = :depto", {
