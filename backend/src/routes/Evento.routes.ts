@@ -34,5 +34,11 @@ router.put(
   sessionMiddleware.VerificarToken,
   eventoController.actualizarEvento
 );
+// GET /api/evento/filtros/ubicaciones
+router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
+
+
+// Público: listado de eventos publicados.
+router.get("/publicados", eventoController.listarPublicados);
 
 export default router;
