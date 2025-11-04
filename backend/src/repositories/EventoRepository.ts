@@ -9,13 +9,13 @@ export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
 
 // Filtros para las búsquedas públicas de eventos publicados.
 export interface IFiltrosEvento {
-  precioMin?: string;
-  precioMax?: string;
+  precioMin?: number;
+  precioMax?: number;
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  categoriaId?: string;
-  artistaId?: string;
+  categoriaIds?: number[];
+  artistaIds?: number[];
   fechaInicio?: string;
   fechaFin?: string;
 }
@@ -167,17 +167,21 @@ export class EventoRepository {
       qb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
     }
 
-    if (filtros.artistaId) {
+    /*if (filtros.artistaId) {
       qb.andWhere("artista.id = :artistaId", {
         artistaId: Number(filtros.artistaId),
       });
-    }
+    }*/
+   
 
-    if (filtros.categoriaId) {
-      qb.andWhere("categoria.id = :categoriaId", {
-        categoriaId: Number(filtros.categoriaId),
-      });
-    }
+     if (filtros.artistaIds && filtros.artistaIds.length > 0) {
+      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
+    }
+
+    // 🛑 LÓGICA DE IDs (MÁS SIMPLE)
+    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
+      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
+    }
 
     if (filtros.fechaInicio) {
       qb.andWhere("evento.fechaEvento >= :fechaInicio", {
@@ -190,12 +194,10 @@ export class EventoRepository {
       qb.andWhere("evento.fechaEvento < :fechaFin", { fechaFin });
     }
 
-    const precioMin =
-      filtros.precioMin !== undefined ? Number(filtros.precioMin) : undefined;
-    const precioMax =
-      filtros.precioMax !== undefined ? Number(filtros.precioMax) : undefined;
-    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
-    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
+    const precioMin = filtros.precioMin;
+    const precioMax = filtros.precioMax;
+    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
+    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
 
     if (aplicarMin || aplicarMax) {
       qb.andWhere(

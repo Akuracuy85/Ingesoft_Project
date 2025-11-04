@@ -98,6 +98,20 @@ export class UsuarioController {
     }
   }
 
+  obtenerTodos = async (req: Request, res: Response) => {
+    try {
+      const usuarios = await this.usuarioService.getAllUser();
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        usuarios: usuarios,
+        message: "Lista de usuarios obtenida correctamente."
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  }
+
 }
 
 export const usuarioController = UsuarioController.getInstance();
