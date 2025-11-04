@@ -19,7 +19,11 @@ export interface IFiltrosEvento {
   fechaInicio?: string;
   fechaFin?: string;
 }
-
+export interface IUbicacionFiltro {
+  departamento: string;
+  provincia: string;
+  distrito: string;
+}
 export class EventoRepository {
   private static instance: EventoRepository;
   private repository: Repository<Evento>;
@@ -38,7 +42,7 @@ export class EventoRepository {
     }
     return EventoRepository.instance;
   }
-
+  
   async obtenerDatosBasicosPorOrganizador(
     organizadorId: number
   ): Promise<EventoBasico[]> {
@@ -259,8 +263,23 @@ export class EventoRepository {
       },
     });
   }
+  async obtenerUbicaciones(): Promise<IUbicacionFiltro[]> {
+    const qb = this.repository.createQueryBuilder("evento");
 
+    qb.select("evento.departamento", "departamento")
+      .addSelect("evento.provincia", "provincia")
+      .addSelect("evento.distrito", "distrito")
+      // Solo mostrar ubicaciones de eventos que están publicados
+      .where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO })
+      .distinct(true) // Obtenemos combinaciones únicas
+      .orderBy("departamento", "ASC")
+      .addOrderBy("provincia", "ASC")
+      .addOrderBy("distrito", "ASC");
 
+    // .getRawMany() devuelve objetos planos
+    return await qb.getRawMany<IUbicacionFiltro>();
+  }
+  
 }
 
 export const eventoRepository = EventoRepository.getInstance();
