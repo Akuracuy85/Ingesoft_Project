@@ -1,85 +1,87 @@
 import HttpClient from "./Client";
-// Importamos tu tipo 'User'
+import axios from 'axios'; // 🛑 NECESARIO: Importar axios para la verificación de errores (axios.isAxiosError)
+
 import { type User } from "@/models/User"; 
 
-// --- 1. DEFINIMOS LA RESPUESTA DEL PERFIL ---
-// Esto ahora coincide con la respuesta de tu PerfilController
+// =============================
+// INTERFACES DE RESPUESTA
+// =============================
+
 interface ProfileResponse {
-  success: boolean;
-  data: User; // <-- ¡Coincide con tu backend!
-  message?: string;
+  success: boolean;
+  data: User; 
+  message?: string;
 }
 
-// Interfaces para las otras respuestas
 interface LoginRequest {
-  email: string;
-  password: string;
+  email: string;
+  password: string;
 }
 
 interface LoginResponse {
-  success: boolean;
+  success: boolean;
 }
 
-interface StatusResponse {
-  success: boolean;
-  expiresIn?: number;
+export interface StatusResponse {
+  success: boolean;
+  expiresIn?: number;
 }
 
 interface LogoutResponse {
-  success: boolean;
+  success: boolean;
 }
 
+// =============================
+// CLASE DE SERVICIO
+// =============================
 
 export class AuthService extends HttpClient {
-  // --- 2. EL CONSTRUCTOR AHORA ESTÁ VACÍO ---
-  // Hacemos esto para poder llamar a diferentes rutas base
-  constructor() {
-    super(""); // El basePath ahora es vacío
-  }
 
-  /**
-   * Inicia sesión enviando email y password al backend
-   */
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    // Añadimos el prefijo /auth aquí
-    return await this.post<LoginResponse>("/auth/login", credentials);
-  }
+  constructor() {
+    super(""); 
+  }
 
-  /**
-   * Verifica si el usuario tiene una sesión activa
-   */
-  async checkSession(): Promise<StatusResponse> {
-    // Añadimos el prefijo /auth aquí
-    return await this.get<StatusResponse>("/auth/status");
-  }
+  async login(credentials: LoginRequest): Promise<LoginResponse> {
+    return await this.post<LoginResponse>("/auth/login", credentials);
+  }
 
-  // --- 3. ¡LA FUNCIÓN CORREGIDA! ---
-  /**
-   * Obtiene los datos del perfil del usuario logueado
-   */
-  async getProfile(): Promise<User> {
-    // Usamos el tipo 'ProfileResponse'
-    // Y llamamos a la ruta /perfil (¡sin /auth!)
-    const response = await this.get<ProfileResponse>("/perfil");
-    
-    // Comprobamos la clave 'data'
-    if (!response.success || !response.data) {
-      throw new Error("No se pudo obtener el perfil del usuario.");
+  async checkSession(): Promise<StatusResponse> {
+    try {
+        // Intenta obtener el estado de la sesión
+        return await this.get<StatusResponse>("/auth/status");
+        
+    } catch (error) {
+        // 🛑 MANEJO CRÍTICO DEL 401
+        // Si el error es de Axios y el código de estado es 401,
+        // esto significa que la sesión no es válida, lo cual es el resultado esperado
+        // para un usuario deslogueado.
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            
+            // Devuelve una respuesta limpia que indica "no hay sesión".
+            return { 
+                success: false, 
+                expiresIn: 0 
+            };
+        }
+
+        // Para cualquier otro error (red, 500), lanza el error para que useAuth lo maneje
+        throw error;
     }
-    
-    // Devolvemos la clave 'data'
-    return response.data;
-  }
+  }
 
-  /**
-   * Cierra la sesión (borra cookies desde el backend)
-   */
-  async logout(): Promise<LogoutResponse> {
-    // Añadimos el prefijo /auth aquí
-    return await this.delete<LogoutResponse>("/auth/logout");
-  }
+  async getProfile(): Promise<User> {
+    const response = await this.get<ProfileResponse>("/perfil");
+    
+    if (!response.success || !response.data) {
+      throw new Error("No se pudo obtener el perfil del usuario.");
+    }
+    
+    return response.data;
+  }
+
+  async logout(): Promise<LogoutResponse> {
+    return await this.delete<LogoutResponse>("/auth/logout");
+  }
 }
 
-// Exportamos una instancia única (singleton)
 export default new AuthService();
-

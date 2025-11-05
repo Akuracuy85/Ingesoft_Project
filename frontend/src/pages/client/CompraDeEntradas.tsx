@@ -2,7 +2,7 @@
 import ClientLayout from "./ClientLayout"; // (Ajusta la ruta si es necesario)
 
 // 2. Importa SOLO el contenido de esta página
-import { BodyCompraEntradas } from "../../components/client/Body/CompraEntradas/Tickets/BodyCompraEntradas"; // (Ajusta la ruta)
+import { BodyCompraEntradas } from "../../components/client/Body/CompraEntradas/BodyCompraEntradas"; // (Ajusta la ruta)
 
 // (Ya no necesitas importar Header, types, data, etc. aquí)
 
