@@ -12,6 +12,7 @@ import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
 import DetalleEvento from "./pages/client/DetalleEvento";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
 import GestionEventos from "./pages/organizador/eventos/GestionEventos.tsx";
+import AdminEventos from "./pages/admin/Eventos/AdminEventos.tsx";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,7 @@ function App() {
           <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
 
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-
+          <Route path="/admin/eventos" element={<AdminEventos />} />
           <Route path="/organizador/eventos" element={<GestionEventos />} />
 
         </Routes>
