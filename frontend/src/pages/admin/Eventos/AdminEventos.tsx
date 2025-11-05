@@ -5,9 +5,9 @@ import { Search, FileDown, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import AdminLayout from "../AdminLayout" 
-import { EventsTable } from "@/components/events-table"
-import { EventDetailsModal } from "@/components/event-details-modal"
-import { mockEvents, Event, EventStatus } from "@/data/mockEvents" /
+import { EventsTable } from "@/components/admin/EventTable"
+import { EventDetailsModal } from "@/components/admin/EventModal"
+import { mockEvents, Event, EventStatus } from "@/data/mockEvents"
 export type EventStatus = "Pendiente" | "Aprobado" | "Rechazado"
 
 export interface Event {
@@ -96,7 +96,7 @@ export default function AdminEventos(): React.ReactElement {
     };
 
     return (
-        <AdminLayout activeItem="Eventos"> {/* 👈 Integración del AdminLayout */}
+        <AdminLayout activeItem="Gestión de eventos">
             <div className="max-w-7xl mx-auto space-y-6">
                 
                 {/* Header Section */}
