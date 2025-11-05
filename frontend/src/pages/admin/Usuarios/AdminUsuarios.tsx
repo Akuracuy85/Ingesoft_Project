@@ -10,7 +10,6 @@ import type { User, UserFormData, Rol } from "../../../models/User";
 
 import { Navigate, Link } from "react-router-dom";
 
-// Contraseña por defecto para nuevos usuarios
 const DEFAULT_PASSWORD = "unite123";
 
 export default function AdminUsuarios(): React.ReactElement {
