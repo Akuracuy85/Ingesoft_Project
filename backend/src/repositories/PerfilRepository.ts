@@ -86,7 +86,7 @@ export class PerfilRepository {
         .select("usuario.puntos", "puntos") 
         // Filtramos por ID
         .where("usuario.id = :id", { id })
-        // 🚨 Filtramos por el rol exacto que funciona en SQL
+        // Filtramos por el rol exacto que funciona en SQL
         .andWhere("usuario.rol = :rol", { rol: 'CLIENTE' })
         // Devolvemos el resultado sin intentar instanciar una entidad
         .getRawOne();
