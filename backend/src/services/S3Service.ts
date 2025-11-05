@@ -33,11 +33,16 @@ export class S3Service {
     this.defaultPrefix = process.env.AWS_S3_PREFIX?.replace(/^\/+|\/+$/g, "") ?? "";
     this.enablePublicRead = process.env.AWS_S3_PUBLIC_READ === "true";
 
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+    const sessionToken = process.env.AWS_SESSION_TOKEN;
+
     const credentials =
-      process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+      accessKeyId && secretAccessKey
         ? {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            accessKeyId,
+            secretAccessKey,
+            sessionToken: sessionToken || undefined,
           }
         : undefined;
 
@@ -217,4 +222,3 @@ export class S3Service {
     return valor;
   }
 }
-
