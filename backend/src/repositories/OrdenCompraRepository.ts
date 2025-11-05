@@ -10,6 +10,7 @@ import { Repository } from "typeorm";
 // Importamos Cliente solo para la firma de la transacción (aunque ahora se elimina)
 // Para evitar errores si se usa en otro lado, lo dejamos importado.
 import { Cliente } from "@/models/Cliente";
+import { EstadoOrden } from "../enums/EstadoOrden";
 
 export class OrdenCompraRepository {
   private static instance: OrdenCompraRepository;
@@ -25,7 +26,20 @@ export class OrdenCompraRepository {
     }
     return OrdenCompraRepository.instance;
   }
-
+  async findByClienteAndEvento(clienteId: number, eventoId: number): Promise<OrdenCompra[]> {
+    return await this.repository.find({
+      where: {
+        cliente: { id: clienteId },
+        evento: { id: eventoId },
+        
+        // IMPORTANTE: Solo contar/listar entradas de órdenes pagadas
+        // Cambia esto si también quieres contar órdenes 'PENDIENTE'
+        estado: EstadoOrden.COMPLETADA 
+      },
+      // Cargamos los detalles (zonas, dnis, etc.)
+      relations: ["detalles", "detalles.zona"]
+    });
+  }
   /**
    * Guarda la orden, sus detalles y actualiza el stock de zonas
    * dentro de una transacción de base de datos.
