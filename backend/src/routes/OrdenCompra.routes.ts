@@ -13,4 +13,26 @@ router.post("/", sessionMiddleware.VerificarToken, ordenCompraController.crearOr
 // GET /api/orden/123
 router.get("/:id", sessionMiddleware.VerificarToken, ordenCompraController.obtenerOrdenPorId);
 
+// 🎯 6. AÑADIR NUEVA RUTA (LISTAR)
+// GET /api/orden/mis-entradas/evento/123
+router.get(
+  "/mis-entradas/evento/:eventoId",
+  sessionMiddleware.VerificarToken, // Requiere login
+  ordenCompraController.listarMisDetallesPorEvento
+);
+
+// 🎯 7. AÑADIR NUEVA RUTA (CONTAR)
+// GET /api/orden/mis-entradas/evento/123/count 
+router.get(
+  "/mis-entradas/evento/:eventoId/count",
+  sessionMiddleware.VerificarToken, // Requiere login
+  ordenCompraController.contarMisEntradasPorEvento
+);
+// POST /api/orden/calcular
+router.post(
+  "/calcular", 
+  sessionMiddleware.VerificarToken, // Protegida, asume que el usuario está logueado
+  ordenCompraController.calcularTotal
+);
+
 export default router;
