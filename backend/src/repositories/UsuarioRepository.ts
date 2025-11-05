@@ -62,4 +62,8 @@ export class UsuarioRepository {
   async borrarUsuario(usuario: Usuario): Promise<void> {
     await this.repository.delete({ id : usuario.id });
   }
+
+  async getAllUser(): Promise<Usuario[]> {
+    return await this.repository.find();
+  }
 }

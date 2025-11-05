@@ -20,7 +20,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-50">
         <Routes>
-          {/* === CLIENTE === */}
           <Route path="/" element={<Navigate to="/eventos" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/restablecer" element={<RestablecerContraseña />} />
@@ -29,7 +28,6 @@ function App() {
           <Route path="/registro-organizador" element={<RegistroOrganizador />} />
           <Route path="/perfil" element={<InformacionPersonal />} />
           
-          {/* 2. USA el componente aquí en lugar de <></> */}
           <Route path="/eventos/:id/compra" element={<CompraDeEntradas />} />
           <Route path="/eventos" element={<SeleccionDeEventos />} />
           <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
@@ -37,10 +35,8 @@ function App() {
           <Route path="/info" element={<InformacionPersonal />} />
           <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
 
-          {/* === ADMIN === */}
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
 
-          {/* === ORGANIZADOR === */}
           <Route path="/organizador/eventos" element={<GestionEventos />} />
 
         </Routes>

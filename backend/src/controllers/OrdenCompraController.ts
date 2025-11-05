@@ -8,6 +8,20 @@ import { CrearOrdenDto } from "@/dto/orden/crear-orden.dto";
 import { plainToClass } from "class-transformer"; 
 import { validate } from "class-validator";
 import { CustomError } from "@/types/CustomError";
+import { CalcularPrecioDto } from "@/dto/orden/calcular-precio.dto";
+
+function validateRequest(req: Request): { clienteId: number; eventoId: number } {
+  const clienteId = req.userId; // ID viene del middleware VerificarToken
+  
+
+  // El ID del evento ahora viene de 'eventoId' en los params
+  const eventoId = Number(req.params.eventoId); 
+  if (!Number.isInteger(eventoId) || eventoId <= 0) {
+    throw new CustomError("El ID del evento no es válido.", StatusCodes.BAD_REQUEST);
+  }
+  
+  return { clienteId, eventoId };
+}
 
 export class OrdenCompraController {
   private static instance: OrdenCompraController;
@@ -74,6 +88,88 @@ export class OrdenCompraController {
         HandleResponseError(res, error);
     }
   }
+   // 🎯 4. AÑADIR NUEVO MANEJADOR (LISTAR)
+  listarMisDetallesPorEvento = async (req: Request, res: Response) => {
+    try {
+      // Usamos el helper de validación
+      const { clienteId, eventoId } = validateRequest(req);
+      const detalles = await this.ordenCompraService.listarDetallesPorClienteYEvento(clienteId, eventoId);
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: detalles // Devuelve la lista de detalles de orden
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  // 🎯 5. AÑADIR NUEVO MANEJADOR (CONTAR)
+  contarMisEntradasPorEvento = async (req: Request, res: Response) => {
+    try {
+      // Usamos el helper de validación
+      const { clienteId, eventoId } = validateRequest(req);
+      const count = await this.ordenCompraService.contarEntradasPorClienteYEvento(clienteId, eventoId);
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: {
+          cantidad: count // Devuelve el número total
+        }
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+  calcularTotal = async (req: Request, res: Response) => {
+    try {
+      // 1. Extraer de req.query (son strings)
+      const { eventoId, items } = req.query;
+
+      // 2. Validar y parsear los datos
+      if (typeof items !== 'string' || !items) {
+        throw new CustomError("El parámetro 'items' (string JSON) es requerido.", StatusCodes.BAD_REQUEST);
+      }
+      
+      let itemsParsed: any;
+      try {
+        itemsParsed = JSON.parse(items);
+      } catch (e) {
+        throw new CustomError("El formato de 'items' no es un JSON válido.", StatusCodes.BAD_REQUEST);
+      }
+
+      // 3. Usar class-validator (como antes) para validar la estructura
+      const dto = plainToClass(CalcularPrecioDto, {
+        eventoId: Number(eventoId),
+        items: itemsParsed // Usamos el array parseado
+      });
+      const errors = await validate(dto);
+
+      if (errors.length > 0) {
+        const mensajesError = errors.map(err => Object.values(err.constraints || {})).flat();
+        throw new CustomError(mensajesError.join(', '), StatusCodes.BAD_REQUEST);
+      }
+
+      // 4. Llamar al servicio (el servicio no cambia)
+      const totalCentimos = await this.ordenCompraService.calcularTotal(dto);
+
+      // 5. Devolver la respuesta
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: {
+          totalCentimos: totalCentimos
+        }
+      });
+
+    } catch (error) {
+      // El catch ahora también maneja el error de JSON.parse
+      if (error instanceof CustomError) {
+        HandleResponseError(res, error);
+      } else {
+        HandleResponseError(res, new CustomError("Error al procesar la solicitud: " + (error as Error).message, StatusCodes.BAD_REQUEST));
+      }
+    }
+  };
 }
 
 export const ordenCompraController = OrdenCompraController.getInstance();

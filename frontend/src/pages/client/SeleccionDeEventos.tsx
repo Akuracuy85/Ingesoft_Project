@@ -1,23 +1,37 @@
-// 1. Importa el LAYOUT (el marco)
-import ClientLayout from "./ClientLayout"; // (Ajusta la ruta si es necesario)
+// src/pages/SeleccionDeEventos.tsx (CORREGIDO Y FINAL)
 
-// 2. Importa SOLO el contenido de esta página
-import { BodySeleccionEventos } from "../../components/client/Body/SeleccionEventos/BodySeleccionEventos"; // (Ajusta la ruta si es necesario)
-
-// (Ya no necesitas importar Header o Footer aquí)
+import React from 'react';
+import ClientLayout from "./ClientLayout"; 
+import { BodySeleccionEventos } from "../../components/client/Body/SeleccionEventos/BodySeleccionEventos"; 
+import { useEventos } from "../../hooks/useEventos"; // LLAMADA A USEEVENTOS AQUÍ
 
 export const SeleccionDeEventos = () => {
+  // LLAMA A useEventos Y OBTÉN TODO EL ESTADO Y LA FUNCIÓN DE RECARGA
+  const { 
+    events, 
+    featuredEvents, 
+    isLoading, 
+    error, 
+    filters, // Se necesita para la lógica en el Body
+    fetchEvents // La función clave para recargar
+  } = useEventos(); 
+
   return (
-    // 3. ¡Aquí está la magia!
-    // Usamos el Layout y le pasamos 'showFilterButton={true}'
-    <ClientLayout showFilterButton={true}>
+    // PASA fetchEvents AL CLIENTLAYOUT PARA QUE EL HEADER LO USE
+    <ClientLayout 
+        showFilterButton={true}
+        onApplyNewFilters={fetchEvents} // Aquí se inyecta la función de recarga
+    >
       
-      {/* El Body es el 'children' que el 
-          ClientLayout pondrá en la etiqueta <main> */}
-      <BodySeleccionEventos />
+      {/* PASA TODOS LOS DATOS Y FILTROS AL BODY */}
+      <BodySeleccionEventos 
+        events={events}
+        featuredEvents={featuredEvents} 
+        isLoading={isLoading}
+        error={error}
+        filters={filters} 
+      />
 
     </ClientLayout>
   );
 };
-
-// export default SeleccionDeEventos; // (Si es la exportación por defecto)
