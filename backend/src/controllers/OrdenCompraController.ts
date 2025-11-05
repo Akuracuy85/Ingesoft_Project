@@ -12,9 +12,7 @@ import { CalcularPrecioDto } from "@/dto/orden/calcular-precio.dto";
 
 function validateRequest(req: Request): { clienteId: number; eventoId: number } {
   const clienteId = req.userId; // ID viene del middleware VerificarToken
-  if (!clienteId) {
-    throw new CustomError("No autorizado. ID de cliente no encontrado.", StatusCodes.UNAUTHORIZED);
-  }
+  
 
   // El ID del evento ahora viene de 'eventoId' en los params
   const eventoId = Number(req.params.eventoId); 
@@ -125,8 +123,26 @@ export class OrdenCompraController {
   };
   calcularTotal = async (req: Request, res: Response) => {
     try {
-      // 1. Validar el DTO de entrada
-      const dto = plainToClass(CalcularPrecioDto, req.body);
+      // 1. Extraer de req.query (son strings)
+      const { eventoId, items } = req.query;
+
+      // 2. Validar y parsear los datos
+      if (typeof items !== 'string' || !items) {
+        throw new CustomError("El parámetro 'items' (string JSON) es requerido.", StatusCodes.BAD_REQUEST);
+      }
+      
+      let itemsParsed: any;
+      try {
+        itemsParsed = JSON.parse(items);
+      } catch (e) {
+        throw new CustomError("El formato de 'items' no es un JSON válido.", StatusCodes.BAD_REQUEST);
+      }
+
+      // 3. Usar class-validator (como antes) para validar la estructura
+      const dto = plainToClass(CalcularPrecioDto, {
+        eventoId: Number(eventoId),
+        items: itemsParsed // Usamos el array parseado
+      });
       const errors = await validate(dto);
 
       if (errors.length > 0) {
@@ -134,20 +150,24 @@ export class OrdenCompraController {
         throw new CustomError(mensajesError.join(', '), StatusCodes.BAD_REQUEST);
       }
 
-      // 2. Llamar al servicio
+      // 4. Llamar al servicio (el servicio no cambia)
       const totalCentimos = await this.ordenCompraService.calcularTotal(dto);
 
-      // 3. Devolver la respuesta
+      // 5. Devolver la respuesta
       res.status(StatusCodes.OK).json({
         success: true,
         data: {
-          totalCentimos: totalCentimos,
-          // (Este es el valor que tu frontend usará como "puntos")
+          totalCentimos: totalCentimos
         }
       });
 
     } catch (error) {
-      HandleResponseError(res, error);
+      // El catch ahora también maneja el error de JSON.parse
+      if (error instanceof CustomError) {
+        HandleResponseError(res, error);
+      } else {
+        HandleResponseError(res, new CustomError("Error al procesar la solicitud: " + (error as Error).message, StatusCodes.BAD_REQUEST));
+      }
     }
   };
 }

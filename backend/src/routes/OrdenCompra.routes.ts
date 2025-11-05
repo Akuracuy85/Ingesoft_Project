@@ -7,6 +7,11 @@ import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 
 const router = Router();
 
+router.get(
+  "/calcular", 
+  sessionMiddleware.VerificarToken, // Protegida, asume que el usuario está logueado
+  ordenCompraController.calcularTotal
+);
 // POST /api/orden
 router.post("/", sessionMiddleware.VerificarToken, ordenCompraController.crearOrden);
 
@@ -29,10 +34,6 @@ router.get(
   ordenCompraController.contarMisEntradasPorEvento
 );
 // POST /api/orden/calcular
-router.post(
-  "/calcular", 
-  sessionMiddleware.VerificarToken, // Protegida, asume que el usuario está logueado
-  ordenCompraController.calcularTotal
-);
+
 
 export default router;
