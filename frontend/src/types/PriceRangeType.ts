@@ -1,4 +1,7 @@
+// src/types/PriceRangeType.ts (CORREGIDO)
+
 export type PriceRangeType = {
-  from: string; // o number si prefieres trabajar con números directamente
-  to: string;
+    // 🛑 Permitir string (input de texto) O null (estado inicial/vacío)
+    min: string | null; 
+    max: string | null; 
 };
