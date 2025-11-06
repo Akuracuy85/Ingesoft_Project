@@ -16,6 +16,12 @@ const DEFAULT_PASSWORD = "unite123";
 export default function AdminUsuarios(): React.ReactElement {
   const { user, isLoggedIn, isLoading } = useAuth();
   const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
+  const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "Activo" | "Inactivo">("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   if (isLoading) {
     return (
@@ -50,12 +56,6 @@ export default function AdminUsuarios(): React.ReactElement {
     );
   }
   
-  const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "Activo" | "Inactivo">("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const users = usersQuery.data ?? [];
 

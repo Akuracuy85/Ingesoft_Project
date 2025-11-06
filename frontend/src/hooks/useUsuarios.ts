@@ -42,7 +42,6 @@ export function useUsuarios() {
       queryClient.invalidateQueries({ queryKey: ["usuarios"] })
     },
   })
-
   return {
     usersQuery,
     createUser,
