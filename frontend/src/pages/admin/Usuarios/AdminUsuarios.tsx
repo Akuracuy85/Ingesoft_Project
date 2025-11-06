@@ -67,7 +67,9 @@ export default function AdminUsuarios(): React.ReactElement {
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.dni.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRole = roleFilter === "all" || u.rol === roleFilter;
+    const matchesRole =
+      roleFilter === "all" ||
+      u.rol?.toLowerCase() === roleFilter.toLowerCase();
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "Activo" ? u.activo : !u.activo);
