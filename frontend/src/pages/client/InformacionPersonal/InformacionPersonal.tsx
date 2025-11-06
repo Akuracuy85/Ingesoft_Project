@@ -16,13 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../../components/ui/dialog";
 import { User, Mail, CreditCard, Phone, FileText, Trash2, Plus, Star } from "lucide-react";
 import { clientUserService } from "../../../services/ClientUserService";
 
@@ -38,11 +31,11 @@ export default function InformacionPersonal() {
   const [points, setPoints] = useState<number>(0);
 
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showCardModal, setShowCardModal] = useState(false);
+
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const USE_MOCK = true;
+  const USE_MOCK = false;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,11 +67,25 @@ export default function InformacionPersonal() {
           const pointsData = await clientUserService.getPoints();
 
           setUserInfo({
-            fullName: profile.name,
+            fullName: profile.nombre,
             email: profile.email,
             dni: profile.dni,
-            phone: profile.phone,
+            phone: profile.celular,
           });
+
+          const firstCard = profile?.tarjetas?.[0];
+          if (firstCard) {
+            const last4 = String(firstCard.lastFourDigits ?? firstCard.numeroCuenta ?? "").slice(-4);
+            console.log("La tarjeta es: ", firstCard);
+            setSavedCard({
+              id: firstCard.id,
+              type: "TARJETA",
+              lastFourDigits: last4,
+            });
+          } else {
+            setSavedCard(null);
+          }
+
           setPoints(pointsData.totalPoints || 0);
         }
       } catch (err) {
@@ -95,10 +102,10 @@ export default function InformacionPersonal() {
     try {
       if (!USE_MOCK) {
         await clientUserService.updateProfile({
-          name: userInfo.fullName,
+          nombre: userInfo.fullName,
           email: userInfo.email,
           dni: userInfo.dni,
-          phone: userInfo.phone,
+          celular: userInfo.phone,
         });
       }
       setShowSuccess(true);
@@ -128,6 +135,10 @@ export default function InformacionPersonal() {
         </div>
       </ClientLayout>
     );
+  }
+
+  function setShowCardModal(arg0: boolean): void {
+    throw new Error("Function not implemented.");
   }
 
   return (
@@ -211,8 +222,8 @@ export default function InformacionPersonal() {
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle className="text-xl">Método de pago</CardTitle>
-                <CardDescription>Puedes guardar una tarjeta para futuras compras.</CardDescription>
+                <CardTitle className="text-xl">Tarjetas guardadas</CardTitle>
+                <CardDescription>Cuentas con estas tarjetas para futuras compras.</CardDescription>
               </CardHeader>
               <CardContent>
                 {savedCard ? (
@@ -227,9 +238,6 @@ export default function InformacionPersonal() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setShowCardModal(true)}>
-                        Cambiar
-                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -241,9 +249,7 @@ export default function InformacionPersonal() {
                     </div>
                   </div>
                 ) : (
-                  <Button onClick={() => setShowCardModal(true)} className="bg-[#D59B2C] hover:bg-[#C08A25] text-white">
-                    <Plus className="w-4 h-4 mr-2" /> Agregar tarjeta
-                  </Button>
+                  <p className="text-gray-500">No cuenta con tarjetas</p>
                 )}
               </CardContent>
             </Card>
@@ -264,30 +270,6 @@ export default function InformacionPersonal() {
           </div>
         </div>
       </div>
-
-      {/* 🔹 Modal para tarjeta */}
-      <Dialog open={showCardModal} onOpenChange={setShowCardModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{savedCard ? "Cambiar tarjeta" : "Agregar tarjeta"}</DialogTitle>
-            <DialogDescription>Ingresa los datos de tu tarjeta.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Label htmlFor="cardNumber">Número de tarjeta</Label>
-            <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-            <Label htmlFor="expiry">Fecha de expiración</Label>
-            <Input id="expiry" placeholder="MM/AA" />
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setShowCardModal(false)} className="flex-1">
-              Cancelar
-            </Button>
-            <Button onClick={() => setShowCardModal(false)} className="flex-1 bg-[#D59B2C] text-white">
-              Guardar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* 🔹 Alerta para eliminar */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>

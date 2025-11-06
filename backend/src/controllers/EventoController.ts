@@ -27,17 +27,17 @@ export class EventoController {
    */
 // En tu EventoController.ts
 
-
+  
 
   listarPublicados = async (req: Request, res: Response) => {
     try {
         // req.query contiene todos los filtros (ej. { departamento: 'Lima' })
-        const filtros: IFiltrosEvento = req.query;
+        const filtros: IFiltrosEvento = parseFiltros(req.query);
          // 1. Obtener las entidades de la base de datos (Ej: con 'nombre', 'fechaEvento', etc.)
         const entidades = await this.eventoService.listarEventosPublicados(filtros);
         // 2. APLICAR EL MAPEO A DTO: Transformar cada entidad a la estructura del frontend.
         // Aquí es donde se cambia 'nombre' a 'title' y el Buffer de imagen a Base64.
-        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad)); 
+        const dtos = entidades.map(entidad => EventMapper.toListDTO(entidad as any)); 
         // 3. Enviar la respuesta con los DTOs
         res.status(StatusCodes.OK).json({
             success: true,
@@ -178,9 +178,19 @@ export class EventoController {
     }
   };
 
-
+  
 // EventoController.ts
-
+  obtenerFiltrosUbicacion = async (req: Request, res: Response) => {
+    try {
+      const filtros = await this.eventoService.obtenerFiltrosUbicacion();
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: filtros,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
   /**
    * @description Devuelve los datos detallados de un evento necesarios para la compra (público).
    * 🚨 CORRECCIÓN CLAVE: Aplica el Mapper y devuelve SOLO el DTO.
@@ -218,4 +228,39 @@ export class EventoController {
 
 }
 
+function parseFiltros(query: Request['query']): IFiltrosEvento {
+  
+  /**
+   * Convierte un parámetro de consulta (que puede ser '5' o ['5', '8']) 
+   * en un array de números [5, 8].
+   */
+  const parseIds = (param: string | string[] | undefined): number[] | undefined => {
+    if (!param) return undefined;
+    
+    // Aseguramos que sea un array
+    const array = Array.isArray(param) ? param : [param];
+    
+    // Convertimos a número y filtramos valores inválidos (NaN)
+    const numbers = array.map(id => Number(id.trim())).filter(Number.isFinite);
+    
+    return numbers.length > 0 ? numbers : undefined;
+  };
+
+  return {
+    // Campos de texto
+    departamento: query.departamento as string | undefined,
+    provincia: query.provincia as string | undefined,
+    distrito: query.distrito as string | undefined,
+    fechaInicio: query.fechaInicio as string | undefined,
+    fechaFin: query.fechaFin as string | undefined,
+    
+    // 🛑 Convertir a número
+    precioMin: query.precioMin ? Number(query.precioMin) : undefined,
+    precioMax: query.precioMax ? Number(query.precioMax) : undefined,
+    
+    // 🛑 Convertir a array de números
+    artistaIds: parseIds(query.artistaIds as any),
+    categoriaIds: parseIds(query.categoriaIds as any),
+  };
+}
 export const eventoController = EventoController.getInstance();

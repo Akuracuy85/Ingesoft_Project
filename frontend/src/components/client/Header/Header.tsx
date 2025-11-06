@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false }) => {
   return (
     <>
       {/* 🔹 HEADER PRINCIPAL */}
-      <header className="flex items-center justify-between w-full h-[102px] px-6 bg-white shadow-sm relative z-50">
+      <header className="fixed top-0 left-0 w-full h-[102px] px-6 bg-white/90 backdrop-blur-md shadow-md flex items-center justify-between z-50">
         {/* LOGO */}
         <div className="flex items-center">
           {/* Es buena idea enlazar el logo al home */}

@@ -1,4 +1,6 @@
 // src/models/Event.ts
+import type { Zone } from "./Zone";
+
 export interface Event {
   id: number;
   title: string;
@@ -6,4 +8,6 @@ export interface Event {
   place: string;
   image: string;
   time: string;
+
+  zonas?: Zone[];
 }

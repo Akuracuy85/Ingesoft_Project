@@ -24,6 +24,7 @@ import { Repository } from "typeorm";
 import { TarifaDto } from "@/dto/evento/TarifaDto";
 import { Tarifa } from "@/models/Tarifa";
 
+export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
   private static instance: EventoService;
   private eventoRepository: EventoRepository;
@@ -123,12 +124,12 @@ export class EventoService {
         filtros
       );
 
-      if (!eventos.length) {
+      /*if (!eventos.length) {
         throw new CustomError(
           "No se encontraron eventos que coincidan con los filtros.",
           StatusCodes.NOT_FOUND
         );
-      }
+      }*/
 
       return eventos;
     } catch (error) {
@@ -682,7 +683,41 @@ export class EventoService {
       );
     }
   }
+  async obtenerFiltrosUbicacion(): Promise<FiltrosUbicacion> {
+    try {
+      const ubicacionesPlanas = await this.eventoRepository.obtenerUbicaciones();
 
+      // Procesar la lista plana para convertirla en un objeto anidado
+      const filtrosAnidados: FiltrosUbicacion = {};
+
+      for (const ubicacion of ubicacionesPlanas) {
+        const { departamento, provincia, distrito } = ubicacion;
+
+        // Ignorar si algún dato es nulo
+        if (!departamento || !provincia || !distrito) continue;
+
+        if (!filtrosAnidados[departamento]) {
+          filtrosAnidados[departamento] = {};
+        }
+        if (!filtrosAnidados[departamento][provincia]) {
+          filtrosAnidados[departamento][provincia] = [];
+        }
+        // Evitar duplicados (aunque distinct() ya ayuda)
+        if (!filtrosAnidados[departamento][provincia].includes(distrito)) {
+          filtrosAnidados[departamento][provincia].push(distrito);
+        }
+      }
+
+      return filtrosAnidados;
+
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener los filtros de ubicación",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
 
 export const eventoService = EventoService.getInstance();
