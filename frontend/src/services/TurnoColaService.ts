@@ -3,13 +3,11 @@ import type { TurnoCola } from "../models/TurnoCola";
 
 class TurnoColaService extends HttpClient {
   constructor() {
-    // cuando tu back defina la ruta, solo cambias el prefijo
     super("/turno-cola");
   }
 
   async getAll(): Promise<TurnoCola[]> {
     const res = await this.get<any>("");
-    // tu backend puede devolver un array directo o { data: [...] }
     return Array.isArray(res) ? res : res?.data || [];
   }
 
