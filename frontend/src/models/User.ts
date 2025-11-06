@@ -23,5 +23,6 @@ export interface UserFormData {
   apellidoMaterno: string;
   celular: string;
   rol: Rol;
+  password: string;
   activo: boolean;
 }
