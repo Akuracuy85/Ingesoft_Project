@@ -6,6 +6,7 @@ import ResumenCompra from "./ResumenCompra";
 import CompraService from "../../../../../services/CompraService";
 import { type CrearOrdenDto } from "../../../../../types/CrearOrdenDTO";
 import { FormularioDatosCompra } from "./FormularioDatosCompra";
+import { useNavigate } from "react-router-dom";
 
 // --- Props ---
 interface DatosCompraProps {
@@ -43,6 +44,8 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const [conadisCodes, setConadisCodes] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   // --- Asistentes derivados ---
   const allAttendees: Attendee[] = summaryItems.flatMap((item) =>
@@ -155,8 +158,9 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
 
     try {
       const response = await CompraService.crearOrden(payload);
-      alert(`¡Orden ${response.ordenId} creada! Redirigiendo a pago...`);
-      window.location.href = response.paymentUrl;
+      if (response.success) {
+        navigate("/eventos");
+      }
     } catch (error: any) {
       const errorMessage = error.message || error.response?.data?.message || "Error desconocido al crear la orden.";
       console.error("Error al crear la orden:", error);

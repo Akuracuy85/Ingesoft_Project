@@ -4,6 +4,7 @@ import HttpClient from './Client';
 import { type CrearOrdenDto } from '../types/CrearOrdenDTO';
 
 export type CrearOrdenResponse = {
+    success: boolean;
     ordenId: number; 
     paymentUrl: string; 
 };
@@ -20,6 +21,7 @@ class CompraService extends HttpClient {
         const respuesta = await super.post('', payload); 
 
         return {
+            success: respuesta.success,
             ordenId: respuesta.ordenId,
             paymentUrl: respuesta.paymentUrl,
         };
