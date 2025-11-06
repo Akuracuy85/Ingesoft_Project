@@ -10,6 +10,7 @@ import type { User, UserFormData, Rol } from "../../../models/User";
 
 import { Navigate, Link } from "react-router-dom";
 
+
 const DEFAULT_PASSWORD = "unite123";
 
 export default function AdminUsuarios(): React.ReactElement {
@@ -97,9 +98,8 @@ export default function AdminUsuarios(): React.ReactElement {
     setIsModalOpen(false);
   };
 
-  // 🧩 Cambia estado (Activo/Inactivo)
-  const handleToggleStatus = (userId: number, activoActual: boolean): void => {
-    toggleStatus.mutate({ id: userId, currentStatus: activoActual ? "Activo" : "Inactivo" });
+  const handleToggleStatus = (userId: number, currentStatus: "Activo" | "Inactivo"): void => {
+  toggleStatus.mutate({ id: userId, currentStatus });
   };
 
   const handleDeleteUser = (userId: number): void => {

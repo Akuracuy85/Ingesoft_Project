@@ -6,9 +6,10 @@ class UserService extends HttpClient {
     super("/usuario");
   }
 
-  async getAll(): Promise<User[]> {
-    const res = await this.get<any>("");
-    return Array.isArray(res) ? res : res?.data || [];
+  async getAll(token?: string): Promise<User[]> {
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined
+    const res = await this.get<any>("/", { headers })
+    return Array.isArray(res) ? res : res?.data || []
   }
 
   async create(userData: UserFormData): Promise<User> {
