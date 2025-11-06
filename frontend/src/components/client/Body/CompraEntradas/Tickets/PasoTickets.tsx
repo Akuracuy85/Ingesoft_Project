@@ -169,7 +169,12 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
       </div>
 
       <div className="text-center mb-4 text-orange-600 font-medium p-2 border border-orange-300 bg-orange-50 rounded">
-        Máximo de {maxTickets} entradas adquiridas por evento.
+        Máximo de 4 entradas adquiridas por evento.<br />
+        {maxTickets === 0
+          ? "No le quedan entradas disponibles para comprar."
+          : maxTickets === 1
+            ? "Le queda 1 entrada disponible para comprar."
+            : `Le quedan ${maxTickets} entradas disponibles para comprar.`}
       </div>
 
       <ZoneTable
