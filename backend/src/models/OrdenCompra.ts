@@ -1,7 +1,3 @@
-// CAMBIO: [2025-10-26] - Creada la entidad OrdenCompra
-// CAMBIO: [2025-10-26] - Refactor: Simplificados los totales
-// Se eliminan 'totalBruto', 'descuentoPuntos' y 'puntosUtilizados'
-// para alinearse con la nueva lógica (puntos no se usan para descuento).
 import { 
   Column, 
   CreateDateColumn, 
@@ -10,6 +6,7 @@ import {
   OneToMany, 
   PrimaryGeneratedColumn 
 } from "typeorm";
+
 import { Cliente } from "./Cliente";
 import { Evento } from "./Evento";
 import { EstadoOrden } from "../enums/EstadoOrden";
@@ -39,10 +36,8 @@ export class OrdenCompra {
   @Column({ type: "int" })
   cantidadEntradas: number;
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  @Column({ type: "int" }) // <-- CAMBIADO DE 'decimal' A 'int'
-  totalPagado: number; // Ahora S/ 600.00 se guarda como 60000
-  // --- FIN DE LA CORRECCIÓN --
+  @Column({ type: "int" })
+  totalPagado: number; 
 
   @CreateDateColumn()
   createdAt: Date;
