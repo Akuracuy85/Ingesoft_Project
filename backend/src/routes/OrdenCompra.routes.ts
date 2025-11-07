@@ -34,6 +34,18 @@ router.get(
   ordenCompraController.contarMisEntradasPorEvento
 );
 // POST /api/orden/calcular
+router.patch(
+  "/:id/confirmar-standar",
+  sessionMiddleware.VerificarToken,
+  ordenCompraController.confirmarStandar // Cambiado de 'confirmarPago'
+);
 
+// 🎯 2. NUEVA RUTA (Preventa)
+// PATCH /api/orden/:id/confirmar-preventa
+router.patch(
+  "/:id/confirmar-preventa",
+  sessionMiddleware.VerificarToken,
+  ordenCompraController.confirmarPreventa
+);
 
 export default router;
