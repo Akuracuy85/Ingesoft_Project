@@ -2,13 +2,13 @@
 
 /**
  * @description Estructura de Tarifa tal como es enviada por el backend.
- * Nota: Tu archivo Tarifa.ts estaba vacío, lo definimos aquí con los campos reales.
+ * Nota: Los campos de fecha se reciben como strings ISO.
  */
 export interface Tarifa {
     id: number;
     nombre: string;
     precio: number;
-    fechaInicio: string; // ISO String
-    fechaFin: string; // ISO String
-    descuento?: number; // Descuento opcional (añadido para UI de tarifas)
+    fechaInicio: string; // ISO String: Mapeado de Date (backend)
+    fechaFin: string; // ISO String: Mapeado de Date (backend)
+    descuento?: number; // Descuento opcional (si aplica)
 }

@@ -28,4 +28,6 @@ uniteRouter.use("/acciones", accionRoutes)
 
 uniteRouter.use("/categoria", categoriaRoutes) // Para GET /api/categoria
 uniteRouter.use("/artista", artistaRoutes)     // Para GET /api/artista
+
+
 export default uniteRouter;

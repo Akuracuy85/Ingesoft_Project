@@ -1,87 +1,185 @@
-// src/services/EventoService.ts (Versión Completa y Corregida)
+// src/services/EventoService.ts (COMPLETO Y CORREGIDO)
 
-// Importaciones de tipos y dependencias
 import { type Event } from '../models/Event'; 
-import HttpClient from './Client'; // Asume que esta es tu clase base para llamadas API
-// 🚨 CORRECCIÓN 1: Se elimina la importación de 'Zone' si no se usa para mantener el tipado limpio
-// import { type Zone } from '../models/Zone'; 
-// 🚀 CORRECCIÓN 2: Se importa el tipo correcto que usa tarifas
+import HttpClient from './Client'; 
 import { type ZonePurchaseDetail } from '../types/ZonePurchaseDetail'; 
+import { type FiltersType } from '../types/FiltersType';
+import type { PriceRangeType } from '../types/PriceRangeType'; 
+import type { DateRangeType } from '../types/DateRangeType'; // Importamos el tipo corregido
 
-
-// --- Definición del Tipo de Datos de Compra ---
-/**
- * @description Define la estructura de datos que el backend retorna 
- * para el proceso de compra de un evento.
- */
 export type EventDetailsForPurchase = Event & { 
-    // ✅ CORRECCIÓN CLAVE: El array debe ser del tipo que contiene las tarifas
     zonasDisponibles: ZonePurchaseDetail[]; 
     limiteEntradas: number;
 };
 
-// --- Clase del Servicio ---
+// ===============================================
+// FUNCIÓN AUXILIAR: Formateo de Fecha
+// ===============================================
+
+/**
+ * Convierte un objeto Date a una cadena YYYY-MM-DD (la API lo necesita como string).
+ */
+// 🛑 MODIFICACIÓN: Ahora solo acepta Date, ya que en el código fuente filtramos el null antes.
+const formatDate = (date: Date): string => {
+    // Utilizamos toISOString y slice para obtener el formato YYYY-MM-DD
+    return date.toISOString().slice(0, 10);
+};
+
+/**
+ * Obtiene la fecha actual en formato YYYY-MM-DD.
+ */
+const getTodayFormatted = (): string => {
+    const today = new Date();
+    return formatDate(today);
+}
+
+
+// ===============================================
+// FUNCIÓN DE MAPEADO: Convierte el objeto FiltersType a Query Params
+// ===============================================
+
+const mapFiltersToQueryParams = (filters: FiltersType): Record<string, any> => {
+    const params: Record<string, any> = {};
+
+    // 1. Mapeo de Ubicación 
+    if (filters.location?.departamento) {
+        params.departamento = filters.location.departamento; 
+    }
+    if (filters.location?.provincia) {
+        params.provincia = filters.location.provincia; 
+    }
+    if (filters.location?.distrito) {
+        params.distrito = filters.location.distrito; 
+    }
+
+    // 2. Mapeo de IDs (Categoría y Artista)
+    if (filters.categories && filters.categories.length > 0) {
+        params.categoriaIds = filters.categories; 
+    }
+    
+    if (filters.artists && filters.artists.length > 0) {
+        params.artistaIds = filters.artists; 
+    }
+    
+    // 3. Mapeo de Rango de Fechas
+    if (filters.dateRange !== null) { 
+        const dateRange = filters.dateRange; // Ya es DateRangeType
+        
+        // 🛑 CORRECCIÓN: Comprobamos que dateRange.start/end no sean null antes de llamar a formatDate
+        if (dateRange.start) {
+            params.fechaInicio = formatDate(dateRange.start);
+        }
+        if (dateRange.end) {
+            params.fechaFin = formatDate(dateRange.end);
+        }
+    }
+
+    // 4. Mapeo de Rango de Precio
+    if (filters.priceRange !== null) {
+        const priceRange = filters.priceRange as PriceRangeType;
+        if (priceRange.min !== null && priceRange.min !== undefined && priceRange.min !== '') {
+            params.precioMin = priceRange.min;
+        }
+        if (priceRange.max !== null && priceRange.max !== undefined && priceRange.max !== '') {
+            params.precioMax = priceRange.max;
+        }
+    }
+    
+
+    // Limpieza final de parámetros
+    return Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => {
+            if (v === null || v === undefined) return false;
+            if (typeof v === 'string' && v.trim() === '') return false;
+            return true;
+        })
+    );
+};
+
+// ===============================================
+// CLASE EVENTOSERVICE
+// ===============================================
+
 class EventoService extends HttpClient {
     
     constructor() {
-        // Inicializa HttpClient con la ruta base de la entidad '/evento'
-        super('/evento'); 
+        super('/evento'); // Base path para las llamadas a la API
     }
 
     /**
-     * @description Obtiene la lista de eventos PUBLICADOS (para el catálogo /eventos).
-     * @param filters Filtros opcionales para la consulta.
-     * @returns Una promesa que resuelve a una lista de objetos Event.
+     * Obtiene una lista de eventos, aplicando filtros.
      */
-    async listar(filters: Record<string, any> = {}): Promise<Event[]> { 
+    async listar(filters: FiltersType): Promise<Event[]> { 
         
-        const params = new URLSearchParams(filters).toString();
+        const path = '/publicados';
         
-        // Endpoint: /api/evento/publicados?filtros
-        const path = params ? `/publicados?${params}` : '/publicados';
+        const params = mapFiltersToQueryParams(filters);
         
-        // Llama al método GET de la clase base HttpClient
-        const respuesta = await super.get(path); 
+        console.log("EventoService -> Query Params Enviados:", params);
 
-
-        // Asumiendo que el backend devuelve { eventos: [...] }
-        return respuesta.eventos; 
+        try {
+            const respuesta = await super.get(path, { params: params }); 
+            return respuesta.eventos || respuesta; 
+        } catch (error) {
+            console.error("Error en la llamada a la API de eventos con filtros:", error);
+            throw error;
+        }
     }
     
     /**
-     * @description Obtiene los datos específicos de UN evento por ID para el proceso de compra.
-     * @param id El ID del evento a buscar.
-     * @returns Una promesa que resuelve al objeto EventDetailsForPurchase.
+     * Obtiene los eventos destacados (futuros y sin filtros restrictivos).
      */
-    async buscarDatosCompraPorId(id: string): Promise<EventDetailsForPurchase> { 
+    async listarDestacados(): Promise<Event[]> { 
+        // 🛑 CORRECCIÓN: Creamos un objeto DateRangeType válido con un objeto Date para 'start'
+        const today = new Date();
         
+        const featuredFilter: FiltersType = { 
+            categories: [], 
+            artists: [], 
+            // Usamos el tipo DateRangeType corregido: Date | null
+            dateRange: { start: today, end: null }, 
+            priceRange: null,
+            location: { departamento: '', provincia: '', distrito: '' }
+        };
+        
+        try {
+            const params = mapFiltersToQueryParams(featuredFilter);
+            const path = '/publicados';
+
+            const respuesta = await super.get(path, { params: params }); 
+            const initialData: Event[] = respuesta.eventos || respuesta;
+            
+            return initialData.slice(0, 5); 
+        } catch (error: any) {
+            if (error.response?.status !== 404) {
+                 console.warn("Advertencia: No se pudieron cargar los eventos para simular destacados.", error);
+            }
+            return []; 
+        }
+    }
+    
+    // ------------------------------------
+    // OTROS MÉTODOS
+    // ------------------------------------
+
+    async buscarDatosCompraPorId(id: string): Promise<EventDetailsForPurchase> { 
         if (!id) {
             throw new Error("Se requiere un ID de evento para la búsqueda de compra.");
         }
         
-        // Endpoint: /api/evento/compra/{id}
         const path = `/compra/${id}`; 
         
-        // Llama al método GET de la clase base HttpClient
         const respuesta = await super.get(path); 
 
-        // Asumiendo que el backend devuelve directamente el objeto EventDetailsForPurchase
         return respuesta; 
     }
     
-    /**
-     * @description Obtiene el detalle público de un evento por su ID.
-     * @param id El ID del evento
-     * @returns Un objeto con los datos completos del evento
-     */
-    async obtenerPorId(id: number): Promise<Event> {
-        if (!id) throw new Error("Se requiere un ID válido de evento");
-        const respuesta = await super.get(`/${id}`);
-        return respuesta.evento; // El backend devuelve { success, evento }
-    }
-
-    // Aquí puedes añadir otros métodos como crearEvento, actualizarEvento, etc.
+    async obtenerPorId(id: number): Promise<Event> {
+        if (!id) throw new Error("Se requiere un ID válido de evento");
+        
+        const respuesta = await super.get(`/${id}`);
+        return respuesta.evento; 
+    }
 }
 
-// Exporta una instancia única (Singleton) del servicio
 export default new EventoService();

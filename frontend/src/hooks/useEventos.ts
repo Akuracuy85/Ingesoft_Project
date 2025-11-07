@@ -1,48 +1,66 @@
-// src/hooks/useEventos.ts
+// src/hooks/useEventos.ts (CORREGIDO PARA PERSISTENCIA)
 
-import { useState, useEffect } from 'react';
-// Asegúrate de ajustar la ruta de importación de tu servicio
-import EventoService from '../services/EventoService'; 
-// Asegúrate de ajustar la ruta de importación de tu modelo
-import { type Event } from '../models/Event'; 
+import { useState, useEffect, useCallback } from 'react';
+import EventoService from '../services/EventoService';
+import { useFilters } from '../context/FilterContext'; // Usa el contexto para obtener los filtros
+import type { Event } from '../models/Event';
+import type { FiltersType } from '../types/FiltersType';
 
-// Definimos la interfaz del resultado del hook para TypeScript
-interface UseEventosResult {
-  events: Event[];
-  isLoading: boolean;
-  error: string | null;
-}
-
-/**
- * Hook personalizado para cargar y gestionar la lista de eventos.
- * Permite pasar filtros opcionales para usar la misma lógica con búsquedas.
- */
-export const useEventos = (filters: Record<string, any> = {}): UseEventosResult => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsLoading(true);
-        // Llama al servicio con los filtros
-        const data = await EventoService.listar(filters); 
-        setEvents(data);
-        setError(null);
-      } catch (err) {
-        console.error("Error al cargar eventos:", err);
-        setError("No se pudieron cargar los eventos. Verifique la conexión.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvents();
+export const useEventos = () => {
+    // 1. Obtener los filtros actuales del Context
+    const { filters } = useFilters(); // 🛑 Esta llamada ahora funciona gracias al main.tsx
     
-    // Dependencia: Recarga los datos solo cuando los filtros cambian.
-    // Usamos JSON.stringify para comparar el objeto de filtros de forma segura.
-  }, [JSON.stringify(filters)]); 
+    // 2. Estado local para los datos
+    const [events, setEvents] = useState<Event[]>([]);
+    const [featuredEvents, setFeaturedEvents] = useState<Event[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  return { events, isLoading, error };
+    // 3. Función de recarga de eventos
+    const fetchEvents = useCallback(async (currentFilters: FiltersType) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const fetchedEvents = await EventoService.listar(currentFilters);
+            setEvents(fetchedEvents);
+
+        } catch (err: any) {
+            setError(err.message || 'Error al obtener eventos.');
+            setEvents([]);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []); 
+
+    // 4. Función de carga de eventos destacados
+    const fetchFeaturedEvents = useCallback(async () => {
+        try {
+            const fetchedFeatured = await EventoService.listarDestacados();
+            setFeaturedEvents(fetchedFeatured);
+        } catch (err) {
+            console.warn("No se pudieron cargar eventos destacados.", err);
+            setFeaturedEvents([]);
+        }
+    }, []);
+    
+    // 5. EFECTO CLAVE PARA LA PERSISTENCIA Y RECARGA
+    useEffect(() => {
+        if (featuredEvents.length === 0) {
+             fetchFeaturedEvents();
+        }
+
+        // Siempre recarga eventos con los filtros actuales del contexto
+        fetchEvents(filters); 
+
+    }, [filters, fetchEvents, fetchFeaturedEvents, featuredEvents.length]);
+    
+    // 6. Retornar el estado y las funciones
+    return {
+        events,
+        featuredEvents,
+        isLoading,
+        error,
+        filters,
+        fetchEvents,
+    };
 };

@@ -1,9 +1,7 @@
 import React from "react";
 
-// 1. Definimos y exportamos el tipo de item del resumen
 export interface SummaryItem {
   zona: string;
-  // ✅ ADICIÓN CLAVE: Necesitamos el ID para enviar al backend
   zonaId: number; 
   cantidad: number;
   subtotal: number;
@@ -12,24 +10,20 @@ export interface SummaryItem {
 interface SelectionSummaryTableProps {
   items: SummaryItem[];
   onDeleteItem: (zoneName: string) => void;
-  // --- ¡NUEVO PROP! ---
-  // Esta función se ejecutará cuando se presione "Aceptar"
   onAcceptSelection: () => void;
 }
 
 const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
   items,
   onDeleteItem,
-  onAcceptSelection, // <-- Recibimos el nuevo prop
+  onAcceptSelection, 
 }) => {
-  // Calculamos el total
   const totalGeneral = items.reduce((acc, item) => acc + item.subtotal, 0);
 
   return (
-    // Ajustamos el ancho para que coincida con la tabla de arriba
+
     <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow">
       
-      {/* Encabezados (grid-cols-9) */}
       <div className="grid grid-cols-9 bg-gray-100 font-semibold text-gray-700">
         <div className="py-2 px-4 text-center col-span-3">Zona</div>
         <div className="py-2 px-4 text-center col-span-1">Cant.</div>
@@ -37,7 +31,6 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
         <div className="py-2 px-4 text-center col-span-2">Acción</div>
       </div>
       
-      {/* Filas de items (grid-cols-9) */}
       {items.map((item) => (
         <div
           key={item.zona}
@@ -60,16 +53,14 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
         </div>
       ))}
 
-      {/* Fila de Total (grid-cols-9) */}
       <div className="grid grid-cols-9 border-t-2 border-gray-300 bg-gray-50 font-bold text-gray-800">
         <div className="py-3 px-4 text-right col-span-4">TOTAL</div>
         <div className="py-3 px-4 text-center col-span-3">
           S/ {totalGeneral.toFixed(2)}
         </div>
-        <div className="col-span-2" /> {/* Celda vacía */}
+        <div className="col-span-2" />
       </div>
 
-      {/* --- ¡NUEVO BLOQUE PARA EL BOTÓN! --- */}
       <div className="p-4 flex justify-end bg-gray-50 border-t border-gray-200">
         <button
           onClick={onAcceptSelection}
