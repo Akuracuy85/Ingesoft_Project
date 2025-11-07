@@ -70,8 +70,8 @@ export const BodyCompraEntradas: React.FC = () => {
   const { data: fetchedUserPoints, isLoading: isLoadingPoints } = useQuery<number | null>({
     queryKey: ["userPoints"],
     queryFn: async () => {
-      const puntos = await PerfilService.getPuntos();
-      return puntos ?? 0;
+      const puntosInfo = await PerfilService.getPuntos();
+      return puntosInfo.totalPoints;;
     },
     enabled: !!user,
   });
