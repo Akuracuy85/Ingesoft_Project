@@ -269,56 +269,99 @@ export class OrdenCompraService {
    * @param ordenId - El ID de la orden a confirmar.
    * @param clienteId - El ID del cliente (del token) para verificar propiedad.
    */
-  async confirmarPagoYAsignarPuntos(ordenId: number, clienteId: number): Promise<OrdenCompra> {
+  private async validarOrdenParaConfirmacion(ordenId: number, clienteId: number): Promise<{ orden: OrdenCompra; cliente: Cliente }> {
+    const orden = await this.ordenCompraRepo.buscarPorId(ordenId);
+    if (!orden) {
+      throw new CustomError("Orden no encontrada.", StatusCodes.NOT_FOUND);
+    }
+    if (orden.cliente.id !== clienteId) {
+      throw new CustomError("No autorizado para confirmar esta orden.", StatusCodes.FORBIDDEN);
+    }
+    if (orden.estado !== EstadoOrden.PENDIENTE) {
+      throw new CustomError("Esta orden no puede ser confirmada (ya está completada o cancelada).", StatusCodes.BAD_REQUEST);
+    }
+    const cliente = await this.usuarioRepo.buscarPorId(clienteId) as Cliente;
+    if (!cliente || cliente.rol !== Rol.CLIENTE) {
+      throw new CustomError("Cliente no encontrado.", StatusCodes.NOT_FOUND);
+    }
+    return { orden, cliente };
+  }
+
+  // 🎯 1. MÉTODO RENOMBRADO Y MODIFICADO (Confirmar Standar - Gana 10%)
+  /**
+   * Confirma una orden (Estándar), la marca como 'COMPLETADA' y
+   * asigna el 10% del total pagado como puntos al cliente.
+   */
+  async confirmarStandarYAsignarPuntos(ordenId: number, clienteId: number): Promise<OrdenCompra> {
     try {
-      // 1. Buscar la orden CON su relación de cliente
-      const orden = await this.ordenCompraRepo.buscarPorId(ordenId);
+      const { orden, cliente } = await this.validarOrdenParaConfirmacion(ordenId, clienteId);
 
-      if (!orden) {
-        throw new CustomError("Orden no encontrada.", StatusCodes.NOT_FOUND);
-      }
-
-      // 2. Verificar propiedad (que el cliente logueado sea dueño de la orden)
-      if (orden.cliente.id !== clienteId) {
-        throw new CustomError("No autorizado para confirmar esta orden.", StatusCodes.FORBIDDEN);
-      }
-
-      // 3. Verificar estado (solo se pueden confirmar órdenes 'PENDIENTE')
-      if (orden.estado === EstadoOrden.COMPLETADA) {
-        throw new CustomError("Esta orden ya fue completada anteriormente.", StatusCodes.BAD_REQUEST);
-      }
-      if (orden.estado !== EstadoOrden.PENDIENTE) {
-        throw new CustomError("Esta orden no puede ser completada (puede estar cancelada).", StatusCodes.BAD_REQUEST);
-      }
-
-      // 4. Buscar la entidad completa del Cliente para actualizar sus puntos
-      const cliente = await this.usuarioRepo.buscarPorId(clienteId) as Cliente;
-      if (!cliente || cliente.rol !== Rol.CLIENTE) {
-        throw new CustomError("Cliente no encontrado.", StatusCodes.NOT_FOUND);
-      }
-
-      // 5. Aplicar la lógica de negocio (las 2 funciones que pediste)
-      
-      // Función 1: Cambiar estado
+      // --- Lógica de Negocio (Estándar) ---
+      // 1. Cambiar estado
       orden.estado = EstadoOrden.COMPLETADA;
       
-      // Función 2: Sumar puntos
-      const puntosGanados = orden.totalPagado; // 1 céntimo = 1 punto
+      // 2. Sumar 10% de puntos (redondeado al céntimo/punto más cercano)
+      const puntosGanados = Math.round(orden.totalPagado * 0.10);
       cliente.puntos = (cliente.puntos || 0) + puntosGanados;
+      // --- Fin Lógica ---
 
-      // 6. Ejecutar la transacción
+      // 3. Ejecutar la transacción (el método del repo no cambia)
       await this.ordenCompraRepo.confirmarOrdenYActualizarPuntos(orden, cliente);
 
-      return orden; // Devolver la orden actualizada
+      return orden;
 
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
-        "Error al confirmar la orden y asignar puntos: " + (error as Error).message, 
+        "Error al confirmar la orden estándar: " + (error as Error).message, 
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  // 🎯 2. NUEVO MÉTODO (Confirmar Preventa - Pierde 30%)
+  /**
+   * Confirma una orden (Preventa), la marca como 'COMPLETADA' y
+   * resta el 30% del total pagado de los puntos del cliente.
+   */
+  async confirmarPreventaYRestarPuntos(ordenId: number, clienteId: number): Promise<OrdenCompra> {
+    try {
+      const { orden, cliente } = await this.validarOrdenParaConfirmacion(ordenId, clienteId);
+
+      // --- Lógica de Negocio (Preventa) ---
+      // 1. Cambiar estado
+      orden.estado = EstadoOrden.COMPLETADA;
+
+      // 2. Calcular puntos a restar
+      const puntosARestar = Math.round(orden.totalPagado * 0.30);
+      const puntosActuales = cliente.puntos || 0;
+
+      // 3. VALIDACIÓN IMPORTANTE: Verificar si tiene puntos suficientes
+      if (puntosActuales < puntosARestar) {
+        throw new CustomError(
+          `Puntos insuficientes para confirmar. Puntos requeridos: ${puntosARestar}, Puntos actuales: ${puntosActuales}.`,
+          StatusCodes.CONFLICT // 409 Conflict es bueno para esto
+        );
+      }
+
+      // 4. Restar puntos
+      cliente.puntos = puntosActuales - puntosARestar;
+      // --- Fin Lógica ---
+
+      // 5. Ejecutar la transacción
+      await this.ordenCompraRepo.confirmarOrdenYActualizarPuntos(orden, cliente);
+
+      return orden;
+
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al confirmar la orden de preventa: " + (error as Error).message, 
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 }
+
 
 export const ordenCompraService = OrdenCompraService.getInstance();

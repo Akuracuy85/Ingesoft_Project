@@ -170,20 +170,41 @@ export class OrdenCompraController {
       }
     }
   };
-  confirmarPago = async (req: Request, res: Response) => {
+  private validateConfirmRequest(req: Request): { clienteId: number; ordenId: number } {
+    const clienteId = req.userId as number;
+    const ordenId = Number(req.params.id); 
+    if (!Number.isInteger(ordenId) || ordenId <= 0) {
+      throw new CustomError("El ID de la orden no es válido.", StatusCodes.BAD_REQUEST);
+    }
+    return { clienteId, ordenId };
+  }
+
+  // 🎯 1. MANEJADOR RENOMBRADO (Standar)
+  confirmarStandar = async (req: Request, res: Response) => {
     try {
-      const clienteId = req.userId as number;
-      const ordenId = Number(req.params.id); // El ID viene de la URL (ej: /api/orden/123/confirmar)
-
-      if (!Number.isInteger(ordenId) || ordenId <= 0) {
-        throw new CustomError("El ID de la orden no es válido.", StatusCodes.BAD_REQUEST);
-      }
-
-      const ordenActualizada = await this.ordenCompraService.confirmarPagoYAsignarPuntos(ordenId, clienteId);
+      const { clienteId, ordenId } = this.validateConfirmRequest(req);
+      const ordenActualizada = await this.ordenCompraService.confirmarStandarYAsignarPuntos(ordenId, clienteId);
 
       res.status(StatusCodes.OK).json({
         success: true,
-        message: "Orden completada y puntos asignados.",
+        message: "Orden (Estándar) completada. 10% de puntos asignados.",
+        data: ordenActualizada
+      });
+
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  // 🎯 2. NUEVO MANEJADOR (Preventa)
+  confirmarPreventa = async (req: Request, res: Response) => {
+    try {
+      const { clienteId, ordenId } = this.validateConfirmRequest(req);
+      const ordenActualizada = await this.ordenCompraService.confirmarPreventaYRestarPuntos(ordenId, clienteId);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Orden (Preventa) completada. 30% de puntos canjeados.",
         data: ordenActualizada
       });
 
