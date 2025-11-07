@@ -16,6 +16,7 @@ import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
 import { Cliente } from "@/models/Cliente";
 import { Rol } from "@/enums/Rol";
 import { CalcularPrecioDto } from '../dto/orden/calcular-precio.dto';
+import { PerfilRepository } from "@/repositories/PerfilRepository";
 // Definición de lo que devuelve el servicio
 interface OrdenCreationResult {
   orden: OrdenCompra;
@@ -28,6 +29,7 @@ export class OrdenCompraService {
   private usuarioRepo: UsuarioRepository;
   private eventoRepo: EventoRepository;
   private zonaRepo: ZonaRepository;
+private perfilRepo: PerfilRepository;
   
 
   private constructor() {
@@ -35,6 +37,7 @@ export class OrdenCompraService {
     this.usuarioRepo = UsuarioRepository.getInstance();
     this.eventoRepo = EventoRepository.getInstance();
     this.zonaRepo = ZonaRepository.getInstance();
+  this.perfilRepo = PerfilRepository.getInstance();
   }
 
   public static getInstance(): OrdenCompraService {
@@ -284,6 +287,8 @@ export class OrdenCompraService {
     if (!cliente || cliente.rol !== Rol.CLIENTE) {
       throw new CustomError("Cliente no encontrado.", StatusCodes.NOT_FOUND);
     }
+    const puntosCorrectos = await this.perfilRepo.buscarSoloPuntos(clienteId);
+    cliente.puntos = puntosCorrectos ? puntosCorrectos.puntos : 0;
     return { orden, cliente };
   }
 

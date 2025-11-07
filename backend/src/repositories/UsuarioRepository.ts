@@ -21,7 +21,7 @@ export class UsuarioRepository {
   }
 
   async buscarPorId(id: number): Promise<Usuario | null> {
-    return await this.repository.findOneBy({ id });
+    return await this.repository.findOne({ where: { id } });
   }
 
   async buscarPorEmail(email: string): Promise<Usuario | null> {
