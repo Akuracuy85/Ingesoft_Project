@@ -34,6 +34,10 @@ router.get(
   ordenCompraController.contarMisEntradasPorEvento
 );
 // POST /api/orden/calcular
-
+router.patch(
+  "/:id/confirmar",
+  sessionMiddleware.VerificarToken, // Requiere login
+  ordenCompraController.confirmarPago
+);
 
 export default router;

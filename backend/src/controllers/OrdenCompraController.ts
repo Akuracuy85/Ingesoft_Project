@@ -170,6 +170,27 @@ export class OrdenCompraController {
       }
     }
   };
+  confirmarPago = async (req: Request, res: Response) => {
+    try {
+      const clienteId = req.userId as number;
+      const ordenId = Number(req.params.id); // El ID viene de la URL (ej: /api/orden/123/confirmar)
+
+      if (!Number.isInteger(ordenId) || ordenId <= 0) {
+        throw new CustomError("El ID de la orden no es válido.", StatusCodes.BAD_REQUEST);
+      }
+
+      const ordenActualizada = await this.ordenCompraService.confirmarPagoYAsignarPuntos(ordenId, clienteId);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Orden completada y puntos asignados.",
+        data: ordenActualizada
+      });
+
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 }
 
 export const ordenCompraController = OrdenCompraController.getInstance();

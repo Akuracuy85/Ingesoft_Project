@@ -262,7 +262,63 @@ export class OrdenCompraService {
       if (error instanceof CustomError) throw error;
       throw new CustomError("Error al contar las entradas.", StatusCodes.INTERNAL_SERVER_ERROR);
     }
-  }  
+  }
+  /**
+   * Confirma una orden pendiente, la marca como 'COMPLETADA' y
+   * asigna los puntos de la compra al cliente.
+   * @param ordenId - El ID de la orden a confirmar.
+   * @param clienteId - El ID del cliente (del token) para verificar propiedad.
+   */
+  async confirmarPagoYAsignarPuntos(ordenId: number, clienteId: number): Promise<OrdenCompra> {
+    try {
+      // 1. Buscar la orden CON su relación de cliente
+      const orden = await this.ordenCompraRepo.buscarPorId(ordenId);
+
+      if (!orden) {
+        throw new CustomError("Orden no encontrada.", StatusCodes.NOT_FOUND);
+      }
+
+      // 2. Verificar propiedad (que el cliente logueado sea dueño de la orden)
+      if (orden.cliente.id !== clienteId) {
+        throw new CustomError("No autorizado para confirmar esta orden.", StatusCodes.FORBIDDEN);
+      }
+
+      // 3. Verificar estado (solo se pueden confirmar órdenes 'PENDIENTE')
+      if (orden.estado === EstadoOrden.COMPLETADA) {
+        throw new CustomError("Esta orden ya fue completada anteriormente.", StatusCodes.BAD_REQUEST);
+      }
+      if (orden.estado !== EstadoOrden.PENDIENTE) {
+        throw new CustomError("Esta orden no puede ser completada (puede estar cancelada).", StatusCodes.BAD_REQUEST);
+      }
+
+      // 4. Buscar la entidad completa del Cliente para actualizar sus puntos
+      const cliente = await this.usuarioRepo.buscarPorId(clienteId) as Cliente;
+      if (!cliente || cliente.rol !== Rol.CLIENTE) {
+        throw new CustomError("Cliente no encontrado.", StatusCodes.NOT_FOUND);
+      }
+
+      // 5. Aplicar la lógica de negocio (las 2 funciones que pediste)
+      
+      // Función 1: Cambiar estado
+      orden.estado = EstadoOrden.COMPLETADA;
+      
+      // Función 2: Sumar puntos
+      const puntosGanados = orden.totalPagado; // 1 céntimo = 1 punto
+      cliente.puntos = (cliente.puntos || 0) + puntosGanados;
+
+      // 6. Ejecutar la transacción
+      await this.ordenCompraRepo.confirmarOrdenYActualizarPuntos(orden, cliente);
+
+      return orden; // Devolver la orden actualizada
+
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al confirmar la orden y asignar puntos: " + (error as Error).message, 
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
 
 export const ordenCompraService = OrdenCompraService.getInstance();
