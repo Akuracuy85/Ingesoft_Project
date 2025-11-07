@@ -31,13 +31,29 @@ class CompraService extends HttpClient {
   async crearOrden(payload: CrearOrdenDto): Promise<CrearOrdenResponse> {
     const respuesta = await super.post("", payload);
 
-        return {
-            success: respuesta.success,
-            ordenId: respuesta.ordenId,
-            paymentUrl: respuesta.paymentUrl,
-        };
+      return {
+        success: respuesta.success,
+        ordenId: respuesta.ordenId,
+        paymentUrl: respuesta.paymentUrl,
+      };
     }
-    
+  async getCantidadEntradasPorEvento(eventoId: number): Promise<number | null> {
+    try {
+      const respuesta = await super.get<ApiResponseData<EntradasCountResponse>>(
+        `/mis-entradas/evento/${eventoId}/count`
+      );
+
+      if (respuesta.success && typeof respuesta.data.cantidad === "number") {
+        return respuesta.data.cantidad;
+      }
+
+      console.warn("Respuesta inesperada al contar entradas:", respuesta);
+      return null;
+    } catch (error) {
+      console.error("Error al obtener cantidad de entradas:", error);
+      return null;
+    }
+  }    
 }
 
 export default new CompraService();

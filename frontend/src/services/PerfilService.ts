@@ -72,7 +72,7 @@ class PerfilService {
   }
 
   /** Obtiene los puntos actuales del usuario */
-  async getPoints(): Promise<PointsInfo> {
+  async getPuntos(): Promise<PointsInfo> {
     try {
       const response = await this.client.get<any>("/puntos");
 

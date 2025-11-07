@@ -64,7 +64,7 @@ export default function InformacionPersonal() {
           setPoints(mockPoints.totalPoints);
         } else {
           const profile = await PerfilService.getProfile();
-          const pointsData = await PerfilService.getPoints();
+          const pointsData = await PerfilService.getPuntos();
 
           setUserInfo({
             fullName: profile.nombre,
