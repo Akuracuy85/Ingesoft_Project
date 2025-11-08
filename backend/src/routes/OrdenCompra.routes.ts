@@ -2,8 +2,8 @@
 // Define los endpoints para la gestión de órdenes.
 // (No se requieren cambios)
 import { Router } from "express";
-import { ordenCompraController } from "@/controllers/OrdenCompraController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
+import { ordenCompraController } from "../controllers/OrdenCompraController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
 
 const router = Router();
 

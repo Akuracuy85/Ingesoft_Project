@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { PerfilService } from "@/services/PerfilService";
-import { HandleResponseError } from "@/utils/Errors";
+import { PerfilService } from "../services/PerfilService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
-import { Usuario } from "@/models/Usuario";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
+import { Usuario } from "../models/Usuario";
 
 export class PerfilController {
   private static instance: PerfilController;

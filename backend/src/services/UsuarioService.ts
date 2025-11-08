@@ -1,9 +1,9 @@
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { Usuario } from "@/models/Usuario";
-import { Rol } from "@/enums/Rol";
-import { CustomError } from "@/types/CustomError";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { Usuario } from "../models/Usuario";
+import { Rol } from "../enums/Rol";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { PasswordHasher } from "@/types/PasswordHasher";
+import { PasswordHasher } from "../types/PasswordHasher";
 
 export class UsuarioService {
   private static instance: UsuarioService;

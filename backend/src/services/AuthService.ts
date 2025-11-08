@@ -1,7 +1,7 @@
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { CustomError } from "@/types/CustomError";
-import { PasswordHasher } from "@/types/PasswordHasher";
-import { GenerarAccessToken, GenerarRefreshToken } from "@/utils/JWTUtils";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { CustomError } from "../types/CustomError";
+import { PasswordHasher } from "../types/PasswordHasher";
+import { GenerarAccessToken, GenerarRefreshToken } from "../utils/JWTUtils";
 import { access } from "fs";
 import { StatusCodes } from "http-status-codes";
 

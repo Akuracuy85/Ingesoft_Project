@@ -1,28 +1,28 @@
-import { AppDataSource } from "@/database/data-source";
+import { AppDataSource } from "../database/data-source";
 import {
   EventoRepository,
   IFiltrosEvento,
-} from "@/repositories/EventoRepository";
-import { Evento } from "@/models/Evento";
-import { CustomError } from "@/types/CustomError";
+} from "../repositories/EventoRepository";
+import { Evento } from "../models/Evento";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { EventoBasicoDto } from "@/dto/evento/EventoBasicoDto";
-import { CrearEventoDto } from "@/dto/evento/CrearEventoDto";
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { Rol } from "@/enums/Rol";
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { Organizador } from "@/models/Organizador";
+import { EventoBasicoDto } from "../dto/evento/EventoBasicoDto";
+import { CrearEventoDto } from "../dto/evento/CrearEventoDto";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { Rol } from "../enums/Rol";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { Organizador } from "../models/Organizador";
 import { randomBytes } from "crypto";
-import { ActualizarEventoDto } from "@/dto/evento/ActualizarEventoDto";
-import { Documento } from "@/models/Documento";
-import { DocumentoDto } from "@/dto/evento/DocumentoDto";
-import { ZonaDto } from "@/dto/evento/ZonaDto";
-import { Zona } from "@/models/Zona";
-import { EventoDetalleDto } from "@/dto/evento/EventoDetalleDto";
-import { Artista } from "@/models/Artista";
+import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
+import { Documento } from "../models/Documento";
+import { DocumentoDto } from "../dto/evento/DocumentoDto";
+import { ZonaDto } from "../dto/evento/ZonaDto";
+import { Zona } from "../models/Zona";
+import { EventoDetalleDto } from "../dto/evento/EventoDetalleDto";
+import { Artista } from "../models/Artista";
 import { Repository } from "typeorm";
-import { TarifaDto } from "@/dto/evento/TarifaDto";
-import { Tarifa } from "@/models/Tarifa";
+import { TarifaDto } from "../dto/evento/TarifaDto";
+import { Tarifa } from "../models/Tarifa";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {

@@ -1,4 +1,4 @@
-import { Usuario } from "@/models/Usuario";
+import { Usuario } from "../models/Usuario";
 import "express";
 
 declare module "express" {

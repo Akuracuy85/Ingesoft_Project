@@ -1,4 +1,4 @@
-import { EstadoEvento } from "@/enums/EstadoEvento";
+import { EstadoEvento } from "../../enums/EstadoEvento";
 import { DocumentoDto } from "./DocumentoDto";
 import { ZonaDto } from "./ZonaDto";
 

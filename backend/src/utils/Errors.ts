@@ -1,4 +1,4 @@
-import { CustomError } from "@/types/CustomError";
+import { CustomError } from "../types/CustomError";
 import { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 

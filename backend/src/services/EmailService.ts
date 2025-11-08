@@ -1,13 +1,13 @@
 import nodemailer from "nodemailer";
 import type { SendMailOptions } from "nodemailer";
-import { CustomError } from "@/types/CustomError";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import path from "path";
 import fs from "fs";
 import Handlebars from "handlebars";
-import { OrdenCompra } from "@/models/OrdenCompra";
-import { GenerarQRDeEntrada } from "@/utils/QR";
-import { FormatearFecha } from "@/utils/StringUtils";
+import { OrdenCompra } from "../models/OrdenCompra";
+import { GenerarQRDeEntrada } from "../utils/QR";
+import { FormatearFecha } from "../utils/StringUtils";
 
 export class EmailService {
   private static instance: EmailService;

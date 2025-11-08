@@ -1,15 +1,15 @@
 // src/controllers/OrdenCompraController.ts
 
 import { Request, Response } from "express";
-import { OrdenCompraService } from "@/services/OrdenCompraService";
-import { HandleResponseError } from "@/utils/Errors";
+import { OrdenCompraService } from "../services/OrdenCompraService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { CrearOrdenDto } from "@/dto/orden/crear-orden.dto";
+import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
 import { plainToClass } from "class-transformer"; 
 import { validate } from "class-validator";
-import { CustomError } from "@/types/CustomError";
-import { CalcularPrecioDto } from "@/dto/orden/calcular-precio.dto";
-import { EmailService } from "@/services/EmailService";
+import { CustomError } from "../types/CustomError";
+import { CalcularPrecioDto } from "../dto/orden/calcular-precio.dto";
+import { EmailService } from "../services/EmailService";
 
 function validateRequest(req: Request): { clienteId: number; eventoId: number } {
   const clienteId = req.userId; // ID viene del middleware VerificarToken
