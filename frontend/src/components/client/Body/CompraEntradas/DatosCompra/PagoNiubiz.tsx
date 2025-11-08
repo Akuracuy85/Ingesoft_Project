@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import LogoUnite from "@/assets/Logo_Unite.svg";
 import { CreditCard, Calendar, Lock, User, Mail } from "lucide-react";
 
@@ -19,9 +20,8 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
   });
   const [isPaying, setIsPaying] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handlePay = async () => {
     const { tarjeta, fecha, cvv, nombre, apellido, email } = form;
@@ -31,34 +31,36 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
     }
 
     setIsPaying(true);
-    // Simulación de pago
     setTimeout(async () => {
-      await onConfirm(); // dispara confirmación → envío correo desde el backend
+      await onConfirm(); // aquí se confirmará la compra y se enviará el correo
       setIsPaying(false);
     }, 2000);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[2px] bg-transparent animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-6 relative animate-slideUp">
+  // 🔸 Renderizamos el modal en un portal para que se superponga al contenido existente
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200">
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
         >
           ×
         </button>
 
         {/* Logo y encabezado */}
-        <div className="text-center mb-5">
-          <img src={LogoUnite} alt="Logo Unite" className="h-12 mx-auto mb-3" />
-          <p className="text-gray-600 text-sm">
-            <strong>Recuerda activar las compras por internet</strong><br />con tu banco
+        <div className="text-center mb-6">
+          <img src={LogoUnite} alt="Logo Unite" className="h-14 mx-auto mb-4" />
+          <p className="text-gray-700 text-sm leading-tight">
+            <strong>Recuerda activar las compras por internet</strong>
+            <br />con tu banco
           </p>
         </div>
 
         {/* Campos */}
         <div className="space-y-3">
+          {/* Número de tarjeta */}
           <div className="relative">
             <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
@@ -75,6 +77,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
             />
           </div>
 
+          {/* MM/AA y CVV */}
           <div className="flex gap-2">
             <div className="relative w-1/2">
               <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -82,10 +85,15 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 name="fecha"
                 placeholder="MM/AA"
                 value={form.fecha}
-                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                maxLength={5}
+                onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, ""); // solo números
+                    if (value.length > 2) value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                    else value = value.slice(0, 2);
+                    setForm({ ...form, fecha: value });
+                }}
+                maxLength={5} // mantiene el límite por el slash
                 className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
-              />
+                />
             </div>
             <div className="relative w-1/2">
               <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -104,6 +112,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
             </div>
           </div>
 
+          {/* Nombre y Apellido */}
           <div className="flex gap-2">
             <div className="relative w-1/2">
               <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
@@ -127,6 +136,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
             </div>
           </div>
 
+          {/* Email */}
           <div className="relative">
             <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <input
@@ -140,7 +150,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           </div>
         </div>
 
-        {/* Botón de pago */}
+        {/* Botón pagar */}
         <button
           onClick={handlePay}
           disabled={isPaying}
@@ -149,10 +159,10 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           {isPaying ? "Procesando..." : `Pagar S/${total.toFixed(2)}`}
         </button>
 
-        {/* Información inferior */}
+        {/* Info inferior */}
         <div className="mt-4 text-center text-xs text-gray-500">
           <p>
-            Informa sobre el tratamiento de tus datos personales{" "}
+            Infórmate sobre el tratamiento de tus datos personales{" "}
             <a href="#" className="text-amber-600 font-semibold">
               aquí
             </a>
@@ -161,11 +171,11 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           <div className="flex justify-center gap-3 mt-2 opacity-80">
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" className="h-5" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" className="h-5" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Diners_Club_Logo3.svg" className="h-5" />
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
