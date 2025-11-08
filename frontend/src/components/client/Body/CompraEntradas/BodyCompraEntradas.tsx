@@ -1,24 +1,23 @@
-// src/components/client/Body/CompraEntradas/BodyCompraEntradas.tsx
 import React, { useState, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../../hooks/useAuth";
 
 import EventoService from "../../../../services/EventoService";
-import { type EventDetailsForPurchase } from "../../../../services/EventoService";
+import type { EventDetailsForPurchase } from "../../../../services/EventoService";
 import PerfilService from "../../../../services/PerfilService";
 import CompraService from "../../../../services/CompraService";
 
-// Componentes de pasos
 import { PasoTickets } from "./Tickets/PasoTickets";
 import DatosCompra from "./DatosCompra/PasoDatosCompra";
 import StepIndicator from "./StepIndicator";
 
-// Tipos
 import type { SummaryItem } from "./Tickets/SelectionSummaryTable";
 import type { Zone } from "../../../../models/Zone";
-import { type ZonePurchaseDetail } from "../../../../types/ZonePurchaseDetail";
+import type { ZonePurchaseDetail } from "../../../../types/ZonePurchaseDetail";
 import type { Step } from "../../../../types/Step";
+
+import { calcularPuntos } from "../../../../utils/points";
 
 const steps: Step[] = [
   { title: "TICKETS", number: 1 },
@@ -30,20 +29,15 @@ export const BodyCompraEntradas: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // --- Estado principal ---
   const [currentStep, setCurrentStep] = useState(0);
   const [selectionSummary, setSelectionSummary] = useState<SummaryItem[]>([]);
 
-  // --- Variables de puntos ---
-  const pointsGainPerTicket = 10;
-  const pointsCostPerTicket = 100;
-
-  // --- Tipo de tarifa y flujo de puntos ---
+  // --- Tipo de tarifa ---
   const tipoTarifa: "Normal" | "Preventa" = location.state?.tipoTarifa || "Normal";
   const isUsingPointsFlow = tipoTarifa === "Preventa";
   const purchaseType: "normal" | "preferencial" = isUsingPointsFlow ? "preferencial" : "normal";
 
-  // --- Consulta de cantidad de entradas poseídas ---
+  // --- Consulta cantidad de entradas ---
   const { data: ticketsPoseidos = 0, isLoading: isLoadingTicketsPoseidos } = useQuery<number>({
     queryKey: ["ticketsPoseidos", id],
     queryFn: async () => {
@@ -56,7 +50,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   const MAX_TICKETS = Math.max(0, 4 - ticketsPoseidos);
 
-  // --- Consulta de detalles del evento ---
+  // --- Consulta de evento ---
   const { data: eventDetails, isLoading, isError, error } = useQuery<EventDetailsForPurchase>({
     queryKey: ["eventPurchase", id],
     queryFn: () => {
@@ -66,12 +60,12 @@ export const BodyCompraEntradas: React.FC = () => {
     enabled: !!id,
   });
 
-  // --- Consulta de puntos del usuario ---
+  // --- Puntos del usuario ---
   const { data: fetchedUserPoints, isLoading: isLoadingPoints } = useQuery<number | null>({
     queryKey: ["userPoints"],
     queryFn: async () => {
       const puntosInfo = await PerfilService.getPuntos();
-      return puntosInfo.totalPoints;;
+      return puntosInfo.totalPoints;
     },
     enabled: !!user,
   });
@@ -95,13 +89,10 @@ export const BodyCompraEntradas: React.FC = () => {
     [selectionSummary]
   );
 
-  const totalPointsImpact = useMemo(() => {
-    if (selectionSummary.length === 0) return 0;
-
-    return isUsingPointsFlow
-      ? selectionSummary.reduce((acc, item) => acc + item.cantidad * pointsCostPerTicket, 0)
-      : selectionSummary.reduce((acc, item) => acc + item.cantidad * pointsGainPerTicket, 0);
-  }, [selectionSummary, isUsingPointsFlow, pointsGainPerTicket, pointsCostPerTicket]);
+  const totalPointsImpact = useMemo(
+    () => calcularPuntos(finalSubtotal, isUsingPointsFlow),
+    [finalSubtotal, isUsingPointsFlow]
+  );
 
   // --- Handlers ---
   const handleStep1Complete = (summary: SummaryItem[]) => {
@@ -109,9 +100,7 @@ export const BodyCompraEntradas: React.FC = () => {
     setCurrentStep(1);
   };
 
-  const handleGoBack = () => {
-    setCurrentStep(0);
-  };
+  const handleGoBack = () => setCurrentStep(0);
 
   // --- Loading/Error ---
   if (isLoading || isLoadingPoints || isLoadingTicketsPoseidos) {
@@ -156,8 +145,6 @@ export const BodyCompraEntradas: React.FC = () => {
           userPoints={userPoints}
           maxTickets={MAX_TICKETS}
           onStepComplete={handleStep1Complete}
-          pointsGainPerTicket={pointsGainPerTicket}
-          pointsCostPerTicket={pointsCostPerTicket}
         />
       )}
 

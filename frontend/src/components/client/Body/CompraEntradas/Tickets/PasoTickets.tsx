@@ -1,37 +1,31 @@
-// src/components/client/Body/CompraEntradas/Tickets/PasoTickets.tsx
-
 import React, { useState, useMemo } from "react";
-
-// Componentes UI
 import ZoneTable from "./ZoneTable/ZoneTable";
 import Encabezado from "../../../../../assets/EstadioImagen.png";
 import SelectionSummaryTable from "./SelectionSummaryTable";
-
-// Tipos
 import type { EventDetailsForPurchase } from "../../../../../services/EventoService";
 import type { SummaryItem } from "./SelectionSummaryTable";
 import type { Zone } from "../../../../../models/Zone";
-import { type ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail";
+import type { ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail";
+import { calcularPuntos } from "../../../../../utils/points";
 
 interface PasoTicketsProps {
   eventDetails: EventDetailsForPurchase;
   zones: Zone[];
   zonesToMap: ZonePurchaseDetail[];
-  tipoTarifa: 'Normal' | 'Preventa';
+  tipoTarifa: "Normal" | "Preventa";
   isUsingPointsFlow: boolean;
   userPoints: number;
-  pointsGainPerTicket: number;
-  pointsCostPerTicket: number;
   maxTickets: number;
   onStepComplete: (summary: SummaryItem[]) => void;
 }
 
-// Función para obtener el precio activo de la zona según tarifa
-const getActiveZonePrice = (zoneDetail: ZonePurchaseDetail, tarifa: 'Normal' | 'Preventa'): number => {
-  if (tarifa === 'Preventa' && zoneDetail.tarifaPreventa) {
-    return zoneDetail.tarifaPreventa.precio;
-  }
-  return zoneDetail.tarifaNormal.precio;
+const getActiveZonePrice = (
+  zoneDetail: ZonePurchaseDetail,
+  tarifa: "Normal" | "Preventa"
+): number => {
+  return tarifa === "Preventa" && zoneDetail.tarifaPreventa
+    ? zoneDetail.tarifaPreventa.precio
+    : zoneDetail.tarifaNormal.precio;
 };
 
 export const PasoTickets: React.FC<PasoTicketsProps> = ({
@@ -41,141 +35,100 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
   tipoTarifa,
   isUsingPointsFlow,
   userPoints,
-  pointsGainPerTicket,
-  pointsCostPerTicket,
   maxTickets,
-  onStepComplete
+  onStepComplete,
 }) => {
-
-  // --- Estados locales ---
   const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const [selectionSummary, setSelectionSummary] = useState<SummaryItem[]>([]);
+  const [isSynced, setIsSynced] = useState(true); // 🔹 indica si el resumen está sincronizado
 
-  // --- Cálculos en tiempo real ---
-  const totalSelectedTickets = useMemo(() => 
-    Object.values(selectedQuantities).reduce((sum, q) => sum + q, 0)
-  , [selectedQuantities]);
+  // 🎟️ Total de entradas seleccionadas (actuales)
+  const totalSelectedTickets = useMemo(
+    () => Object.values(selectedQuantities).reduce((sum, q) => sum + q, 0),
+    [selectedQuantities]
+  );
 
+  // 💰 Subtotal provisional (de la tabla superior)
   const potentialSubtotal = useMemo(() => {
     return Object.entries(selectedQuantities).reduce((total, [zoneName, quantity]) => {
-      if (!quantity) return total;
-      const zoneDetail = zonesToMap.find(z => z.nombre === zoneName);
-      if (!zoneDetail) return total;
-      return total + getActiveZonePrice(zoneDetail, tipoTarifa) * quantity;
+      const zoneDetail = zonesToMap.find((z) => z.nombre === zoneName);
+      return zoneDetail ? total + getActiveZonePrice(zoneDetail, tipoTarifa) * quantity : total;
     }, 0);
   }, [selectedQuantities, zonesToMap, tipoTarifa]);
 
-  // --- Lógica de puntos separada ---
-  const totalPointsImpact = useMemo(() => {
-    if (totalSelectedTickets === 0) return 0;
-    return isUsingPointsFlow
-      ? totalSelectedTickets * pointsCostPerTicket // GASTAR puntos
-      : totalSelectedTickets * pointsGainPerTicket; // ACUMULAR puntos
-  }, [totalSelectedTickets, isUsingPointsFlow, pointsGainPerTicket, pointsCostPerTicket]);
+  // 🔹 Puntos estimados (tabla superior)
+  const potentialPointsImpact = useMemo(
+    () => calcularPuntos(potentialSubtotal, isUsingPointsFlow),
+    [potentialSubtotal, isUsingPointsFlow]
+  );
 
-  const totalPointsCost = isUsingPointsFlow ? totalPointsImpact : 0;
+  // 🔹 Subtotal confirmado (del resumen)
+  const confirmedSubtotal = useMemo(
+    () => selectionSummary.reduce((acc, item) => acc + item.subtotal, 0),
+    [selectionSummary]
+  );
+
+  // 🔹 Puntos confirmados (tabla resumen)
+  const confirmedPointsImpact = useMemo(
+    () => calcularPuntos(confirmedSubtotal, isUsingPointsFlow),
+    [confirmedSubtotal, isUsingPointsFlow]
+  );
+
+  const totalPointsCost = isUsingPointsFlow ? potentialPointsImpact : 0;
   const hasEnoughPoints = userPoints >= totalPointsCost;
 
-  const isSummaryVisible = selectionSummary.length > 0;
-  const canProceedToSummary = totalSelectedTickets > 0 && totalSelectedTickets <= maxTickets;
-
-  // --- Handlers ---
   const handleQuantityChange = (zoneName: string, newQuantity: number) => {
-    const currentQuantity = selectedQuantities[zoneName] || 0;
-    const diff = newQuantity - currentQuantity;
-    const newTotal = totalSelectedTickets + diff;
-
-    let quantityToSet = newQuantity;
-    if (newTotal > maxTickets) {
-      const maxAllowed = currentQuantity + (maxTickets - totalSelectedTickets);
-      quantityToSet = Math.min(newQuantity, maxAllowed);
-      if (newQuantity > currentQuantity) {
-        alert(`Solo puedes comprar un máximo de ${maxTickets} entradas en total.`);
-      }
-    }
-
-    setSelectedQuantities(prev => ({ ...prev, [zoneName]: quantityToSet }));
+    setSelectedQuantities((prev) => {
+      if (prev[zoneName] === newQuantity) return prev;
+      setIsSynced(false); // 🔹 Desincroniza si cambian las cantidades
+      return { ...prev, [zoneName]: newQuantity };
+    });
   };
 
   const handleSubmitSelection = () => {
-    if (totalSelectedTickets === 0) {
-      alert("Debes seleccionar al menos una entrada para continuar.");
-      return;
-    }
-    if (isUsingPointsFlow && !hasEnoughPoints) {
-      alert(`No tienes suficientes puntos. Necesitas ${totalPointsCost} y solo tienes ${userPoints}.`);
-      return;
-    }
-
     const newSummary: SummaryItem[] = [];
-    zonesToMap.forEach(detail => {
+    zonesToMap.forEach((detail) => {
       const cantidad = selectedQuantities[detail.nombre] || 0;
       if (cantidad > 0) {
         const subtotal = getActiveZonePrice(detail, tipoTarifa) * cantidad;
-        newSummary.push({
-          zona: detail.nombre,
-          zonaId: detail.id,
-          cantidad,
-          subtotal
-        });
+        newSummary.push({ zona: detail.nombre, zonaId: detail.id, cantidad, subtotal });
       }
     });
 
     setSelectionSummary(newSummary);
+    setIsSynced(true); // 🔹 Al actualizar, vuelve a sincronizar
   };
 
   const handleDeleteSummaryItem = (zoneName: string) => {
-    setSelectionSummary(prev => prev.filter(item => item.zona !== zoneName));
+    setSelectionSummary((prev) => prev.filter((item) => item.zona !== zoneName));
     handleQuantityChange(zoneName, 0);
   };
 
   const handleAcceptSelection = () => {
-    if (selectionSummary.length === 0) {
-      alert("Debes 'Agregar' tu selección antes de continuar.");
+    if (!isSynced) {
+      alert("Debes presionar 'Actualizar selección' antes de continuar.");
       return;
     }
-    if (totalSelectedTickets > maxTickets) {
-      alert(`Error: La cantidad máxima de entradas es ${maxTickets}. Reduce tu selección.`);
-      return;
-    }
-    if (isUsingPointsFlow && !hasEnoughPoints) {
-      alert(`No tienes suficientes puntos. Necesitas ${totalPointsImpact} y solo tienes ${userPoints}.`);
-      return;
-    }
-
     onStepComplete(selectionSummary);
   };
 
-  // --- Renderizado ---
+  const isSummaryVisible = selectionSummary.length > 0;
+
+  // 🆕 --- NUEVOS CÁLCULOS DE LÍMITE DE ENTRADAS ---
+  const ticketsComprados = 4 - maxTickets; // Entradas ya compradas
+  const maxAlcanzado = maxTickets === 0;   // Límite alcanzado
+
   return (
     <>
-      <img src={Encabezado} alt="Encabezado del Evento" className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover" />
+      <img
+        src={Encabezado}
+        alt="Encabezado del Evento"
+        className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
+      />
+
       <h1 className="text-2xl font-semibold text-gray-800 my-4">
         Compra tus entradas para {eventDetails.title}
       </h1>
-
-      {/* Indicador de tarifa y flujo de puntos */}
-      <div className="w-full max-w-2xl text-center mb-4 text-lg font-medium p-3 border border-gray-300 bg-white rounded shadow-sm">
-        Tarifa seleccionada:  
-        <span className={`font-bold ${tipoTarifa === 'Preventa' ? 'text-blue-600' : 'text-green-600'}`}>
-          {" "}{tipoTarifa}
-        </span>
-        <div className="text-sm font-normal mt-1">
-          {isUsingPointsFlow 
-            ? <span className="text-red-600">(Esta compra usará {totalPointsImpact} Puntos. Saldo: {userPoints})</span>
-            : <span className="text-green-600">(Esta compra acumulará {totalPointsImpact} Puntos)</span>
-          }
-        </div>
-      </div>
-
-      <div className="text-center mb-4 text-orange-600 font-medium p-2 border border-orange-300 bg-orange-50 rounded">
-        Máximo de 4 entradas adquiridas por evento.<br />
-        {maxTickets === 0
-          ? "No le quedan entradas disponibles para comprar."
-          : maxTickets === 1
-            ? "Le queda 1 entrada disponible para comprar."
-            : `Le quedan ${maxTickets} entradas disponibles para comprar.`}
-      </div>
 
       <ZoneTable
         zones={zones}
@@ -183,21 +136,46 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
         onQuantityChange={handleQuantityChange}
         maxGlobalLimit={maxTickets}
         currentTotal={totalSelectedTickets}
+        purchaseType={tipoTarifa === "Preventa" ? "preventa" : "normal"}
       />
 
+      {/* 🆕 Aviso de límite de entradas */}
+      <div
+        className={`mt-3 text-center py-2 px-4 rounded-lg ${
+          maxAlcanzado
+            ? "bg-red-50 border border-red-300 text-red-700"
+            : "bg-yellow-50 border border-yellow-300 text-yellow-800"
+        }`}
+      >
+        {maxAlcanzado ? (
+          <>Ya tienes las 4 entradas permitidas para este evento. No puedes comprar más.</>
+        ) : (
+          <>
+            Ya tienes <b>{ticketsComprados}</b> entrada
+            {ticketsComprados === 1 ? "" : "s"} para este evento. Puedes comprar hasta{" "}
+            <b>{maxTickets}</b> más (máximo total: 4).
+          </>
+        )}
+      </div>
+
+      {/* 🔹 Botón que cambia según el estado de sincronización */}
       <button
         onClick={handleSubmitSelection}
-        disabled={!canProceedToSummary || (isUsingPointsFlow && !hasEnoughPoints)}
-        className="mt-6 bg-yellow-700 text-white px-6 py-2 rounded-lg shadow hover:bg-yellow-800 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={maxAlcanzado} // 🔹 evita que agregue si ya llegó al máximo
+        className={`mt-6 px-6 py-2 rounded-lg shadow font-semibold transition duration-150 ${
+          maxAlcanzado
+            ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+            : isSynced
+            ? "bg-yellow-700 text-white hover:bg-yellow-800"
+            : "bg-yellow-500 text-white animate-pulse"
+        }`}
       >
-        {isSummaryVisible ? "Actualizar Selección" : "Agregar"}
+        {isSummaryVisible
+          ? isSynced
+            ? "Actualizar Selección"
+            : "Actualizar (Desincronizado)"
+          : "Agregar"}
       </button>
-
-      {isUsingPointsFlow && !hasEnoughPoints && totalSelectedTickets > 0 && (
-        <div className="mt-4 text-red-600 font-medium">
-          No tienes suficientes puntos para {totalSelectedTickets} entrada(s). Necesitas {totalPointsCost}.
-        </div>
-      )}
 
       {isSummaryVisible && (
         <div className="w-full flex flex-col items-center mt-10">
@@ -208,6 +186,10 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
             items={selectionSummary}
             onDeleteItem={handleDeleteSummaryItem}
             onAcceptSelection={handleAcceptSelection}
+            isUsingPointsFlow={isUsingPointsFlow}
+            totalPointsImpact={confirmedPointsImpact} // ✅ usa puntos confirmados
+            userPoints={userPoints}
+            isSynced={isSynced}
           />
         </div>
       )}
