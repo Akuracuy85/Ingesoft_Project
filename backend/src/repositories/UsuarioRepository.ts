@@ -21,7 +21,7 @@ export class UsuarioRepository {
   }
 
   async buscarPorId(id: number): Promise<Usuario | null> {
-    return await this.repository.findOneBy({ id });
+    return await this.repository.findOne({ where: { id } });
   }
 
   async buscarPorEmail(email: string): Promise<Usuario | null> {
@@ -62,4 +62,8 @@ export class UsuarioRepository {
   async borrarUsuario(usuario: Usuario): Promise<void> {
     await this.repository.delete({ id : usuario.id });
   }
+
+  async getAllUser(): Promise<Usuario[]> {
+    return await this.repository.find();
+  }
 }

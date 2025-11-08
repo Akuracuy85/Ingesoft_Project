@@ -1,7 +1,7 @@
-// types.ts
+// src/types/DateRangeType.ts (CORREGIDO)
 
-// 🔹 Rango de fechas
 export type DateRangeType = {
-  start: Date | null;
-  end: Date | null;
+    // 🛑 CLAVE: Cambiar string | null por Date | null
+    start: Date | null; 
+    end: Date | null; 
 };

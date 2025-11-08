@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { usuarioController } from "@/controllers/UsuarioController";
+import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
 
 const router = Router();
+
+router.get("/", sessionMiddleware.VerificarToken, usuarioController.obtenerTodos);
 
 router.get("/:id", usuarioController.obtenerPorId);
 
@@ -16,5 +19,6 @@ router.delete("/:id", usuarioController.borrar);
 router.patch("/activar/:id", usuarioController.activar);
 
 router.patch("/desactivar/:id", usuarioController.desactivar);
+
 
 export default router;
