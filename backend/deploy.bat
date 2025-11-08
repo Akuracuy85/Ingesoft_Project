@@ -11,7 +11,7 @@ set TAR_NAME=%IMAGE_NAME%-%IMAGE_TAG%.tar
 :: Cambiar estos valores por los de ustedes si quieren
 set PEM_PATH=C:\Users\user\Desktop\Cursos\PUCP\Ingesoft\TA\unite-ec2.pem
 set EC2_USER=ubuntu
-set EC2_HOST=ec2-98-81-25-110.compute-1.amazonaws.com
+set EC2_HOST=ec2-35-175-201-15.compute-1.amazonaws.com
 set EC2_DIR=/home/ubuntu/ingesoft
 
 :: -----------------------------------
@@ -77,4 +77,5 @@ echo =====================================
 ssh -i "%PEM_PATH%" %EC2_USER%@%EC2_HOST% "sudo docker run -d -p 80:3000 --name %IMAGE_NAME% %IMAGE_NAME%:%IMAGE_TAG%"
 
 echo.
-echo DEPLOY COMPLETADO con exito ;v (o al menos se subio bien y se mando el comando de correr asi q revisa la EC2)!
+echo  DEPLOY COMPLETADO con exito ;v (o al menos se subio bien y se mando el comando de correr asi q revisa la EC2)!
+echo prueba entrando a http://%EC2_HOST%/api/sas desde tu navegador

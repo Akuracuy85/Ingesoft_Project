@@ -5,7 +5,7 @@
  * Nota: Los campos de fecha se reciben como strings ISO.
  */
 export interface Tarifa {
-    id: number;
+    id?: number;
     nombre: string;
     precio: number;
     fechaInicio: string; // ISO String: Mapeado de Date (backend)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
-import type { User, UserFormData, Rol } from "../../models/User";
+import type { User, UserFormData } from "../../models/User";
 
 interface UserModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface UserModalProps {
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) => {
   const initialFormData: UserFormData = {
     nombre: "",
+    password: "",
     apellidoPaterno: "",
     apellidoMaterno: "",
     dni: "",
@@ -27,6 +28,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     if (user) {
       setFormData({
         nombre: user.nombre,
+        password: "",
         apellidoPaterno: user.apellidoPaterno,
         apellidoMaterno: user.apellidoMaterno,
         dni: user.dni,

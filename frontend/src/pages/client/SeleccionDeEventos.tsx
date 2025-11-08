@@ -1,6 +1,5 @@
 // src/pages/SeleccionDeEventos.tsx (CORREGIDO Y FINAL)
 
-import React from 'react';
 import ClientLayout from "./ClientLayout"; 
 import { BodySeleccionEventos } from "../../components/client/Body/SeleccionEventos/BodySeleccionEventos"; 
 import { useEventos } from "../../hooks/useEventos"; // LLAMADA A USEEVENTOS AQUÍ

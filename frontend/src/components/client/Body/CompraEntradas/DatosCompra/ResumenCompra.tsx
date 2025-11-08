@@ -17,7 +17,7 @@ interface ResumenCompraProps {
 const ResumenCompra: React.FC<ResumenCompraProps> = ({ 
   summaryItems, 
   isUsingPoints,
-  purchaseType, // Recibido
+  //purchaseType, // Recibido
   pointsImpact,  // Recibido
   userPointsPre
 }) => {

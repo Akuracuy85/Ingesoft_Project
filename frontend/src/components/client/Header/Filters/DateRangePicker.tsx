@@ -1,6 +1,5 @@
 // src/components/Filters/DateRangePicker.tsx (FINAL CON DatePickerField)
 
-import React from 'react';
 // Asegúrate de que DateRangeType ahora permita null en sus campos si es necesario, 
 // o maneja la lógica de null en este componente.
 import type { DateRangeType } from "../../../../types/DateRangeType";

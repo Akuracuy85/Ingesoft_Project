@@ -13,7 +13,7 @@ import axios, {
 
 
 // URL base de la API, obtenida de las variables de entorno o usa un default
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ec2-35-175-201-15.compute-1.amazonaws.com/api';
 
 export interface ApiResponse<T = any> {
     success: boolean;

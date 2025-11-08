@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog";
-import { User, Mail, CreditCard, Phone, FileText, Trash2, Plus, Star } from "lucide-react";
+import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-react";
 import PerfilService from "../../../services/PerfilService";
 
 export default function InformacionPersonal() {
@@ -136,10 +136,10 @@ export default function InformacionPersonal() {
       </ClientLayout>
     );
   }
-
+  /*
   function setShowCardModal(arg0: boolean): void {
     throw new Error("Function not implemented.");
-  }
+  }*/
 
   return (
     <ClientLayout showFilterButton={false}>

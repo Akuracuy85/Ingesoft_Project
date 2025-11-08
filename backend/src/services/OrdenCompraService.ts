@@ -16,7 +16,7 @@ import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
 import { Cliente } from "../models/Cliente";
 import { Rol } from "../enums/Rol";
 import { CalcularPrecioDto } from '../dto/orden/calcular-precio.dto';
-import { PerfilRepository } from "@/repositories/PerfilRepository";
+import { PerfilRepository } from "../repositories/PerfilRepository";
 // Definición de lo que devuelve el servicio
 interface OrdenCreationResult {
   orden: OrdenCompra;

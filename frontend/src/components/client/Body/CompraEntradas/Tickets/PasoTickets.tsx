@@ -49,7 +49,7 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
   );
 
   // 💰 Subtotal provisional (de la tabla superior)
-  const potentialSubtotal = useMemo(() => {
+  /*const potentialSubtotal = useMemo(() => {
     return Object.entries(selectedQuantities).reduce((total, [zoneName, quantity]) => {
       const zoneDetail = zonesToMap.find((z) => z.nombre === zoneName);
       return zoneDetail ? total + getActiveZonePrice(zoneDetail, tipoTarifa) * quantity : total;
@@ -60,7 +60,7 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
   const potentialPointsImpact = useMemo(
     () => calcularPuntos(potentialSubtotal, isUsingPointsFlow),
     [potentialSubtotal, isUsingPointsFlow]
-  );
+  );*/
 
   // 🔹 Subtotal confirmado (del resumen)
   const confirmedSubtotal = useMemo(
@@ -74,8 +74,8 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
     [confirmedSubtotal, isUsingPointsFlow]
   );
 
-  const totalPointsCost = isUsingPointsFlow ? potentialPointsImpact : 0;
-  const hasEnoughPoints = userPoints >= totalPointsCost;
+  //const totalPointsCost = isUsingPointsFlow ? potentialPointsImpact : 0;
+  //const hasEnoughPoints = userPoints >= totalPointsCost;
 
   const handleQuantityChange = (zoneName: string, newQuantity: number) => {
     setSelectedQuantities((prev) => {

@@ -1,9 +1,0 @@
-
-Metanle esto para que este fino su EC2 antes de meterle el deplot.bat xq necesita docker:
-
-sudo apt update
-sudp apt upgrade
-sudo apt install docker.io docker-compose -y
-sudo systemctl enable docker
-sudo systemctl start docker
-mkdir ingesoft
