@@ -37,7 +37,6 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
     }, 2000);
   };
 
-  // 🔸 Renderizamos el modal en un portal para que se superponga al contenido existente
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200">
@@ -86,14 +85,15 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 placeholder="MM/AA"
                 value={form.fecha}
                 onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, ""); // solo números
-                    if (value.length > 2) value = value.slice(0, 2) + "/" + value.slice(2, 4);
-                    else value = value.slice(0, 2);
-                    setForm({ ...form, fecha: value });
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.length > 2)
+                    value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                  else value = value.slice(0, 2);
+                  setForm({ ...form, fecha: value });
                 }}
-                maxLength={5} // mantiene el límite por el slash
+                maxLength={5}
                 className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
-                />
+              />
             </div>
             <div className="relative w-1/2">
               <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />

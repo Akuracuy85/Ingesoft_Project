@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // 1. Importa el LAYOUT (el marco)
 import ClientLayout from "./ClientLayout"; // (Ajusta la ruta a tu layout)
 
@@ -6,13 +6,14 @@ import ClientLayout from "./ClientLayout"; // (Ajusta la ruta a tu layout)
 import { BodyDetalleEvento } from "../../components/client/Body/SeleccionEventos/BodyDetalleEvento"; // (Ajusta la ruta al Body)
 
 export const DetalleEvento: React.FC = () => {
+    useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    // 3. Usamos el Layout.
-    // No pasamos 'showFilterButton', así que será 'false' (correcto)
     <ClientLayout>
       
-      {/* 4. El Body es el 'children' que el 
-          ClientLayout pondrá en la etiqueta <main> */}
+      {}
       <BodyDetalleEvento />
 
     </ClientLayout>
