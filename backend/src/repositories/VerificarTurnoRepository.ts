@@ -1,8 +1,8 @@
-import { AppDataSource } from "@/database/data-source";
-import { TurnoCola } from "@/models/TurnoCola";
+import { AppDataSource } from "../database/data-source";
+import { TurnoCola } from "../models/TurnoCola";
 import { Repository } from "typeorm";
 import { PerfilRepository } from "./PerfilRepository";
-import { Cola } from "@/models/Cola";
+import { Cola } from "../models/Cola";
 
 // Interfaz para la respuesta combinada
 export interface InfoTurnoCliente {

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { usuarioController } from "@/controllers/UsuarioController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
+import { usuarioController } from "../controllers/UsuarioController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
 
 const router = Router();
 

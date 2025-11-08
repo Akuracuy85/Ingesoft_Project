@@ -1,8 +1,8 @@
-import { AppDataSource } from "@/database/data-source";
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { Documento } from "@/models/Documento";
-import { Evento } from "@/models/Evento";
-import { Zona } from "@/models/Zona";
+import { AppDataSource } from "../database/data-source";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { Documento } from "../models/Documento";
+import { Evento } from "../models/Evento";
+import { Zona } from "../models/Zona";
 import { Brackets, Repository } from "typeorm";
 
 export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;

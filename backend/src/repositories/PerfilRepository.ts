@@ -1,6 +1,6 @@
-import { AppDataSource } from "@/database/data-source";
-import { Usuario } from "@/models/Usuario";
-import { Cliente } from "@/models/Cliente";
+import { AppDataSource } from "../database/data-source";
+import { Usuario } from "../models/Usuario";
+import { Cliente } from "../models/Cliente";
 import { Repository } from "typeorm";
 
 export class PerfilRepository {

@@ -1,7 +1,7 @@
 import { PutObjectCommand, DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 import { StatusCodes } from "http-status-codes";
-import { CustomError } from "@/types/CustomError";
+import { CustomError } from "../types/CustomError";
 
 interface UploadOptions {
   base64: string;

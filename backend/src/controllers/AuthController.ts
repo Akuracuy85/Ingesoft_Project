@@ -1,7 +1,7 @@
-import { AuthService } from "@/services/AuthService";
-import { CrearCookieDeSesion } from "@/utils/CookieUtils";
-import { HandleResponseError } from "@/utils/Errors";
-import { GenerarAccessToken, VerificarRefreshToken } from "@/utils/JWTUtils";
+import { AuthService } from "../services/AuthService";
+import { CrearCookieDeSesion } from "../utils/CookieUtils";
+import { HandleResponseError } from "../utils/Errors";
+import { GenerarAccessToken, VerificarRefreshToken } from "../utils/JWTUtils";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 

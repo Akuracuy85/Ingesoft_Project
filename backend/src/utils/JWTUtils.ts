@@ -1,4 +1,4 @@
-import { TIME } from "@/types/Time";
+import { TIME } from "../types/Time";
 import jwt from "jsonwebtoken";
 
 const ACCESS_SECRET = process.env.JWT_SECRET || "unite_secret";

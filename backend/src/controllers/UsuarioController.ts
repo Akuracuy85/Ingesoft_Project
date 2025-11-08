@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { UsuarioService } from "@/services/UsuarioService";
-import { HandleResponseError } from "@/utils/Errors";
+import { UsuarioService } from "../services/UsuarioService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
 
 export class UsuarioController {
