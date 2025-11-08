@@ -1,15 +1,10 @@
-// src/types/CrearOrdenDto.ts (O donde lo tengas definido)
-
+// src/types/CrearOrdenDto.ts
 export interface CrearOrdenItemDto {
-  zonaId: number;
-  dnis: string[];
+  zonaId: number;
+  dnis: string[];
 }
 
 export interface CrearOrdenDto {
-  eventoId: number;
-  items: CrearOrdenItemDto[];
-  
-  // 🛑 AÑADIDOS: Campos para la lógica de puntos
-  tipoCompra: 'normal' | 'preferencial';
-  puntosImpacto: number; // El total de puntos (calculado en el frontend)
+  eventoId: number;
+  items: CrearOrdenItemDto[];
 }
