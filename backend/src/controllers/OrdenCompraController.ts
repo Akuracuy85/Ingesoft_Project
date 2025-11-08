@@ -201,7 +201,7 @@ export class OrdenCompraController {
     }
   };
 
-  // 🎯 2. NUEVO MANEJADOR (Preventa)
+  // 2. NUEVO MANEJADOR (Preventa)
   confirmarPreventa = async (req: Request, res: Response) => {
     try {
       const { clienteId, ordenId } = this.validateConfirmRequest(req);

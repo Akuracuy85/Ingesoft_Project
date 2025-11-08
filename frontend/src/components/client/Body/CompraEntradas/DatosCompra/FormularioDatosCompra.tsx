@@ -2,7 +2,6 @@
 
 import React from 'react';
 import type { SummaryItem } from "../Tickets/SelectionSummaryTable";
-import PagoNiubiz from "./PagoNiubiz";
 
 const DNI_LENGTH = 8;
 
