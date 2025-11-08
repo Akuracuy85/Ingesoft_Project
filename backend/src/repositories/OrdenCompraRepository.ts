@@ -10,6 +10,8 @@ import { Repository } from "typeorm";
 // Importamos Cliente solo para la firma de la transacción (aunque ahora se elimina)
 // Para evitar errores si se usa en otro lado, lo dejamos importado.
 import { Cliente } from "../models/Cliente";
+import { Usuario } from "../models/Usuario";
+
 import { EstadoOrden } from "../enums/EstadoOrden";
 
 export class OrdenCompraRepository {
@@ -72,6 +74,23 @@ export class OrdenCompraRepository {
     return await this.repository.findOne({
       where: { id },
       relations: ["cliente", "evento", "detalles", "detalles.zona"]
+    });
+  }
+  /**
+   * Actualiza el estado de una orden a 'COMPLETADA' y suma los puntos
+   * al cliente correspondiente, todo dentro de una transacción.
+   * @param orden - La entidad OrdenCompra (ya modificada con estado='COMPLETADA')
+   * @param cliente - La entidad Cliente (ya modificada con los nuevos puntos)
+   */
+  async confirmarOrdenYActualizarPuntos(orden: OrdenCompra, cliente: Usuario): Promise<void> {
+    
+    // Usamos el gestor de transacciones de AppDataSource
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+      // 1. Guardar la orden (que ahora tiene estado 'COMPLETADA')
+      await transactionalEntityManager.save(orden);
+      
+      // 2. Guardar el cliente (que ahora tiene los puntos actualizados)
+      await transactionalEntityManager.save(cliente);
     });
   }
 }
