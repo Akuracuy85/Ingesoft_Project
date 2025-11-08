@@ -1,6 +1,6 @@
 // src/routes/Artista.routes.ts
 import { Router } from "express";
-import { artistaController } from "@/controllers/ArtistaController";
+import { artistaController } from "../controllers/ArtistaController";
 
 const router = Router();
 

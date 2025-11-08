@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { VerificarAccessToken } from "@/utils/JWTUtils";
+import { VerificarAccessToken } from "../utils/JWTUtils";
 
 export class SessionMiddleware {
   

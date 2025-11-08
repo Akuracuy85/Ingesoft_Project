@@ -1,22 +1,22 @@
 // src/services/OrdenCompraService.ts
 
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { EstadoOrden } from "@/enums/EstadoOrden";
-import { DetalleOrden } from "@/models/DetalleOrden";
-import { OrdenCompra } from "@/models/OrdenCompra";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { EstadoOrden } from "../enums/EstadoOrden";
+import { DetalleOrden } from "../models/DetalleOrden";
+import { OrdenCompra } from "../models/OrdenCompra";
 
-import { Zona } from "@/models/Zona";
-import { EventoRepository } from "@/repositories/EventoRepository";
-import { OrdenCompraRepository } from "@/repositories/OrdenCompraRepository";
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { ZonaRepository } from "@/repositories/ZonaRepository";
-import { CustomError } from "@/types/CustomError";
+import { Zona } from "../models/Zona";
+import { EventoRepository } from "../repositories/EventoRepository";
+import { OrdenCompraRepository } from "../repositories/OrdenCompraRepository";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { ZonaRepository } from "../repositories/ZonaRepository";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
-import { Cliente } from "@/models/Cliente";
-import { Rol } from "@/enums/Rol";
+import { Cliente } from "../models/Cliente";
+import { Rol } from "../enums/Rol";
 import { CalcularPrecioDto } from '../dto/orden/calcular-precio.dto';
-import { PerfilRepository } from "@/repositories/PerfilRepository";
+import { PerfilRepository } from "../repositories/PerfilRepository";
 // Definición de lo que devuelve el servicio
 interface OrdenCreationResult {
   orden: OrdenCompra;

@@ -1,4 +1,4 @@
-import { TIME } from "@/types/Time";
+import { TIME } from "../types/Time";
 import { Response } from "express";
 
 function CrearCookie(res: Response, nombre: string, valor: string, duracion: number, config?: object) {

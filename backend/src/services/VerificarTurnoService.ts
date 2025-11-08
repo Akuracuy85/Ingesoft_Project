@@ -1,5 +1,5 @@
-import { VerificarTurnoRepository, InfoTurnoCliente } from "@/repositories/VerificarTurnoRepository";
-import { CustomError } from "@/types/CustomError";
+import { VerificarTurnoRepository, InfoTurnoCliente } from "../repositories/VerificarTurnoRepository";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 
 export class VerificarTurnoService {

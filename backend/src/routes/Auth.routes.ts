@@ -1,5 +1,5 @@
-import { authController } from "@/controllers/AuthController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
+import { authController } from "../controllers/AuthController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
 import { Router } from "express";
 
 

@@ -1,4 +1,4 @@
-// src/components/client/Body/CompraEntradas/DatosCompra/DatosCompra.tsx
+// src/components/client/Body/CompraEntradas/DatosCompra/PasoDatosCompra.tsx
 
 import React, { useState, useMemo } from "react";
 import type { SummaryItem } from "../Tickets/SelectionSummaryTable";
@@ -7,13 +7,14 @@ import CompraService from "../../../../../services/CompraService";
 import { type CrearOrdenDto } from "../../../../../types/CrearOrdenDTO";
 import { FormularioDatosCompra } from "./FormularioDatosCompra";
 import { useNavigate } from "react-router-dom";
+import PagoNiubiz from "./PagoNiubiz";
 
 interface DatosCompraProps {
   eventoId: number;
   summaryItems: SummaryItem[];
   onBack: () => void;
   isUsingPoints: boolean;
-  purchaseType: "normal" | "preferencial"; // 🔸 Define tipo de compra
+  purchaseType: "normal" | "preferencial";
   totalPointsImpact: number;
   userPoints: number;
 }
@@ -40,6 +41,9 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const [conadisCodes, setConadisCodes] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPagoModal, setShowPagoModal] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
@@ -162,24 +166,15 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
       const response = await CompraService.crearOrden(payload);
 
       if (response.success) {
-        const ordenId = response.ordenId;
-
-        // --- Confirmar según tipo de compra ---
-        if (purchaseType === "normal") {
-          await CompraService.confirmarStandar(ordenId);
-          alert("✅ Compra completada. Se asignaron puntos por la compra.");
-        } else if (purchaseType === "preferencial") {
-          await CompraService.confirmarPreventa(ordenId);
-          alert("🎟️ Compra completada. Se descontaron puntos por la preventa.");
-        }
-
-        navigate("/eventos");
+        // Guardamos la orden pendiente y mostramos el modal de pago
+        setPendingOrderId(response.ordenId);
+        setShowPagoModal(true);
       }
     } catch (error: any) {
       const errorMessage =
         error.message ||
         error.response?.data?.message ||
-        "Error desconocido al crear o confirmar la orden.";
+        "Error desconocido al crear la orden.";
       console.error("Error al procesar la compra:", error);
       alert(`Error en la compra: ${errorMessage}`);
     } finally {
@@ -241,6 +236,31 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
           />
         </div>
       </div>
+
+      {/* Modal de pago Niubiz */}
+      {showPagoModal && pendingOrderId && (
+        <PagoNiubiz
+          total={summaryItems.reduce((sum, i) => sum + i.subtotal, 0)}
+          onClose={() => setShowPagoModal(false)}
+          onConfirm={async () => {
+            try {
+              if (purchaseType === "normal") {
+                await CompraService.confirmarStandar(pendingOrderId);
+                alert(" Pago completado. Se asignaron puntos por la compra.");
+              } else if (purchaseType === "preferencial") {
+                await CompraService.confirmarPreventa(pendingOrderId);
+                alert(" Pago completado. Se descontaron puntos por la preventa.");
+              }
+
+              setShowPagoModal(false);
+              navigate("/eventos");
+            } catch (err) {
+              console.error("Error al confirmar el pago:", err);
+              alert("Error al procesar el pago simulado.");
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

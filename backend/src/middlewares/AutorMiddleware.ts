@@ -1,6 +1,6 @@
-import { Rol } from "@/enums/Rol";
-import { UsuarioService } from "@/services/UsuarioService";
-import { HandleResponseError } from "@/utils/Errors";
+import { Rol } from "../enums/Rol";
+import { UsuarioService } from "../services/UsuarioService";
+import { HandleResponseError } from "../utils/Errors";
 import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
