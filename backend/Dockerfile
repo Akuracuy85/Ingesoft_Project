@@ -8,6 +8,7 @@ RUN npm install
 
 COPY . .
 RUN npm run build
+RUN mkdir -p dist/emails && cp -r src/emails/* dist/emails/
 
 FROM node:20-alpine
 

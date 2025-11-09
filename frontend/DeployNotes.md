@@ -19,6 +19,6 @@ Hice un comando en el package.json para hacer deploy, solo hacen:
 
 `npm run deploy`
 
-Esto compila el proyecto usando `npm run build` y luego el comando de aws `aws s3 sync ./dist s3://unite.aedsen.com` donde unite.aedsen.com es el nombre del bucket donde se guarda
+Esto compila el proyecto usando `npm run build` y luego el comando de aws `aws s3 sync ./dist s3://uniteapps.com` donde uniteappscom es el nombre del bucket donde se guarda
 
 Y ya ;v desplegado

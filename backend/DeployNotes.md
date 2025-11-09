@@ -1,13 +1,13 @@
 
 ## Deploy del Back
-Metanle esto para que este fino su EC2 antes de meterle el `deplot.bat` xq necesita docker:
+Metanle esto para que este fino su EC2 antes de meterle el `deplot.bat` xq necesita docker y el nginx con certbot para el https:
 
 ``` shell
 sudo apt update
-sudp apt upgrade
+sudo apt upgrade -y
 sudo apt install docker.io docker-compose -y
 sudo systemctl enable docker
-sudo systemctl start docker
+sudo apt install -y nginx certbot python3-certbot-nginx
 ```
 
 Luego le crean esta carpeta para que esté ordenado
@@ -21,14 +21,11 @@ Y ya, pueden correr el `deploy.bat` ;v
 
 ## Otras consideraciones
 
-* Dentro de los Allowed Origins del back tiene que estar al url del front, si desplegamos tambien el front esta url debe estar ahí, de lo contrario el front no podrá hacer consultas al back
-
 * Al acabar la sesion del AWS de 4 horas que nos dan probablemente cambie la ip, ahora voy a probar con una ip elastica creada manualmente pero igual hay que tenerlo en cuenta
 
 * Si se acaba la sesion de 4 horas la instancia dejará de correr. Por lo que no habrá back
 
 Si les importa como funciona tonces acá les explico que hace el `deploy.bat`, sino pueden dejarlo acá
-
 
 
 ### 0. Borrar archivos .tar
@@ -128,5 +125,30 @@ echo =====================================
 ssh -i "%PEM_PATH%" %EC2_USER%@%EC2_HOST% "sudo docker run -d -p 80:3000 --name %IMAGE_NAME% %IMAGE_NAME%:%IMAGE_TAG%"
 echo =====================================
 ```
+
+### 7. Subir configuracion de nginx y sacar certificado https
+
+Si por alguna razon cambiamos de contenedor, de puerto donde corre el docker, o de ruta del front, se debe subir el nginx de nuevo y para eso se escoge 's' acá.
+
+``` bash
+echo =====================================
+echo [7/7] (Opcional) Configurar HTTPS con Let's Encrypt...
+echo =====================================
+set /p RUN_CERTBOT=¿Quieres subir y ejecutar setup-https.sh para configurar HTTPS? (s/n): 
+
+if /I "%RUN_CERTBOT%"=="s" (
+    echo Subiendo script setup-https.sh a EC2...
+    scp -i "%PEM_PATH%" setup-https.sh %EC2_USER%@%EC2_HOST%:%EC2_DIR%/
+    
+    echo Dando permisos y ejecutando script en EC2...
+    ssh -i "%PEM_PATH%" %EC2_USER%@%EC2_HOST% "chmod +x %EC2_DIR%/setup-https.sh && sudo %EC2_DIR%/setup-https.sh"
+) else (
+    echo Saltando configuración HTTPS...
+)
+```
+
+Con esto se subirá el archivo `setup-https.sh` y se ejecutará.
+
+Esto luego dentro te dará otra opcion, generar un nuevo certificado https, esto solo hagando si cambiamos de dominio, que no creo, o si va a expirar el nuestro, pero expira en como 1 mes así que no hace falta, para ver que hace el 
 
 Y ya, si hay algun error de ejecucion al final no nos avisará así que es importante verificar.
