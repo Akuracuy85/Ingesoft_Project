@@ -27,7 +27,15 @@ export const Login = () => {
       const res = await login(email, password);
       if (res.success) {
         alert("Inicio de sesión correcto.");
-        navigate("/eventos");
+        if (res.rol === "ORGANIZADOR") {
+          navigate("/organizador/eventos");
+        }
+        else if (res.rol === "ADMINISTRADOR") {
+          navigate("/admin/usuarios");
+        }
+        else {
+          navigate("/eventos");
+        }
       } else {
         alert("Credenciales inválidas");
       }

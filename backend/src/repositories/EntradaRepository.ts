@@ -1,6 +1,6 @@
 // src/repositories/EntradaRepository.ts
-import { AppDataSource } from "@/database/data-source";
-import { Entrada } from "@/models/Entrada";
+import { AppDataSource } from "../database/data-source";
+import { Entrada } from "../models/Entrada";
 import { Repository } from "typeorm";
 
 export class EntradaRepository {

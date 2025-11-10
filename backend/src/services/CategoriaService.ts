@@ -1,7 +1,7 @@
 // src/services/CategoriaService.ts
-import { Categoria } from "@/models/Categoria";
-import { CategoriaRepository } from "@/repositories/CategoriaRepository";
-import { CustomError } from "@/types/CustomError";
+import { Categoria } from "../models/Categoria";
+import { CategoriaRepository } from "../repositories/CategoriaRepository";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 
 export class CategoriaService {

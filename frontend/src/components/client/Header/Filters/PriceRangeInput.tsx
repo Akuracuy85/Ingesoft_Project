@@ -1,6 +1,6 @@
 // src/components/Filters/PriceRangeInput.tsx (FINAL COMPLETO CON LÍMITE 5000)
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import type { PriceRangeType } from "../../../../types/PriceRangeType";
 
 const CURRENCY_SYMBOL = "S/.";

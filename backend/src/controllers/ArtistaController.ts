@@ -1,7 +1,7 @@
 // src/controllers/ArtistaController.ts
 import { Request, Response } from "express";
-import { ArtistaService } from "@/services/ArtistaService";
-import { HandleResponseError } from "@/utils/Errors";
+import { ArtistaService } from "../services/ArtistaService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
 
 export class ArtistaController {

@@ -1,47 +1,49 @@
+import { AuthProvider } from "@/hooks/useAuth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos"; 
+import { Routes, Route, Navigate } from "react-router-dom";
+
+import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos";
 import { Login } from "@/pages/auth/Login";
 import { RestablecerContraseña } from "@/pages/auth/RestablecerContraseña";
 import { NuevaContraseña } from "@/pages/auth/NuevaContraseña";
 import { Registro } from "@/pages/auth/Registro";
-import { Routes, Route, Navigate } from "react-router-dom";
-import ColaVirtual from "./pages/client/Eventos/ColaVirtual.tsx";
-import CompraDeEntradas from "./pages/client/CompraDeEntradas"; 
-import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal.tsx";
+import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
+import ColaVirtual from "./pages/client/Eventos/ColaVirtual";
+import CompraDeEntradas from "./pages/client/CompraDeEntradas";
+import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal";
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
 import DetalleEvento from "./pages/client/DetalleEvento";
-import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
-import GestionEventos from "./pages/organizador/eventos/GestionEventos.tsx";
-import AdminEventos from "./pages/admin/Eventos/AdminEventos.tsx";
+import GestionEventos from "./pages/organizador/eventos/GestionEventos";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gray-50">
-        <Routes>
-          <Route path="/" element={<Navigate to="/eventos" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/restablecer" element={<RestablecerContraseña />} />
-          <Route path="/nueva-contraseña" element={<NuevaContraseña />} />
-          <Route path="/registro" element={<Registro />} />
-          <Route path="/registro-organizador" element={<RegistroOrganizador />} />
-          <Route path="/perfil" element={<InformacionPersonal />} />
-          
-          <Route path="/eventos/:id/compra" element={<CompraDeEntradas />} />
-          <Route path="/eventos" element={<SeleccionDeEventos />} />
-          <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
-          
-          <Route path="/info" element={<InformacionPersonal />} />
-          <Route path="/cola" element={<ColaVirtual />} /> {/* 👈 aquí */}
+      <AuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Routes>
+            {/* Rutas públicas */}
+            <Route path="/" element={<Navigate to="/eventos" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/restablecer" element={<RestablecerContraseña />} />
+            <Route path="/nueva-contraseña" element={<NuevaContraseña />} />
+            <Route path="/registro" element={<Registro />} />
+            <Route path="/registro-organizador" element={<RegistroOrganizador />} />
+            <Route path="/eventos" element={<SeleccionDeEventos />} />
+            <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
 
-          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-          <Route path="/admin/eventos" element={<AdminEventos />} />
-          <Route path="/organizador/eventos" element={<GestionEventos />} />
-
-        </Routes>
-      </div>
+            {/* Rutas protegidas */}
+            <Route path="/perfil" element={<ProtectedRoute><InformacionPersonal /></ProtectedRoute>} />
+            <Route path="/eventos/:id/compra" element={<ProtectedRoute><CompraDeEntradas /></ProtectedRoute>} />
+            <Route path="/cola" element={<ProtectedRoute><ColaVirtual /></ProtectedRoute>} />
+            <Route path="/admin/usuarios" element={<ProtectedRoute><AdminUsuarios /></ProtectedRoute>} />
+            <Route path="/organizador/eventos" element={<ProtectedRoute><GestionEventos /></ProtectedRoute>} />
+            <Route path="/info" element={<InformacionPersonal />} />
+          </Routes>
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

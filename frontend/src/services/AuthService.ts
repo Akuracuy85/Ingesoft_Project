@@ -1,7 +1,7 @@
 import HttpClient from "./Client";
 import axios from 'axios'; // 🛑 NECESARIO: Importar axios para la verificación de errores (axios.isAxiosError)
 
-import { type User } from "@/models/User"; 
+import { type Rol, type User } from "@/models/User"; 
 
 // =============================
 // INTERFACES DE RESPUESTA
@@ -19,7 +19,9 @@ interface LoginRequest {
 }
 
 interface LoginResponse {
-  success: boolean;
+  success: boolean;
+  rol: Rol;
+  message?: string;
 }
 
 export interface StatusResponse {

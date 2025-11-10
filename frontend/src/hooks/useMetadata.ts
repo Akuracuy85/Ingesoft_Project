@@ -1,7 +1,13 @@
 // src/hooks/useMetadata.ts
 
 import { useState, useEffect } from 'react';
-import MetadataService, { type FilterOption, type LocationOption } from '../services/MetadataService';
+import MetadataService from '../services/MetadataService';
+import type { LocationOption } from '../services/UbicacionService';
+
+export interface FilterOption {
+    id: string | number; // O number, si el backend usa IDs numéricos
+    nombre: string;
+}
 
 interface MetadataResult {
     categorias: FilterOption[];

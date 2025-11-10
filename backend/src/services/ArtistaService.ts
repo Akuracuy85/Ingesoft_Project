@@ -1,6 +1,6 @@
 // src/services/ArtistaService.ts
-import { ArtistaRepository } from "@/repositories/ArtistaRepository";
-import { CustomError } from "@/types/CustomError";
+import { ArtistaRepository } from "../repositories/ArtistaRepository";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 
 type ArtistaDropdown = {

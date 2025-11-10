@@ -6,7 +6,8 @@ import { CustomDropdown } from "../../CustomDropdown";
 import type { LocationType } from "../../../../types/LocationType";
 import type { Option } from "../../CustomDropdown"; // El tipo Option usa { id: string, nombre: string }
 
-import MetadataService, { type LocationOption } from '../../../../services/MetadataService'; 
+import MetadataService from '../../../../services/MetadataService'; 
+import type { LocationOption } from '../../../../services/UbicacionService';
 
 
 type LocationSelectProps = {

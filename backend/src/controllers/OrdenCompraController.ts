@@ -1,14 +1,15 @@
 // src/controllers/OrdenCompraController.ts
 
 import { Request, Response } from "express";
-import { OrdenCompraService } from "@/services/OrdenCompraService";
-import { HandleResponseError } from "@/utils/Errors";
+import { OrdenCompraService } from "../services/OrdenCompraService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { CrearOrdenDto } from "@/dto/orden/crear-orden.dto";
+import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
 import { plainToClass } from "class-transformer"; 
 import { validate } from "class-validator";
-import { CustomError } from "@/types/CustomError";
-import { CalcularPrecioDto } from "@/dto/orden/calcular-precio.dto";
+import { CustomError } from "../types/CustomError";
+import { CalcularPrecioDto } from "../dto/orden/calcular-precio.dto";
+import { EmailService } from "../services/EmailService";
 
 function validateRequest(req: Request): { clienteId: number; eventoId: number } {
   const clienteId = req.userId; // ID viene del middleware VerificarToken
@@ -24,71 +25,75 @@ function validateRequest(req: Request): { clienteId: number; eventoId: number } 
 }
 
 export class OrdenCompraController {
-  private static instance: OrdenCompraController;
-  private ordenCompraService: OrdenCompraService;
+  private static instance: OrdenCompraController;
+  private ordenCompraService: OrdenCompraService;
+  private emailService: EmailService;
 
-  private constructor() {
-    this.ordenCompraService = OrdenCompraService.getInstance();
-  }
+  private constructor() {
+    this.ordenCompraService = OrdenCompraService.getInstance();
+    this.emailService = EmailService.getInstance();
+  }
 
-  public static getInstance(): OrdenCompraController {
-    if (!OrdenCompraController.instance) {
-      OrdenCompraController.instance = new OrdenCompraController();
-    }
-    return OrdenCompraController.instance;
-  }
+  public static getInstance(): OrdenCompraController {
+    if (!OrdenCompraController.instance) {
+      OrdenCompraController.instance = new OrdenCompraController();
+    }
+    return OrdenCompraController.instance;
+  }
 
-  /**
+  /**
    * Maneja la solicitud POST para crear una nueva orden
    */
-  crearOrden = async (req: Request, res: Response) => {
-    try {
-      const clienteId = req.userId; 
-      const dto = plainToClass(CrearOrdenDto, req.body);
-      const errors = await validate(dto);
+  crearOrden = async (req: Request, res: Response) => {
+    try {
+      const clienteId = req.userId; 
+      const dto = plainToClass(CrearOrdenDto, req.body);
+      const errors = await validate(dto);
 
-      if (errors.length > 0) {
-        const mensajesError = errors.map(err => Object.values(err.constraints || {})).flat();
-        throw new CustomError(mensajesError.join(', '), StatusCodes.BAD_REQUEST);
-      }
+      if (errors.length > 0) {
+        const mensajesError = errors.map(err => Object.values(err.constraints || {})).flat();
+        throw new CustomError(mensajesError.join(', '), StatusCodes.BAD_REQUEST);
+      }
 
-      // El servicio ahora devuelve la orden y la URL de pago (simulada).
-      const { orden, paymentUrl } = await this.ordenCompraService.crearOrden(dto, clienteId);
-      
-      res.status(StatusCodes.CREATED).json({
-        success: true,
-        ordenId: orden.id, // Devolvemos solo el ID de la orden
-        paymentUrl: paymentUrl, // Devolvemos la URL simulada
-      });
-    } catch (error) {
-      HandleResponseError(res, error);
-    }
-  };
+      // El servicio ahora devuelve la orden y la URL de pago (simulada).
+      const { orden, paymentUrl } = await this.ordenCompraService.crearOrden(dto, clienteId);
+      //const ordenCompleta = await this.ordenCompraService.obtenerOrden(orden.id, clienteId);
 
-  /**
+      //this.emailService.SendTicketsEmail(ordenCompleta);
+
+      res.status(StatusCodes.CREATED).json({
+        success: true,
+        ordenId: orden.id, // Devolvemos solo el ID de la orden
+        paymentUrl: paymentUrl, // Devolvemos la URL simulada
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  /**
    * Maneja la solicitud GET para obtener el detalle de una orden
    * NOTA: Esta ruta SÍ requiere autenticación (VerificarToken está en el router)
    */
-  obtenerOrdenPorId = async (req: Request, res: Response) => {
-    try {
-      const clienteId = req.userId;
-      if (!clienteId) {
-        // Este error sólo se lanzaría si el middleware no funciona correctamente.
-        throw new CustomError("No autorizado.", StatusCodes.UNAUTHORIZED);
-      }
+  obtenerOrdenPorId = async (req: Request, res: Response) => {
+    try {
+      const clienteId = req.userId;
+      if (!clienteId) {
+        // Este error sólo se lanzaría si el middleware no funciona correctamente.
+        throw new CustomError("No autorizado.", StatusCodes.UNAUTHORIZED);
+      }
 
-      const idOrden = Number(req.params.id);
-      const orden = await this.ordenCompraService.obtenerOrden(idOrden, clienteId);
-      
-      res.status(StatusCodes.OK).json({
-        success: true,
-        orden: orden
-      });
-    } catch (error) {
-        HandleResponseError(res, error);
-    }
-  }
-   // 🎯 4. AÑADIR NUEVO MANEJADOR (LISTAR)
+      const idOrden = Number(req.params.id);
+      const orden = await this.ordenCompraService.obtenerOrden(idOrden, clienteId);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        orden: orden
+      });
+    } catch (error) {
+        HandleResponseError(res, error);
+    }
+  };
+   // 4. AÑADIR NUEVO MANEJADOR (LISTAR)
   listarMisDetallesPorEvento = async (req: Request, res: Response) => {
     try {
       // Usamos el helper de validación
@@ -104,7 +109,7 @@ export class OrdenCompraController {
     }
   };
 
-  // 🎯 5. AÑADIR NUEVO MANEJADOR (CONTAR)
+  // 5. AÑADIR NUEVO MANEJADOR (CONTAR)
   contarMisEntradasPorEvento = async (req: Request, res: Response) => {
     try {
       // Usamos el helper de validación
@@ -162,12 +167,55 @@ export class OrdenCompraController {
       });
 
     } catch (error) {
-      // El catch ahora también maneja el error de JSON.parse
       if (error instanceof CustomError) {
         HandleResponseError(res, error);
       } else {
         HandleResponseError(res, new CustomError("Error al procesar la solicitud: " + (error as Error).message, StatusCodes.BAD_REQUEST));
       }
+    }
+  };
+  private validateConfirmRequest(req: Request): { clienteId: number; ordenId: number } {
+    const clienteId = req.userId as number;
+    const ordenId = Number(req.params.id); 
+    if (!Number.isInteger(ordenId) || ordenId <= 0) {
+      throw new CustomError("El ID de la orden no es válido.", StatusCodes.BAD_REQUEST);
+    }
+    return { clienteId, ordenId };
+  }
+
+  // 1. MANEJADOR RENOMBRADO (Standar)
+  confirmarStandar = async (req: Request, res: Response) => {
+    try {
+      const { clienteId, ordenId } = this.validateConfirmRequest(req);
+      const ordenActualizada = await this.ordenCompraService.confirmarStandarYAsignarPuntos(ordenId, clienteId);
+      await this.emailService.SendTicketsEmail(ordenActualizada);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Orden (Estándar) completada. 10% de puntos asignados.",
+        data: ordenActualizada
+      });
+
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  // 2. NUEVO MANEJADOR (Preventa)
+  confirmarPreventa = async (req: Request, res: Response) => {
+    try {
+      const { clienteId, ordenId } = this.validateConfirmRequest(req);
+      const ordenActualizada = await this.ordenCompraService.confirmarPreventaYRestarPuntos(ordenId, clienteId);
+      await this.emailService.SendTicketsEmail(ordenActualizada);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Orden (Preventa) completada. 30% de puntos canjeados.",
+        data: ordenActualizada
+      });
+
+    } catch (error) {
+      HandleResponseError(res, error);
     }
   };
 }

@@ -5,7 +5,6 @@ import HttpClient from './Client';
 import { type ZonePurchaseDetail } from '../types/ZonePurchaseDetail'; 
 import { type FiltersType } from '../types/FiltersType';
 import type { PriceRangeType } from '../types/PriceRangeType'; 
-import type { DateRangeType } from '../types/DateRangeType'; // Importamos el tipo corregido
 
 export type EventDetailsForPurchase = Event & { 
     zonasDisponibles: ZonePurchaseDetail[]; 
@@ -27,11 +26,11 @@ const formatDate = (date: Date): string => {
 
 /**
  * Obtiene la fecha actual en formato YYYY-MM-DD.
- */
 const getTodayFormatted = (): string => {
-    const today = new Date();
-    return formatDate(today);
+  const today = new Date();
+  return formatDate(today);
 }
+ */
 
 
 // ===============================================

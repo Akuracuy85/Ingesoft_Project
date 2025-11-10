@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { EventoService } from "@/services/EventoService";
-import { HandleResponseError } from "@/utils/Errors";
+import { EventoService } from "../services/EventoService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { IFiltrosEvento } from "@/repositories/EventoRepository";
-import { Evento } from "@/models/Evento";
+import { IFiltrosEvento } from "../repositories/EventoRepository";
+import { Evento } from "../models/Evento";
 
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
 

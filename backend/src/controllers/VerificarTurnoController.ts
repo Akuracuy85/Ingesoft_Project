@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { VerificarTurnoService } from "@/services/VerificarTurnoService";
-import { HandleResponseError } from "@/utils/Errors";
+import { VerificarTurnoService } from "../services/VerificarTurnoService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware"; 
-import { InfoTurnoCliente } from "@/repositories/VerificarTurnoRepository"; 
+import { sessionMiddleware } from "../middlewares/SessionMiddleware"; 
+import { InfoTurnoCliente } from "../repositories/VerificarTurnoRepository"; 
 
 export class VerificarTurnoController {
     private static instance: VerificarTurnoController;

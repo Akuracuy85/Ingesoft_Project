@@ -1,7 +1,7 @@
 // src/repositories/ArtistaRepository.ts
 
-import { AppDataSource } from "@/database/data-source";
-import { Artista } from "@/models/Artista";
+import { AppDataSource } from "../database/data-source";
+import { Artista } from "../models/Artista";
 import { Repository } from "typeorm";
 
 export class ArtistaRepository {
