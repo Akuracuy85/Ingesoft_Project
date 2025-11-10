@@ -24,8 +24,8 @@ uniteRouter.use("/orden", ordenCompraRoutes)
 uniteRouter.use("/perfil", perfilRoutes)
 uniteRouter.use("/turno", turnoRoutes)
 
-uniteRouter.use("/categoria", categoriaRoutes) // Para GET /api/categoria
-uniteRouter.use("/artista", artistaRoutes)     // Para GET /api/artista
+uniteRouter.use("/categoria", categoriaRoutes)
+uniteRouter.use("/artista", artistaRoutes)
 
 
 export default uniteRouter;

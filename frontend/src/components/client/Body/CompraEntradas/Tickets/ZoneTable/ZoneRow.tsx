@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import type { Zone } from "../../../../../../models/Zone";
 
-const MAX_TICKETS = 4;
+//const MAX_TICKETS = 4;
 
 interface ZoneRowProps {
   zone: Zone;

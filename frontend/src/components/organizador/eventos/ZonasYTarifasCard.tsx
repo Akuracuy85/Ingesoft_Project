@@ -11,15 +11,17 @@ export default function ZonasYTarifasCard() {
       id: 1,
       nombre: "VIP",
       capacidad: 100,
-      tarifaNormal: { precio: 150, descuento: 0 },
-      tarifaPreventa: { precio: 120, descuento: 10 },
+      cantidadComprada: 0,
+      tarifaNormal: { id: 1, nombre: "tarifaNormal", fechaInicio: "", fechaFin: "", precio: 150, descuento: 0 },
+      tarifaPreventa: { id: 2, nombre: "tarifaPreventa", fechaInicio: "", fechaFin: "", precio: 120, descuento: 10 },
     },
     {
       id: 2,
       nombre: "Platea",
       capacidad: 300,
-      tarifaNormal: { precio: 80, descuento: 0 },
-      tarifaPreventa: { precio: 70, descuento: 5 },
+      cantidadComprada: 0,
+      tarifaNormal: { id: 3, nombre: "tarifaNormal", fechaInicio: "", fechaFin: "", precio: 80, descuento: 0 },
+      tarifaPreventa: { id: 4, nombre: "tarifaPreventa", fechaInicio: "", fechaFin: "",precio: 70, descuento: 5 },
     },
   ]);
 
@@ -29,8 +31,9 @@ export default function ZonasYTarifasCard() {
     const nuevaZona: Zone = {
       nombre: `Zona ${zones.length + 1}`,
       capacidad: 0,
-      tarifaNormal: { precio: 0, descuento: 0 },
-      tarifaPreventa: { precio: 0, descuento: 0 },
+      cantidadComprada: 0,
+      tarifaNormal: { nombre: "tarifaNormal", fechaInicio: "", fechaFin: "", precio: 0, descuento: 0 },
+      tarifaPreventa: { nombre: "tarifaPreventa", fechaInicio: "", fechaFin: "", precio: 0, descuento: 0 },
     };
     setZones((prev) => [...prev, nuevaZona]);
   };
@@ -47,8 +50,8 @@ export default function ZonasYTarifasCard() {
       if (!tarifa) {
         // inicializar si no existe
         const nueva: TarifaUI = { precio: 0, descuento: 0 };
-        if (tipo === "normal") next[index] = { ...next[index], tarifaNormal: nueva };
-        else next[index] = { ...next[index], tarifaPreventa: nueva };
+        if (tipo === "normal") next[index] = { ...next[index], tarifaNormal: (nueva as unknown as Tarifa) };
+        else next[index] = { ...next[index], tarifaPreventa: (nueva as unknown as Tarifa) };
       }
       // actualizar el valor (asegurando conversión numérica)
       const tarifaObj = tipo === "normal" ? (next[index].tarifaNormal as TarifaUI) : (next[index].tarifaPreventa as TarifaUI);

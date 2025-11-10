@@ -9,7 +9,7 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, image, time } = event;
+  const { title, date, place /*, image, time*/ } = event;
 
   return (
     <Link to={`${event.id}/detalle`}>
