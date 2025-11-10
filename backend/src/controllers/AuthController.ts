@@ -31,10 +31,11 @@ export class AuthController {
   Login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
-      const { accessToken, refreshToken } = await this.authService.AutenticarUsuario(email, password);
+      const { accessToken, refreshToken, rol } = await this.authService.AutenticarUsuario(email, password);
       CrearCookieDeSesion(res, accessToken, refreshToken);
       res.status(StatusCodes.OK).json({
         success: true,
+        rol: rol
       });
     } catch (error) {
       HandleResponseError(res, error);

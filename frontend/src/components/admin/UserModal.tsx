@@ -18,7 +18,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     dni: "",
     email: "",
     celular: "",
-    rol: "Cliente",
+    rol: "CLIENTE",
     activo: true,
   };
 

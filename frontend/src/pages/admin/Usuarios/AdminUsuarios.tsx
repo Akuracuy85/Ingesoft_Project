@@ -15,7 +15,7 @@ const DEFAULT_PASSWORD = "unite123";
 
 export default function AdminUsuarios(): React.ReactElement {
   const { user, isLoggedIn, isLoading } = useAuth();
-  const REQUIRED_ROLE: Rol = "Administrador"; 
+  const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
   const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
