@@ -88,6 +88,7 @@ export class EventoService {
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
+        lugar: evento.lugar,
         fechaPublicacion: evento.fechaPublicacion.toISOString(),
         aforoTotal: evento.aforoTotal,
         entradasVendidas: evento.entradasVendidas,
@@ -178,6 +179,7 @@ export class EventoService {
         departamento: data.departamento.trim(),
         provincia: data.provincia.trim(),
         distrito: data.distrito.trim(),
+        lugar: data.lugar.trim(),
         estado,
         fechaPublicacion: new Date(),
         aforoTotal: 0,
@@ -243,6 +245,7 @@ export class EventoService {
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
     evento.distrito = data.distrito.trim();
+    evento.lugar = data.lugar.trim();
     evento.artista = artista;
 
     if (data.imagenPortada !== undefined) {
@@ -681,6 +684,7 @@ export class EventoService {
       "departamento",
       "provincia",
       "distrito",
+      "lugar",
       "estado",
     ];
     for (const campo of campos) {

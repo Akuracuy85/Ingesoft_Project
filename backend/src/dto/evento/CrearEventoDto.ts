@@ -9,6 +9,7 @@ export interface CrearEventoDto {
   departamento: string;
   provincia: string;
   distrito: string;
+  lugar: string;
   estado: EstadoEvento;
   imagenPortada?: string; // base64 opcional
 }
