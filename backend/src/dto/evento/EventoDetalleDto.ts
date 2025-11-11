@@ -11,6 +11,7 @@ export interface EventoDetalleDto {
   departamento: string;
   provincia: string;
   distrito: string;
+  lugar: string;
   fechaPublicacion: string;
   aforoTotal: number;
   entradasVendidas: number;
