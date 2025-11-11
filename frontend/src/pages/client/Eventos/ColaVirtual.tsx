@@ -2,11 +2,12 @@
 
 import ClientLayout from "../ClientLayout"
 import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/button"
 import { Card } from "../../../components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
 import { Clock, Users, CheckCircle2 } from "lucide-react"
-import turnoColaService from "../../../services/TurnoColaService"
+//import turnoColaService from "../../../services/TurnoColaService"
 import type { TurnoCola } from "../../../models/TurnoCola"
 
 export default function ColaVirtual() {
@@ -16,18 +17,23 @@ export default function ColaVirtual() {
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const { evento, tipoTarifa } = location.state || {};
+
   useEffect(() => {
     const fetchTurno = async () => {
       try {
-        const data = await turnoColaService.getAll()
-        const miTurno = data[0] || {
+        //const data = await turnoColaService.getAll()
+        const miTurno = {
           id: 1,
-          posicion: 356,
+          posicion: 5,
           ingreso: new Date().toISOString(),
           estado: "en_cola",
         }
         setTurno(miTurno)
-        setTotalInQueue(data.length || 1240)
+        setTotalInQueue(/*data.length ||*/ 1240)
         setProgress(Math.max(5, 100 - (miTurno.posicion / 500) * 100))
       } catch (error) {
         console.error("Error al obtener turno:", error)
@@ -38,20 +44,31 @@ export default function ColaVirtual() {
 
     fetchTurno()
   }, [])
+
   useEffect(() => {
-    if (!turno) return
+    if (!turno) return;
 
     const interval = setInterval(() => {
       setTurno((prev) => {
-        if (!prev) return prev
-        const nuevaPos = prev.posicion > 1 ? prev.posicion - 1 : 1
-        setProgress(Math.max(5, 100 - (nuevaPos / 500) * 100))
-        return { ...prev, posicion: nuevaPos }
-      })
-    }, 5000)
+        if (!prev) return prev;
+        const nuevaPos = prev.posicion > 1 ? prev.posicion - 1 : 1;
 
-    return () => clearInterval(interval)
-  }, [turno])
+        setProgress(Math.max(5, 100 - (nuevaPos / 500) * 100));
+
+        if (nuevaPos === 1) {
+          setTimeout(() => {
+            navigate(`/eventos/${evento.id}/compra`, {
+              state: { evento, tipoTarifa },
+            });
+          }, 2000);
+        }
+
+        return { ...prev, posicion: nuevaPos };
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [turno, evento, tipoTarifa, navigate]);
 
   const canPurchase = turno?.posicion === 1
 

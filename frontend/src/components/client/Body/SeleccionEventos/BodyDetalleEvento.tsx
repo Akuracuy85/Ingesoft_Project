@@ -68,8 +68,8 @@ export const BodyDetalleEvento: React.FC = () => {
     hour12: true,
   });
 
-  const handleCompraClick = (tipo: string) => {
-    navigate(`/eventos/${eventoId}/compra`, {
+  const handleColaClick = (tipo: string) => {
+    navigate(`/cola`, {
       state: { evento, tipoTarifa: tipo },
     });
   };
@@ -208,7 +208,7 @@ export const BodyDetalleEvento: React.FC = () => {
             {tiposTarifas.map((tipo) => (
               <button
                 key={tipo}
-                onClick={() => handleCompraClick(tipo)}
+                onClick={() => handleColaClick(tipo)}
                 className="px-10 py-4 bg-black text-white text-lg font-semibold rounded-md hover:bg-gray-800 transition-colors"
               >
                 Comprar {tipo}
