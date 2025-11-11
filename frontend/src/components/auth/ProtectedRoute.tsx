@@ -1,12 +1,9 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC = () => {
   const { isLoggedIn, isLoading } = useAuth();
 
   // Mientras se verifica la sesión
@@ -20,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si está logueado → renderiza la página protegida
-  return <>{children}</>;
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

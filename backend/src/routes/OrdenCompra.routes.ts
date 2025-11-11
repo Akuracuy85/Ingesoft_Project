@@ -9,7 +9,7 @@ const router = Router();
 
 router.get(
   "/calcular", 
-  sessionMiddleware.VerificarToken, // Protegida, asume que el usuario está logueado
+  sessionMiddleware.VerificarToken, // Protegida, verifica que el usuario esté logueado
   ordenCompraController.calcularTotal
 );
 // POST /api/orden
@@ -18,7 +18,6 @@ router.post("/", sessionMiddleware.VerificarToken, ordenCompraController.crearOr
 // GET /api/orden/123
 router.get("/:id", sessionMiddleware.VerificarToken, ordenCompraController.obtenerOrdenPorId);
 
-// 🎯 6. AÑADIR NUEVA RUTA (LISTAR)
 // GET /api/orden/mis-entradas/evento/123
 router.get(
   "/mis-entradas/evento/:eventoId",
@@ -26,21 +25,20 @@ router.get(
   ordenCompraController.listarMisDetallesPorEvento
 );
 
-// 🎯 7. AÑADIR NUEVA RUTA (CONTAR)
 // GET /api/orden/mis-entradas/evento/123/count 
 router.get(
   "/mis-entradas/evento/:eventoId/count",
   sessionMiddleware.VerificarToken, // Requiere login
   ordenCompraController.contarMisEntradasPorEvento
 );
+
 // POST /api/orden/calcular
 router.patch(
   "/:id/confirmar-standar",
   sessionMiddleware.VerificarToken,
-  ordenCompraController.confirmarStandar // Cambiado de 'confirmarPago'
+  ordenCompraController.confirmarStandar
 );
 
-// 🎯 2. NUEVA RUTA (Preventa)
 // PATCH /api/orden/:id/confirmar-preventa
 router.patch(
   "/:id/confirmar-preventa",

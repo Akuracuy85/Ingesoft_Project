@@ -4,40 +4,38 @@ import React from "react";
 import type { ReactNode } from "react";
 import { Header } from "../../components/client/Header/Header";
 import { Footer } from "../../components/client/Footer/Footer";
-import { type FiltersType } from "../../types/FiltersType"; 
+import { type FiltersType } from "../../types/FiltersType";
 
 interface ClientLayoutProps {
-  children: ReactNode;
-  showFilterButton?: boolean;
-  // Acepta la función de recarga
-  onApplyNewFilters?: (filters: FiltersType) => void;
+  children: ReactNode;
+  showFilterButton?: boolean;
+  onApplyNewFilters?: (filters: FiltersType) => void;
 }
 
 const ClientLayout: React.FC<ClientLayoutProps> = ({
-  children,
-  showFilterButton = false,
-  onApplyNewFilters, 
+  children,
+  showFilterButton = false,
+  onApplyNewFilters,
 }) => {
-  return (
-    // 🛑 El comentario problemático fue eliminado o movido fuera del return
-    <div className="flex flex-col min-h-screen bg-white">
-        
-        <header className="flex top-0 left-0 w-full z-50 bg-white shadow">
-          <Header 
-                showFilterButton={showFilterButton} 
-                onApplyNewFilters={onApplyNewFilters} 
-            />
-        </header>
+  return (
+    <div className="flex flex-col min-h-screen bg-white">
 
-        <main className="pt-[100px] flex-1 flex flex-col items-center justify-start w-full">
-          {children}
-        </main>
+      <header className="flex top-0 left-0 w-full z-50 bg-white shadow">
+        <Header
+          showFilterButton={showFilterButton}
+          onApplyNewFilters={onApplyNewFilters}
+        />
+      </header>
 
-        <footer className="w-full">
-          <Footer />
-        </footer>
-      </div>
-  );
+      <main className="pt-[100px] flex-1 flex flex-col items-center justify-start w-full">
+        {children}
+      </main>
+
+      <footer className="w-full">
+        <Footer />
+      </footer>
+    </div>
+  );
 };
 
 export default ClientLayout;

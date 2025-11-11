@@ -1,7 +1,4 @@
-// src/models/Event.ts
-
 import type { Zone } from "./Zone";
-// Suponemos un tipo para Artista, basado en la relación ManyToOne del backend
 export interface Artist {
     id: number;
     nombre: string;
