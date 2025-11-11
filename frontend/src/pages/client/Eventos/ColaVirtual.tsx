@@ -124,11 +124,10 @@ export default function ColaVirtual() {
           {/* Botón de compra */}
           <Button
             disabled={!canPurchase}
-            className={`w-full h-14 text-lg font-semibold ${
-              canPurchase
+            className={`w-full h-14 text-lg font-semibold ${canPurchase
                 ? "bg-[#D59B2C] hover:bg-[#C08A25] text-white animate-pulse"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+              }`}
             onClick={() => setShowValidationModal(true)}
           >
             {canPurchase ? "Ingresar a la compra" : "Esperando tu turno..."}

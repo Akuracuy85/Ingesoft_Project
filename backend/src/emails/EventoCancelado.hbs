@@ -1,0 +1,29 @@
+<html>
+  <body style="font-family: Arial, sans-serif; background-color:#fafafa; padding: 20px;">
+    <h2 style="color:#d32f2f;">🚫 El evento <strong>{{evento.nombre}}</strong> fue cancelado :(</h2>
+
+    <p>
+      Lamentamos informarte que el evento 
+      <strong>{{evento.nombre}}</strong>, al que tenías entradas, ha sido 
+      <strong>cancelado</strong>.
+    </p>
+
+    <div style="margin-top: 20px;">
+      <h3>Detalles del evento:</h3>
+      <p><strong>Fecha original:</strong> {{fechaFormateada}}</p>
+      <p><strong>Lugar:</strong> {{evento.distrito}}, {{evento.provincia}}</p>
+    </div>
+
+    <div style="margin-top: 30px; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 10px;">
+      <h3 style="margin-top: 0; color: #856404;">Información importante:</h3>
+      <p>
+        El equipo organizador gestionará la devolución de tu pago o 
+        la reprogramación del evento y se contactarán contigo.
+      </p>
+    </div>
+
+    <p style="margin-top: 40px;">Gracias por tu comprensión,<br>El equipo de <strong>Unite</strong></p>
+
+    {{> Footer }}
+  </body>
+</html>

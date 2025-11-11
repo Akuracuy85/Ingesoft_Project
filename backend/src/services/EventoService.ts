@@ -826,6 +826,19 @@ export class EventoService {
       );
     }
   }
+
+  async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
+    try {
+      const emails = await this.eventoRepository.obtenerEmailDeAsistentesAlEvento(eventoId);
+      return emails;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener los emails de los asistentes al evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
 
 export const eventoService = EventoService.getInstance();
