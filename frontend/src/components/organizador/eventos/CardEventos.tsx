@@ -4,7 +4,8 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import EventoService from "@/services/EventoService";
+import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO } from "@/services/EventoService";
+
 
 // Tipos para la tabla
 interface EventoItem {
@@ -45,6 +46,13 @@ function mapEstadoToUI(estadoApi: string): EstadoEventoUI {
   }
 }
 
+// Formatear fecha YYYY-MM-DD a dd/MM/yyyy sin usar Date para evitar desfase de zona horaria.
+function formatFechaYMDToDMY(ymd: string): string {
+  const [y, m, d] = ymd.split("-");
+  if (!y || !m || !d) return ymd;
+  return `${d}/${m}/${y}`;
+}
+
 const CardEventos: React.FC = () => {
   // Estado de la lista
   const [eventos, setEventos] = useState<EventoItem[]>([]);
@@ -71,25 +79,42 @@ const CardEventos: React.FC = () => {
 
   // Cargar desde backend al montar
   useEffect(() => {
+    const controller = new AbortController();
     const fetchEventos = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const resp = await EventoService.listarBasicosOrganizador();
-        const items: EventoItem[] = (resp.eventos || []).map((e: any) => ({
-          nombre: e.nombre,
-          fecha: typeof e.fecha === "string" ? e.fecha : new Date(e.fecha).toISOString().slice(0, 10),
-          estado: mapEstadoToUI(e.estado),
-        }));
+        const resp = await listarBasicosOrganizador();
+        if (resp && Array.isArray(resp.eventos) && resp.eventos.length > 0) {
+          console.log("📦 [DEBUG] Eventos recibidos desde el backend:");
+          resp.eventos.forEach((ev: EventoBasicoOrganizadorDTO, idx: number) => {
+            const raw = typeof ev.fecha === "string" ? ev.fecha : ev.fecha?.toISOString?.() ?? "";
+            console.log(`→ #${idx + 1} | Nombre: ${ev.nombre} | Fecha original: ${raw}`);
+          });
+        } else {
+          console.log("⚠️ [DEBUG] No se recibieron eventos o el array está vacío:", resp?.eventos);
+        }
+        const items: EventoItem[] = resp.eventos.map((e: EventoBasicoOrganizadorDTO) => {
+          const ymd = typeof e.fecha === "string" ? e.fecha : e.fecha.toISOString().slice(0, 10);
+          const fechaFormateada = formatFechaYMDToDMY(ymd);
+          console.log(`🧾 [DEBUG] Preparando item ${e.nombre} → Fecha mostrada: ${fechaFormateada}`);
+          return {
+            nombre: e.nombre,
+            fecha: fechaFormateada,
+            estado: mapEstadoToUI(e.estado),
+          };
+        });
         setEventos(items);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        if (controller.signal.aborted) return;
         console.error("Error cargando eventos:", err);
-        setError("No se pudieron cargar los eventos. Intenta nuevamente.");
+        setError("Error al cargar los eventos.");
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     };
     fetchEventos();
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -229,7 +254,7 @@ const CardEventos: React.FC = () => {
 
         {/* Loading y error */}
         {isLoading && (
-          <div className="mt-6 text-sm text-gray-600">Cargando eventos…</div>
+          <div className="mt-6 text-sm text-gray-600">Cargando eventos...</div>
         )}
         {error && !isLoading && (
           <div className="mt-6 text-sm text-red-600">{error}</div>
@@ -302,7 +327,9 @@ const CardEventos: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {eventos.map((ev, index) => (
+                {eventos.map((ev, index) => {
+                  console.log(`🧾 [DEBUG] Renderizando evento ${ev.nombre} → Fecha mostrada: ${ev.fecha}`);
+                  return (
                   <tr
                     key={`${ev.nombre}-${ev.fecha}-${index}`}
                     className={`${selectedIndex === index ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
@@ -370,11 +397,11 @@ const CardEventos: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );})}
               </tbody>
             </table>
             {!isLoading && !error && eventos.length === 0 && (
-              <div className="text-sm text-gray-500 p-4">No hay eventos para mostrar.</div>
+              <div className="text-sm text-gray-500 p-4">No hay eventos en este momento.</div>
             )}
           </div>
         </div>

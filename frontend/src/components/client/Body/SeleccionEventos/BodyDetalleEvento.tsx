@@ -62,11 +62,7 @@ export const BodyDetalleEvento: React.FC = () => {
 );
 
 
-  const horaEvento = new Date(evento.fechaEvento).toLocaleTimeString("es-PE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const horaEvento = evento.time || "";
 
   const handleColaClick = (tipo: string) => {
     navigate(`/cola`, {
@@ -94,14 +90,7 @@ export const BodyDetalleEvento: React.FC = () => {
               {evento.artista?.nombre || "Artista invitado"}
             </h2>
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">
-                {new Date(evento.fechaEvento).toLocaleDateString("es-PE", {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
+              <span className="font-semibold">{evento.date}</span>
               <br />
               {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
               <br />
