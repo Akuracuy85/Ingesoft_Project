@@ -128,6 +128,14 @@ export const Registro = () => {
             </Link>
           </p>
 
+          {/* Quiere ser Organizador */}
+          <p className="text-center mt-6 text-gray-600">
+            ¿Quieres una cuenta de organizador?{" "}
+            <Link to="/organizador/registro" className="text-blue-600 hover:underline">
+              Trata por aquí
+            </Link>
+          </p>
+
           {/* Nombres */}
           <div className="mb-6">
             <label className="block text-gray-700 font-medium mb-2">Nombres</label>

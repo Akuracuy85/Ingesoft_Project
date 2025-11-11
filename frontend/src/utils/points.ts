@@ -1,5 +1,3 @@
-// src/utils/points.ts
-
 /**
  * Calcula los puntos ganados o gastados según el subtotal y el tipo de flujo.
  *
