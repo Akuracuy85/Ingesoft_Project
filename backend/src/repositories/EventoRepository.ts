@@ -1,25 +1,29 @@
-import { AppDataSource } from "@/database/data-source";
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { Documento } from "@/models/Documento";
-import { Evento } from "@/models/Evento";
-import { Zona } from "@/models/Zona";
+import { AppDataSource } from "../database/data-source";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { Documento } from "../models/Documento";
+import { Evento } from "../models/Evento";
+import { Zona } from "../models/Zona";
 import { Brackets, Repository } from "typeorm";
 
 export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
 
 // Filtros para las búsquedas públicas de eventos publicados.
 export interface IFiltrosEvento {
-  precioMin?: string;
-  precioMax?: string;
+  precioMin?: number;
+  precioMax?: number;
   departamento?: string;
   provincia?: string;
   distrito?: string;
-  categoriaId?: string;
-  artistaId?: string;
+  categoriaIds?: number[];
+  artistaIds?: number[];
   fechaInicio?: string;
   fechaFin?: string;
 }
-
+export interface IUbicacionFiltro {
+  departamento: string;
+  provincia: string;
+  distrito: string;
+}
 export class EventoRepository {
   private static instance: EventoRepository;
   private repository: Repository<Evento>;
@@ -141,11 +145,15 @@ export class EventoRepository {
       "artista.categoria",
       "categoria"
     );
-    qb.leftJoin("evento.zonas", "zona");
-    qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
-    qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
+    // qb.leftJoin("evento.zonas", "zona");
+    // qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
+    // qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
 
-    qb.where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
+
+    qb.leftJoinAndSelect("evento.zonas", "zona");
+    qb.leftJoinAndSelect("zona.tarifaNormal", "tarifaNormal");
+    qb.leftJoinAndSelect("zona.tarifaPreventa", "tarifaPreventa");
+
 
     if (filtros.departamento) {
       qb.andWhere("evento.departamento = :depto", {
@@ -159,16 +167,20 @@ export class EventoRepository {
       qb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
     }
 
-    if (filtros.artistaId) {
+    /*if (filtros.artistaId) {
       qb.andWhere("artista.id = :artistaId", {
         artistaId: Number(filtros.artistaId),
       });
+    }*/
+
+
+    if (filtros.artistaIds && filtros.artistaIds.length > 0) {
+      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
     }
 
-    if (filtros.categoriaId) {
-      qb.andWhere("categoria.id = :categoriaId", {
-        categoriaId: Number(filtros.categoriaId),
-      });
+    // 🛑 LÓGICA DE IDs (MÁS SIMPLE)
+    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
+      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
     }
 
     if (filtros.fechaInicio) {
@@ -182,10 +194,8 @@ export class EventoRepository {
       qb.andWhere("evento.fechaEvento < :fechaFin", { fechaFin });
     }
 
-    const precioMin =
-      filtros.precioMin !== undefined ? Number(filtros.precioMin) : undefined;
-    const precioMax =
-      filtros.precioMax !== undefined ? Number(filtros.precioMax) : undefined;
+    const precioMin = filtros.precioMin;
+    const precioMax = filtros.precioMax;
     const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
     const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
 
@@ -195,17 +205,17 @@ export class EventoRepository {
           if (aplicarMin && aplicarMax) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio BETWEEN :precioMin AND :precioMax) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
             );
           } else if (aplicarMin) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio >= :precioMin) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
             );
           } else if (aplicarMax) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio <= :precioMax) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
             );
           }
         })
@@ -238,10 +248,10 @@ export class EventoRepository {
     });
   }
 
-/**
-   * @description Busca un evento por ID cargando las relaciones mínimas necesarias
-   * para el proceso de mapeo DTO de la vista de compra (Zonas y Artista).
-   */
+  /**
+     * @description Busca un evento por ID cargando las relaciones mínimas necesarias
+     * para el proceso de mapeo DTO de la vista de compra (Zonas y Artista).
+     */
   async buscarPorIdParaCompra(id: number): Promise<Evento | null> {
     return await this.repository.findOne({
       where: { id },
@@ -255,7 +265,35 @@ export class EventoRepository {
       },
     });
   }
+  async obtenerUbicaciones(): Promise<IUbicacionFiltro[]> {
+    const qb = this.repository.createQueryBuilder("evento");
 
+    qb.select("evento.departamento", "departamento")
+      .addSelect("evento.provincia", "provincia")
+      .addSelect("evento.distrito", "distrito")
+      // Solo mostrar ubicaciones de eventos que están publicados
+      .where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO })
+      .distinct(true) // Obtenemos combinaciones únicas
+      .orderBy("departamento", "ASC")
+      .addOrderBy("provincia", "ASC")
+      .addOrderBy("distrito", "ASC");
+
+    // .getRawMany() devuelve objetos planos
+    return await qb.getRawMany<IUbicacionFiltro>();
+  }
+
+  async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
+    const qb = this.repository.createQueryBuilder("evento");
+    qb.leftJoin("evento.entradas", "entrada")
+      .leftJoin("entrada.ordenCompra", "ordenCompra")
+      .leftJoin("ordenCompra.cliente", "cliente")
+      .select("cliente.email", "email")
+      .where("evento.id = :eventoId", { eventoId })
+      .andWhere("ordenCompra.estado = :estado", { estado: "COMPLETADA" })
+      .distinct(true);
+    const resultados = await qb.getRawMany<{ email: string }>();
+    return resultados.map((r) => r.email);
+  }
 
 }
 

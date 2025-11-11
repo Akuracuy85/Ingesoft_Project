@@ -5,7 +5,8 @@ import eventoRoutes from "./Evento.routes";
 import ordenCompraRoutes from "./OrdenCompra.routes"; 
 import perfilRoutes from "./Perfil.routes";
 import turnoRoutes from "./VerificarTurno.routes";
-
+import categoriaRoutes from "./Categoria.routes";
+import artistaRoutes from "./Artista.routes";
 
 const uniteRouter = express.Router();
 
@@ -22,5 +23,9 @@ uniteRouter.use("/evento", eventoRoutes)
 uniteRouter.use("/orden", ordenCompraRoutes) 
 uniteRouter.use("/perfil", perfilRoutes)
 uniteRouter.use("/turno", turnoRoutes)
+
+uniteRouter.use("/categoria", categoriaRoutes)
+uniteRouter.use("/artista", artistaRoutes)
+
 
 export default uniteRouter;

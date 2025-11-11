@@ -1,7 +1,8 @@
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { CustomError } from "@/types/CustomError";
-import { PasswordHasher } from "@/types/PasswordHasher";
-import { GenerarAccessToken, GenerarRefreshToken } from "@/utils/JWTUtils";
+import { Rol } from "@/enums/Rol";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { CustomError } from "../types/CustomError";
+import { PasswordHasher } from "../types/PasswordHasher";
+import { GenerarAccessToken, GenerarRefreshToken } from "../utils/JWTUtils";
 import { access } from "fs";
 import { StatusCodes } from "http-status-codes";
 
@@ -21,7 +22,7 @@ export class AuthService {
     return AuthService.instance;
   }
 
-  public async AutenticarUsuario(email: string, password: string): Promise<{accessToken: string, refreshToken: string}> {
+  public async AutenticarUsuario(email: string, password: string): Promise<{accessToken: string, refreshToken: string, rol: Rol}> {
     
     let usuario = null
     try {
@@ -41,7 +42,7 @@ export class AuthService {
       throw new CustomError("Error al verificar la contraseña", StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
-    let res = {accessToken: "", refreshToken: ""};
+    let res = {accessToken: "", refreshToken: "", rol: usuario.rol};
     try {
       res.accessToken = GenerarAccessToken(usuario.id);
       res.refreshToken = GenerarRefreshToken(usuario.id);

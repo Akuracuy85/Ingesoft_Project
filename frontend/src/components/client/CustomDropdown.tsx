@@ -1,7 +1,7 @@
 // src/components/Filters/CustomDropdown.tsx
 import React, { useState, useRef, useEffect } from "react";
 
-interface Option {
+export interface Option {
   id: string;
   nombre: string;
 }

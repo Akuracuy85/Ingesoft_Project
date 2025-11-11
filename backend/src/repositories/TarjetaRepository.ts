@@ -1,7 +1,7 @@
-import { AppDataSource } from "@/database/data-source";
-import { Tarjeta } from "@/models/Tarjeta";
+import { AppDataSource } from "../database/data-source";
+import { Tarjeta } from "../models/Tarjeta";
 import { Repository } from "typeorm";
-import { Cliente } from "@/models/Cliente"; // Necesario para el tipo de la relación
+import { Cliente } from "../models/Cliente"; // Necesario para el tipo de la relación
 
 export class TarjetaRepository {
     private static instance: TarjetaRepository;

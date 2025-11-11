@@ -4,4 +4,5 @@ export interface DocumentoDto {
   tipo: string;
   tamano: number;
   url: string;
+  contenidoBase64?: string;
 }

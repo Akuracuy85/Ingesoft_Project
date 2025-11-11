@@ -5,13 +5,16 @@ import { EventListResponseDTO } from './EventListResponseDTO';
 import { EventDetailsForPurchaseDTO } from './EventDetailsForPurchaseDTO';
 // 🚨 IMPORTAR la entidad Tarifa para compatibilidad con ZonaDTO y el ORM.
 import { Tarifa } from "../../models/Tarifa"; 
-
+// src/dto/Event/EventMapper.ts
+import { TarifaDto } from "../evento/TarifaDto";
+// ... otros imports
 // ----------------------------------------------------------------------
 // --- DEFINICIONES DE TIPOS (INTERNAS AL MAPPER) ---
 // ----------------------------------------------------------------------
 
 interface ArtistEntity {
     nombre: string;
+    categoria?: CategoriaEntity;
 }
 
 interface BufferData {
@@ -29,11 +32,15 @@ interface EventEntity {
     departamento: string;
     provincia: string;
     distrito: string;
+    lugar: string;
     imagenBanner: BinaryData; 
     mimeType?: string; 
     artista: ArtistEntity;
 }
-
+interface CategoriaEntity { // <-- AÑADE ESTA INTERFAZ
+    id: number;
+    nombre: string;
+}
 // Usamos la entidad Tarifa importada para tipar las relaciones.
 interface ZoneEntity {
     id: number;
@@ -73,7 +80,7 @@ function bufferToBase64(binaryData: BinaryData, mimeType: string): string {
         
     return `data:${mimeType};base64,${base64String}`; 
 }
-
+    
 // ----------------------------------------------------------------------
 // Clase Mapeadora
 // ----------------------------------------------------------------------
@@ -83,35 +90,67 @@ export class EventMapper {
     /**
      * @description Mapea la entidad de Evento a la estructura de la lista de eventos.
      */
-    static toListDTO(entity: EventEntity): EventListResponseDTO {
+    private static mapearTarifaDto(tarifa?: Tarifa | null): TarifaDto | null {
+        if (!tarifa) {
+            return null;
+        }
+
+        return {
+            id: tarifa.id,
+            nombre: tarifa.nombre,
+            precio: tarifa.precio,
+            fechaInicio: tarifa.fechaInicio.toISOString(),
+            fechaFin: tarifa.fechaFin.toISOString(),
+        };
+    }
+    static toListDTO(entity: EventEntityWithZones): EventListResponseDTO {
                 
         const eventDate = entity.fechaEvento;
 
         const dateString = eventDate.toLocaleDateString('es-ES', { 
-            day: 'numeric', 
+            day: 'numeric',
             month: 'long',
             year: 'numeric'
         });
-
+        
         const timeString = eventDate.toLocaleTimeString('es-ES', { 
-            hour: '2-digit', 
-            minute: '2-digit', 
+            hour: '2-digit',
+            minute: '2-digit',
             hour12: false 
         });
-                
-        const place = `${entity.distrito}, ${entity.provincia}`;
+        
+        const place = entity.lugar
+            ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
+            : `${entity.distrito}, ${entity.provincia}`;
         const mimeType = entity.mimeType || 'image/jpeg'; 
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
+        
+        const zonasDto = (entity.zonas || []).map(zona => ({
+            id: zona.id,
+            nombre: zona.nombre,
+            capacidad: zona.capacidad,
+            cantidadComprada: zona.cantidadComprada,
+            
+            // Usa la función de ayuda para mapear las tarifas
+            tarifaNormal: this.mapearTarifaDto(zona.tarifaNormal), 
+            tarifaPreventa: this.mapearTarifaDto(zona.tarifaPreventa)
+        }));
                 
         // 🚀 ESTO ESTABA FALTANDO (o mal ubicado)
         return {
             id: entity.id,
-            title: entity.nombre,
-            date: dateString, 
-            time: timeString, 
-            place: place, 
-            image: imageBase64, 
-            artistName: entity.artista.nombre,
+            title: entity.nombre,
+            description: entity.descripcion, // <-- AÑADIDO
+            date: dateString, 
+            time: timeString,
+            departamento: entity.departamento, // <-- AÑADIDO
+            provincia: entity.provincia, // <-- AÑADIDO
+            distrito: entity.distrito, // <-- AÑADIDO
+            place: place, 
+            image: imageBase64, 
+            artistName: entity.artista.nombre,
+            category: entity.artista.categoria?.nombre, // <-- AÑADIDO
+            zonas: zonasDto, // <-- AÑADIDO
         };
     }
 
@@ -127,7 +166,9 @@ export class EventMapper {
         // 1. Mapeo de Propiedades Base
         const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
         const timeString = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const place = `${entity.distrito}, ${entity.provincia}`;
+        const place = entity.lugar
+            ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
+            : `${entity.distrito}, ${entity.provincia}`;
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
 
         // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)

@@ -6,42 +6,42 @@ export function useUsuarios() {
   const queryClient = useQueryClient();
 
   const usersQuery = useQuery<User[]>({
-    queryKey: ["users"],
+    queryKey: ["usuarios"],
     queryFn: async () => {
-      const data = await userService.getAll();
-      return data;
+      const token = localStorage.getItem("token")
+      return userService.getAll(token || undefined)
     },
-  });
+  })
 
   const createUser = useMutation({
-    mutationFn: (userData: UserFormData) => userService.create(userData),
-    onSuccess: (data) => {
-      console.log("✅ Usuario creado:", data);
-      // ✅ Invalida la cache de usuarios para recargar la tabla
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+    mutationFn: (data: UserFormData) => userService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usuarios"] })
     },
-    onError: (error) => {
-      console.error("❌ Error al crear usuario:", error);
-    },
-  });
+  })
 
   const updateUser = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UserFormData }) =>
       userService.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
-  });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usuarios"] })
+    },
+  })
 
   const deleteUser = useMutation({
     mutationFn: (id: number) => userService.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
-  });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usuarios"] })
+    },
+  })
 
-  const toggleStatus = useMutation({
+   const toggleStatus = useMutation({
     mutationFn: ({ id, currentStatus }: { id: number; currentStatus: string }) =>
-    userService.toggleStatus(id, currentStatus),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
-  });
-
+      userService.toggleStatus(id, currentStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["usuarios"] })
+    },
+  })
   return {
     usersQuery,
     createUser,

@@ -1,8 +1,8 @@
 // CAMBIO: [2025-10-26] - Creado ZonaRepository
 // Se crea para manejar el acceso a datos de Zonas,
 // especialmente para buscar zonas y validar stock.
-import { AppDataSource } from "@/database/data-source";
-import { Zona } from "@/models/Zona";
+import { AppDataSource } from "../database/data-source";
+import { Zona } from "../models/Zona";
 import { Repository } from "typeorm";
 
 export class ZonaRepository {

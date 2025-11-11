@@ -1,13 +1,12 @@
 import React from "react";
 import type { Step } from "../../../../types/Step";
 
-// 🚨 NUEVA INTERFAZ DE PROPIEDADES para el componente COMPLETO
+
 export interface StepIndicatorProps {
-    currentStep: number; // Índice del paso actual (0, 1, 2...)
-    steps: Step[]; // La lista completa de pasos
+    currentStep: number; 
+    steps: Step[]; 
 }
 
-// Subcomponente para un solo paso (opcional, pero ayuda a la limpieza)
 const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean; isLast: boolean }> = ({
     step,
     isActive,

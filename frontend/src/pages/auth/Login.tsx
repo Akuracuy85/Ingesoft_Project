@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,16 +11,31 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaValido, setCaptchaValido] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!captchaValido) {
+      alert("Por favor, verifica el captcha antes de continuar.");
+      return;
+    }
+
     try {
       const res = await login(email, password);
       if (res.success) {
         alert("Inicio de sesión correcto.");
-        navigate("/eventos"); // o la ruta que corresponda
+        if (res.rol === "ORGANIZADOR") {
+          navigate("/organizador/eventos");
+        }
+        else if (res.rol === "ADMINISTRADOR") {
+          navigate("/admin/usuarios");
+        }
+        else {
+          navigate("/eventos");
+        }
       } else {
         alert("Credenciales inválidas");
       }
@@ -95,10 +111,23 @@ export const Login = () => {
             )}
           </div>
 
+          {/* Captcha */}
+          <div className="flex justify-center mt-4 mb-6">
+            <ReCAPTCHA
+              sitekey="6LdJnfcrAAAAAMgCVoBka3Z4bewdmH7MOw9FiKTi"
+              onChange={(token: string | null) => setCaptchaValido(!!token)}
+            />
+          </div>
+
           {/* Botón de ingresar */}
           <button
             type="submit"
-            className="w-full bg-[#e58c00] hover:bg-[#d47d00] text-white font-semibold text-lg py-3 rounded-full transition-all cursor-pointer"
+            disabled={!captchaValido}
+            className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
+              captchaValido
+                ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
+                : "bg-gray-400 text-white cursor-not-allowed"
+            }`}
           >
             INGRESAR
           </button>

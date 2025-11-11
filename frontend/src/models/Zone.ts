@@ -1,14 +1,17 @@
-// ./src/types/zone.ts (Tipo que consume la tabla de zonas)
-// Importar Tarifa y ZonePurchaseDetail NO es necesario aquí, solo si vas a re-calcular.
+// src/models/Zone.ts (CORRECCIÓN FINAL)
 
-import type { Tarifa } from './Tarifa';
+import type { Tarifa } from "./Tarifa";
 
 export interface Zone {
-  id?: number;
-  nombre: string;
-  capacidad: number;
-  cantidadComprada?: number;
-  tarifaNormal: Tarifa;
-  tarifaPreventa: Tarifa;
+    id?: number;
+    nombre: string;
+    capacidad: number;
+    cantidadComprada: number;
+    
+    // ✅ Campo obligatorio: Mapeado de tarifaNormal
+    tarifaNormal: Tarifa; 
+    
+    // 🛑 CORRECCIÓN: Usamos '?' para hacerlo opcional y permitimos 'null'
+    // Esto significa que la propiedad puede estar ausente (undefined) o presente con valor (Tarifa | null)
+    tarifaPreventa?: Tarifa | null; 
 }
-// Nota: Usamos Partial<Tarifa> para permitir que la UI maneje solo `precio` y `descuento`.

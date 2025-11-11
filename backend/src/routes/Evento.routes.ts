@@ -1,15 +1,13 @@
 import { Router } from "express";
-import { eventoController } from "@/controllers/EventoController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
+import { eventoController } from "../controllers/EventoController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
 
 const router = Router();
 
 // Público: listado de eventos publicados.
 router.get("/publicados", eventoController.listarPublicados);
 
-// === NUEVO ENDPOINT PÚBLICO: Obtener datos de compra por ID ===
-// Endpoint: /api/evento/compra/:id
-router.get("/compra/:id", eventoController.obtenerDatosCompraPorId); // ✅ CORRECCIÓN: USAR EL MÉTODO DTO
+router.get("/compra/:id", eventoController.obtenerDatosCompraPorId);
 
 // Privado (organizador): gestión de sus propios eventos.
 router.get(
@@ -17,22 +15,29 @@ router.get(
   sessionMiddleware.VerificarToken,
   eventoController.obtenerDatosBasicos
 );
-// ... [otras rutas privadas]
+
 router.get(
   "/",
   sessionMiddleware.VerificarToken,
   eventoController.obtenerEventosDetallados
 );
+
 router.get("/:id", eventoController.obtenerPorId);
+
 router.post(
   "/",
   sessionMiddleware.VerificarToken,
   eventoController.crearEvento
 );
+
 router.put(
   "/:id",
   sessionMiddleware.VerificarToken,
   eventoController.actualizarEvento
 );
+
+router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
+
+router.get("/publicados", eventoController.listarPublicados);
 
 export default router;

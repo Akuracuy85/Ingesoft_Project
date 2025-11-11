@@ -20,7 +20,6 @@ export const RegistroOrganizador = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Campos personales
   const [nombres, setNombres] = useState("");
   const [apellidoPaterno, setApellidoPaterno] = useState("");
   const [apellidoMaterno, setApellidoMaterno] = useState("");
@@ -29,24 +28,59 @@ export const RegistroOrganizador = () => {
   const navigate = useNavigate();
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
+  const esEmailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Validadores simples
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setDni(e.target.value.replace(/[^0-9]/g, ""));
-  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setTelefono(e.target.value.replace(/[^0-9]/g, ""));
-  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setRuc(e.target.value.replace(/[^0-9]/g, ""));
+  // --- VALIDACIONES ---
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
+    setDni(value);
+  };
+
+  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 9);
+    setTelefono(value);
+  };
+
+  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 11);
+    setRuc(value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const esDniValido = dni.length === 8;
+  const esTelefonoValido = telefono.length === 9;
+  const esRucValido = ruc.length === 11;
+
+  const todosLlenos =
+    nombres &&
+    apellidoPaterno &&
+    apellidoMaterno &&
+    dni &&
+    telefono &&
+    email &&
+    password &&
+    confirmPassword &&
+    ruc &&
+    razonSocial;
+
+  const puedeRegistrar =
+    todosLlenos &&
+    esDniValido &&
+    esTelefonoValido &&
+    esRucValido &&
+    esEmailValido &&
+    captchaValido &&
+    aceptaTerminos &&
+    contraseñasCoinciden;
 
   const handleSubmit = async () => {
-    if (
-      !captchaValido ||
-      !aceptaTerminos ||
-      !contraseñasCoinciden ||
-      !ruc ||
-      !razonSocial
-    )
+    if (!puedeRegistrar) {
+      alert("Por favor, completa todos los campos correctamente.");
       return;
+    }
 
     setLoading(true);
     try {
@@ -81,19 +115,16 @@ export const RegistroOrganizador = () => {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-gray-100">
-      {/* Fondo */}
       <img
         src={concierto}
         alt="Fondo concierto"
         className="absolute inset-0 w-full h-full object-cover opacity-40"
       />
 
-      {/* Header */}
       <header className="absolute top-0 left-0 w-full bg-white border-b border-gray-300 py-2 px-8 flex items-center shadow-sm">
         <img src={logoUnite} alt="Logo Unite" className="h-12 w-auto" />
       </header>
 
-      {/* Contenido */}
       <div className="relative z-10 flex flex-1 justify-center items-center p-6 mt-20">
         <div className="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl p-10 w-[90%] max-w-5xl">
           <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">
@@ -107,7 +138,7 @@ export const RegistroOrganizador = () => {
             </Link>
           </p>
 
-          {/* === SECCIÓN 1: DATOS DEL REPRESENTANTE === */}
+          {/* === DATOS DEL REPRESENTANTE === */}
           <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4 border-b border-gray-300 pb-2">
             Datos del Representante
           </h3>
@@ -120,7 +151,9 @@ export const RegistroOrganizador = () => {
               placeholder="Ingresa tus nombres"
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                nombres ? "border-gray-300" : "border-red-500"
+              }`}
             />
           </div>
 
@@ -135,7 +168,9 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa tu apellido paterno"
                 value={apellidoPaterno}
                 onChange={(e) => setApellidoPaterno(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  apellidoPaterno ? "border-gray-300" : "border-red-500"
+                }`}
               />
             </div>
             <div>
@@ -147,12 +182,14 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa tu apellido materno"
                 value={apellidoMaterno}
                 onChange={(e) => setApellidoMaterno(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  apellidoMaterno ? "border-gray-300" : "border-red-500"
+                }`}
               />
             </div>
           </div>
 
-          {/* Documento y Teléfono */}
+          {/* DNI / Teléfono */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">
@@ -163,20 +200,32 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa tu DNI"
                 value={dni}
                 onChange={handleDniChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  esDniValido ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!esDniValido && dni.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Deben ser 8 caracteres numéricos
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Teléfono
-              </label>
+              <label className="block text-gray-700 font-medium mb-2">Teléfono</label>
               <input
                 type="text"
                 placeholder="Ingresa tu número de teléfono"
                 value={telefono}
                 onChange={handleTelefonoChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  esTelefonoValido ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!esTelefonoValido && telefono.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Deben ser 9 caracteres numéricos
+                </p>
+              )}
             </div>
           </div>
 
@@ -189,12 +238,18 @@ export const RegistroOrganizador = () => {
               type="email"
               placeholder="Ingresa tu correo electrónico"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+              onChange={handleEmailChange}
+              required
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                email && esEmailValido ? "border-gray-300" : "border-red-500"
+              }`}
             />
+            {!esEmailValido && email.length > 0 && (
+              <p className="text-red-500 text-sm mt-1">El correo no es válido</p>
+            )}
           </div>
 
-          {/* Contraseña */}
+          {/* Contraseñas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="relative">
               <label className="block text-gray-700 font-medium mb-2">Contraseña</label>
@@ -203,7 +258,9 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa tu contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none ${
+                  password ? "border-gray-300" : "border-red-500"
+                }`}
               />
               <button
                 type="button"
@@ -224,7 +281,7 @@ export const RegistroOrganizador = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`w-full px-4 py-3 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none border ${
-                  contraseñasCoinciden ? "border-gray-300" : "border-red-500"
+                  confirmPassword && contraseñasCoinciden ? "border-gray-300" : "border-red-500"
                 }`}
               />
               <button
@@ -242,7 +299,7 @@ export const RegistroOrganizador = () => {
             </div>
           </div>
 
-          {/* === SECCIÓN 2: DATOS DE LA ORGANIZACIÓN === */}
+          {/* === DATOS DE LA ORGANIZACIÓN === */}
           <h3 className="text-xl font-semibold text-gray-800 mt-10 mb-4 border-b border-gray-300 pb-2">
             Datos de la Organización
           </h3>
@@ -255,9 +312,17 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa el RUC de la organización"
                 value={ruc}
                 onChange={handleRucChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  esRucValido ? "border-gray-300" : "border-red-500"
+                }`}
               />
+              {!esRucValido && ruc.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Deben ser 11 caracteres numéricos
+                </p>
+              )}
             </div>
+
             <div>
               <label className="block text-gray-700 font-medium mb-2">
                 Razón Social
@@ -267,7 +332,9 @@ export const RegistroOrganizador = () => {
                 placeholder="Ingresa la razón social"
                 value={razonSocial}
                 onChange={(e) => setRazonSocial(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
+                  razonSocial ? "border-gray-300" : "border-red-500"
+                }`}
               />
             </div>
           </div>
@@ -304,20 +371,9 @@ export const RegistroOrganizador = () => {
           {/* Botón registrar */}
           <button
             onClick={handleSubmit}
-            disabled={
-              loading ||
-              !captchaValido ||
-              !aceptaTerminos ||
-              !contraseñasCoinciden ||
-              !ruc ||
-              !razonSocial
-            }
+            disabled={!puedeRegistrar || loading}
             className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
-              captchaValido &&
-              aceptaTerminos &&
-              contraseñasCoinciden &&
-              ruc &&
-              razonSocial
+              puedeRegistrar
                 ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
