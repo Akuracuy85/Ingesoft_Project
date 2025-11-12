@@ -6,7 +6,8 @@ import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
 import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO, createEvent, mapEstadoUIToBackend } from "@/services/EventoService";
 import ArtistaService from "@/services/ArtistaService";
-import UbicacionService from "@/services/UbicacionService";
+// Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
+
 // Moved to utils for reuse
 import { formatFecha } from "@/utils/formatFecha";
 
@@ -179,7 +180,7 @@ const CardEventos: React.FC = () => {
         }
       }
 
-      // Obtener artista y ubicación mínimos desde servicios existentes
+      // Obtener artista (mínimo requerido por backend actual)
       const artistas = await ArtistaService.getArtistas();
       if (!artistas || artistas.length === 0) {
         alert("No hay artistas disponibles para asignar al evento.");
@@ -187,36 +188,16 @@ const CardEventos: React.FC = () => {
       }
       const artistaId = Number(artistas[0].id);
 
-      // Ubicación por defecto: primer departamento/provincia/distrito disponibles
-      const departamentos = await UbicacionService.getDepartamentos();
-      if (!departamentos || departamentos.length === 0) {
-        alert("No hay ubicaciones disponibles (departamentos).");
-        return;
-      }
-      const departamento = departamentos[0].nombre;
-      const provincias = await UbicacionService.getProvincias(departamento);
-      if (!provincias || provincias.length === 0) {
-        alert("No hay ubicaciones disponibles (provincias).");
-        return;
-      }
-      const provincia = provincias[0].nombre;
-      const distritos = await UbicacionService.getDistritos(departamento, provincia);
-      if (!distritos || distritos.length === 0) {
-        alert("No hay ubicaciones disponibles (distritos).");
-        return;
-      }
-      const distrito = distritos[0].nombre;
-
       const payload = {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fecha: data.fecha, // YYYY-MM-DD
         hora: data.hora,   // HH:mm
         artistaId,
-        departamento,
-        provincia,
-        distrito,
-        lugar: (data.lugar || "").trim() || `${departamento}, ${provincia}`,
+        departamento: data.departamento?.trim() || null,
+        provincia: data.provincia?.trim() || null,
+        distrito: data.distrito?.trim() || null,
+        lugar: (data.lugar || "").trim() || undefined,
         estado: estadoBackend,
         imagenPortada,
       };

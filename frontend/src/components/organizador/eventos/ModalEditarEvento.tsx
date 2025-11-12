@@ -170,60 +170,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
 
-          {/* Ubicación: Departamento / Provincia / Distrito */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Departamento <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="departamento"
-                value={form.departamento}
-                onChange={handleDepartamentoChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="">Selecciona departamento</option>
-                {departamentos.map((d) => (
-                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Provincia <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="provincia"
-                value={form.provincia}
-                onChange={handleProvinciaChange}
-                disabled={!form.departamento}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
-              >
-                <option value="">Selecciona provincia</option>
-                {provincias.map((p) => (
-                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Distrito <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="distrito"
-                value={form.distrito}
-                onChange={handleDistritoChange}
-                disabled={!form.departamento || !form.provincia}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
-              >
-                <option value="">Selecciona distrito</option>
-                {distritos.map((di) => (
-                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -251,6 +197,54 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
                 }`}
               />
               {horaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+          </div>
+
+          {/* Ubicación: Departamento / Provincia / Distrito */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+              <select
+                name="departamento"
+                value={form.departamento}
+                onChange={handleDepartamentoChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="">Selecciona departamento</option>
+                {departamentos.map((d) => (
+                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
+              <select
+                name="provincia"
+                value={form.provincia}
+                onChange={handleProvinciaChange}
+                disabled={!form.departamento}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+              >
+                <option value="">Selecciona provincia</option>
+                {provincias.map((p) => (
+                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+              <select
+                name="distrito"
+                value={form.distrito}
+                onChange={handleDistritoChange}
+                disabled={!form.departamento || !form.provincia}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+              >
+                <option value="">Selecciona distrito</option>
+                {distritos.map((di) => (
+                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
+                ))}
+              </select>
             </div>
           </div>
 

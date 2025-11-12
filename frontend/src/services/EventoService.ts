@@ -172,10 +172,10 @@ export interface CrearEventoPayload {
   fecha: string; // YYYY-MM-DD
   hora: string; // HH:mm
   artistaId: number;
-  departamento: string;
-  provincia: string;
-  distrito: string;
-  lugar: string;
+  departamento?: string | null;
+  provincia?: string | null;
+  distrito?: string | null;
+  lugar?: string;
   estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
   imagenPortada?: string; // base64 sin prefijo
 }
