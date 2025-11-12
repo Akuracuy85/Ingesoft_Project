@@ -114,7 +114,9 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha <span className="text-red-500">*</span>
+              </label>
               <input
                 type="date"
                 name="fecha"
@@ -124,7 +126,9 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hora <span className="text-red-500">*</span>
+              </label>
               <input
                 type="time"
                 name="hora"
@@ -203,4 +207,3 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 };
 
 export default ModalCrearEvento;
-
