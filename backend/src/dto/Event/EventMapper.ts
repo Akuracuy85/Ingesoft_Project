@@ -80,7 +80,7 @@ function bufferToBase64(binaryData: BinaryData, mimeType: string): string {
         
     return `data:${mimeType};base64,${base64String}`; 
 }
-    
+
 // ----------------------------------------------------------------------
 // Clase Mapeadora
 // ----------------------------------------------------------------------
@@ -104,21 +104,21 @@ export class EventMapper {
         };
     }
     static toListDTO(entity: EventEntityWithZones): EventListResponseDTO {
-                
+
         const eventDate = entity.fechaEvento;
 
-        const dateString = eventDate.toLocaleDateString('es-ES', { 
+        const dateString = eventDate.toLocaleDateString('es-ES', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
         });
-        
-        const timeString = eventDate.toLocaleTimeString('es-ES', { 
+
+        const timeString = eventDate.toLocaleTimeString('es-ES', {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false 
+            hour12: false
         });
-        
+
         const place = entity.lugar
             ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
             : `${entity.distrito}, ${entity.provincia}`;
@@ -141,13 +141,13 @@ export class EventMapper {
             id: entity.id,
             title: entity.nombre,
             description: entity.descripcion, // <-- AÑADIDO
-            date: dateString, 
+            date: dateString,
             time: timeString,
             departamento: entity.departamento, // <-- AÑADIDO
             provincia: entity.provincia, // <-- AÑADIDO
             distrito: entity.distrito, // <-- AÑADIDO
-            place: place, 
-            image: imageBase64, 
+            place: place,
+            image: imageBase64,
             artistName: entity.artista.nombre,
             category: entity.artista.categoria?.nombre, // <-- AÑADIDO
             zonas: zonasDto, // <-- AÑADIDO
@@ -159,9 +159,9 @@ export class EventMapper {
      * EventDetailsForPurchaseDTO.
      */
     static toPurchaseDTO(entity: EventEntityWithZones): EventDetailsForPurchaseDTO {
-                
+
         const eventDate = entity.fechaEvento;
-        const mimeType = entity.mimeType || 'image/jpeg'; 
+        const mimeType = entity.mimeType || 'image/jpeg';
 
         // 1. Mapeo de Propiedades Base
         const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -190,15 +190,15 @@ export class EventMapper {
         return {
             id: entity.id,
             title: entity.nombre,
-            description: entity.descripcion, 
-            date: dateString, 
-            time: timeString, 
+            description: entity.descripcion,
+            date: dateString,
+            time: timeString,
             place: place,
             image: imageBase64,
             artistName: entity.artista.nombre,
-            
+
             // Propiedades específicas de Compra
-            zonasDisponibles: zonasDisponibles, 
+            zonasDisponibles: zonasDisponibles,
             limiteEntradas: LIMITE_COMPRA_POR_PERSONA,
         };
     }
