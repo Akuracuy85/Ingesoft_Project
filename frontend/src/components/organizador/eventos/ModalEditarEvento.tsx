@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import type { NuevoEventoForm } from "./ModalCrearEvento";
+import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 
 interface ModalEditarEventoProps {
   open: boolean;
@@ -19,14 +20,49 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
       lugar: "",
       estado: "Borrador",
       imagen: null,
+      departamento: "",
+      provincia: "",
+      distrito: "",
     }
   );
   const [touchedSubmit, setTouchedSubmit] = useState(false);
 
+  // Opciones para selects
+  const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
+  const [provincias, setProvincias] = useState<LocationOption[]>([]);
+  const [distritos, setDistritos] = useState<LocationOption[]>([]);
+
   useEffect(() => {
-    if (open && initialData) {
-      setForm({ ...initialData });
+    if (open) {
       setTouchedSubmit(false);
+      // Cargar departamentos
+      UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+
+      // Precargar formulario con initialData
+      if (initialData) {
+        setForm({ ...initialData });
+        // Si hay departamento, cargar provincias
+        (async () => {
+          if (initialData.departamento) {
+            const provs = await UbicacionService.getProvincias(initialData.departamento).catch(() => []);
+            setProvincias(provs);
+          } else {
+            setProvincias([]);
+          }
+          // Si hay provincia, cargar distritos
+          if (initialData.departamento && initialData.provincia) {
+            const dists = await UbicacionService.getDistritos(initialData.departamento, initialData.provincia).catch(() => []);
+            setDistritos(dists);
+          } else {
+            setDistritos([]);
+          }
+        })();
+      } else {
+        // Si no hay initialData, limpiar selects
+        setForm((prev) => ({ ...prev, departamento: "", provincia: "", distrito: "" }));
+        setProvincias([]);
+        setDistritos([]);
+      }
     }
   }, [open, initialData]);
 
@@ -42,6 +78,32 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
   const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
     setForm((prev) => ({ ...prev, imagen: file }));
+  };
+
+  const handleDepartamentoChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDep = e.target.value;
+    setForm((prev) => ({ ...prev, departamento: selectedDep, provincia: "", distrito: "" }));
+    setDistritos([]);
+    if (selectedDep) {
+      const provs = await UbicacionService.getProvincias(selectedDep).catch(() => []);
+      setProvincias(provs);
+    } else {
+      setProvincias([]);
+    }
+  };
+
+  const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedProv = e.target.value;
+    setForm((prev) => ({ ...prev, provincia: selectedProv, distrito: "" }));
+    setDistritos([]);
+    if (selectedProv && form.departamento) {
+      const dists = await UbicacionService.getDistritos(form.departamento, selectedProv).catch(() => []);
+      setDistritos(dists);
+    }
+  };
+
+  const handleDistritoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({ ...prev, distrito: e.target.value }));
   };
 
   const handleGuardar = () => {
@@ -106,6 +168,60 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               }`}
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Ubicación: Departamento / Provincia / Distrito */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Departamento <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="departamento"
+                value={form.departamento}
+                onChange={handleDepartamentoChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="">Selecciona departamento</option>
+                {departamentos.map((d) => (
+                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Provincia <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="provincia"
+                value={form.provincia}
+                onChange={handleProvinciaChange}
+                disabled={!form.departamento}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+              >
+                <option value="">Selecciona provincia</option>
+                {provincias.map((p) => (
+                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Distrito <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="distrito"
+                value={form.distrito}
+                onChange={handleDistritoChange}
+                disabled={!form.departamento || !form.provincia}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+              >
+                <option value="">Selecciona distrito</option>
+                {distritos.map((di) => (
+                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Fecha y Hora */}
