@@ -5,6 +5,8 @@ import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
 import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO } from "@/services/EventoService";
+// Moved to utils for reuse
+import { formatFecha } from "@/utils/formatFecha";
 
 
 // Tipos para la tabla
@@ -44,13 +46,6 @@ function mapEstadoToUI(estadoApi: string): EstadoEventoUI {
     default:
       return "Borrador";
   }
-}
-
-// Formatear fecha YYYY-MM-DD a dd/MM/yyyy sin usar Date para evitar desfase de zona horaria.
-function formatFechaYMDToDMY(ymd: string): string {
-  const [y, m, d] = ymd.split("-");
-  if (!y || !m || !d) return ymd;
-  return `${d}/${m}/${y}`;
 }
 
 const CardEventos: React.FC = () => {
@@ -96,7 +91,7 @@ const CardEventos: React.FC = () => {
         }
         const items: EventoItem[] = resp.eventos.map((e: EventoBasicoOrganizadorDTO) => {
           const ymd = typeof e.fecha === "string" ? e.fecha : e.fecha.toISOString().slice(0, 10);
-          const fechaFormateada = formatFechaYMDToDMY(ymd);
+          const fechaFormateada = formatFecha(ymd);
           console.log(`🧾 [DEBUG] Preparando item ${e.nombre} → Fecha mostrada: ${fechaFormateada}`);
           return {
             nombre: e.nombre,
