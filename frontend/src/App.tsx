@@ -30,17 +30,19 @@ function App() {
             <Route path="/restablecer" element={<RestablecerContraseña />} />
             <Route path="/nueva-contraseña" element={<NuevaContraseña />} />
             <Route path="/registro" element={<Registro />} />
-            <Route path="/registro-organizador" element={<RegistroOrganizador />} />
+            <Route path="/organizador/registro" element={<RegistroOrganizador />} />
             <Route path="/eventos" element={<SeleccionDeEventos />} />
             <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
 
             {/* Rutas protegidas */}
-            <Route path="/perfil" element={<ProtectedRoute><InformacionPersonal /></ProtectedRoute>} />
-            <Route path="/eventos/:id/compra" element={<ProtectedRoute><CompraDeEntradas /></ProtectedRoute>} />
-            <Route path="/cola" element={<ProtectedRoute><ColaVirtual /></ProtectedRoute>} />
-            <Route path="/admin/usuarios" element={<ProtectedRoute><AdminUsuarios /></ProtectedRoute>} />
-            <Route path="/organizador/eventos" element={<ProtectedRoute><GestionEventos /></ProtectedRoute>} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/perfil" element={<InformacionPersonal />} />
+            <Route path="/eventos/:id/compra" element={<CompraDeEntradas />} />
+            <Route path="/cola" element={<ColaVirtual />} />
+            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+            <Route path="/organizador/eventos" element={<GestionEventos />} />
             <Route path="/info" element={<InformacionPersonal />} />
+          </Route>
           </Routes>
         </div>
       </AuthProvider>

@@ -62,14 +62,10 @@ export const BodyDetalleEvento: React.FC = () => {
 );
 
 
-  const horaEvento = new Date(evento.fechaEvento).toLocaleTimeString("es-PE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  const horaEvento = evento.time || "";
 
-  const handleCompraClick = (tipo: string) => {
-    navigate(`/eventos/${eventoId}/compra`, {
+  const handleColaClick = (tipo: string) => {
+    navigate(`/cola`, {
       state: { evento, tipoTarifa: tipo },
     });
   };
@@ -94,14 +90,7 @@ export const BodyDetalleEvento: React.FC = () => {
               {evento.artista?.nombre || "Artista invitado"}
             </h2>
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">
-                {new Date(evento.fechaEvento).toLocaleDateString("es-PE", {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
+              <span className="font-semibold">{evento.date}</span>
               <br />
               {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
               <br />
@@ -208,7 +197,7 @@ export const BodyDetalleEvento: React.FC = () => {
             {tiposTarifas.map((tipo) => (
               <button
                 key={tipo}
-                onClick={() => handleCompraClick(tipo)}
+                onClick={() => handleColaClick(tipo)}
                 className="px-10 py-4 bg-black text-white text-lg font-semibold rounded-md hover:bg-gray-800 transition-colors"
               >
                 Comprar {tipo}

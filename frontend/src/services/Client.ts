@@ -4,10 +4,6 @@ import axios, {
   type AxiosResponse,
   type AxiosError
 } from 'axios';
-// 🛑 Necesitamos una implementación de URLSearchParams (de Node o polyfill de navegador)
-// Si estás en un entorno moderno de navegador, URLSearchParams está globalmente disponible.
-// Si estás en Node (SSR/tests), puede que necesites importarlo: 
-// import { URLSearchParams } from 'url'; 
 
 
 // URL base de la API, obtenida de las variables de entorno o usa un default
@@ -22,7 +18,7 @@ export interface ApiResponse<T = any> {
 
 
 // ===============================================
-// 🛑 FUNCIÓN DE SERIALIZACIÓN DE ARRAYS (Corrige k[]=v a k=v&k=v)
+// 🛑 FUNCIÓN DE SERIALIZACIÓN DE ARRAYS
 // ===============================================
 
 const customParamsSerializer = (params: Record<string, any>): string => {

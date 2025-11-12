@@ -1,5 +1,3 @@
-"use client";
-
 import ClientLayout from "../ClientLayout";
 import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
