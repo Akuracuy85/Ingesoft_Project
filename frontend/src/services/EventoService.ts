@@ -148,6 +148,11 @@ class EventoService extends HttpClient {
 
     return { eventos: normalizados };
   }
+
+  async createEvent(data: CrearEventoPayload): Promise<{ success: boolean; eventoId: number }> {
+    // El backend espera los campos exactos del CrearEventoDto
+    return await super.post<{ success: boolean; eventoId: number }>("/", data);
+  }
 }
 
 const eventoServiceInstance = new EventoService();
@@ -155,6 +160,34 @@ const eventoServiceInstance = new EventoService();
 // Función nombrada para facilitar el consumo tipado en componentes
 export const listarBasicosOrganizador = () =>
   eventoServiceInstance.listarBasicosOrganizador();
+export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
 
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
+
+// Payload de creación (refleja backend CrearEventoDto)
+export interface CrearEventoPayload {
+  nombre: string;
+  descripcion: string;
+  fecha: string; // YYYY-MM-DD
+  hora: string; // HH:mm
+  artistaId: number;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
+  imagenPortada?: string; // base64 sin prefijo
+}
+
+export function mapEstadoUIToBackend(estado: string): string {
+  switch (estado) {
+    case "Publicado":
+      return "PUBLICADO";
+    case "En revisión":
+      return "PENDIENTE_APROBACION";
+    case "Borrador":
+    default:
+      return "BORRADOR";
+  }
+}

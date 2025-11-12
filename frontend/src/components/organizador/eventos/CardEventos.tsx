@@ -4,7 +4,9 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO } from "@/services/EventoService";
+import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO, createEvent, mapEstadoUIToBackend } from "@/services/EventoService";
+import ArtistaService from "@/services/ArtistaService";
+import UbicacionService from "@/services/UbicacionService";
 // Moved to utils for reuse
 import { formatFecha } from "@/utils/formatFecha";
 
@@ -138,20 +140,111 @@ const CardEventos: React.FC = () => {
   const handleOpenCreate = () => setIsCreateOpen(true);
   const handleCloseCreate = () => setIsCreateOpen(false);
 
-  // Guardar desde crear (solo UI por ahora)
-  const handleSaveCreate = (data: NuevoEventoForm) => {
-    const nuevo: EventoItem = {
-      nombre: data.nombre,
-      fecha: data.fecha || "",
-      estado: data.estado,
-      descripcion: data.descripcion,
-      hora: data.hora,
-      lugar: data.lugar,
-      imagenNombre: data.imagen?.name || null,
-    };
-    setEventos((prev) => [nuevo, ...prev]);
-    alert(`Evento guardado:\n${JSON.stringify(nuevo, null, 2)}`);
-    handleCloseCreate();
+  // Utilidad: convertir File a base64 (sin prefijo data:...)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIdx = result.indexOf(",");
+        resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Guardar desde crear: ahora conectado al backend
+  const handleSaveCreate = async (data: NuevoEventoForm) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Validaciones mínimas
+      if (!data.nombre.trim() || !data.descripcion.trim() || !data.fecha || !data.hora) {
+        alert("Por favor completa nombre, descripción, fecha y hora.");
+        return;
+      }
+
+      // Estado para backend
+      const estadoBackend = mapEstadoUIToBackend(data.estado);
+
+      // Imagen (opcional)
+      let imagenPortada: string | undefined;
+      if (data.imagen) {
+        try {
+          imagenPortada = await fileToBase64(data.imagen);
+        } catch (e) {
+          console.warn("No se pudo convertir la imagen a base64, se enviará sin imagen.", e);
+        }
+      }
+
+      // Obtener artista y ubicación mínimos desde servicios existentes
+      const artistas = await ArtistaService.getArtistas();
+      if (!artistas || artistas.length === 0) {
+        alert("No hay artistas disponibles para asignar al evento.");
+        return;
+      }
+      const artistaId = Number(artistas[0].id);
+
+      // Ubicación por defecto: primer departamento/provincia/distrito disponibles
+      const departamentos = await UbicacionService.getDepartamentos();
+      if (!departamentos || departamentos.length === 0) {
+        alert("No hay ubicaciones disponibles (departamentos).");
+        return;
+      }
+      const departamento = departamentos[0].nombre;
+      const provincias = await UbicacionService.getProvincias(departamento);
+      if (!provincias || provincias.length === 0) {
+        alert("No hay ubicaciones disponibles (provincias).");
+        return;
+      }
+      const provincia = provincias[0].nombre;
+      const distritos = await UbicacionService.getDistritos(departamento, provincia);
+      if (!distritos || distritos.length === 0) {
+        alert("No hay ubicaciones disponibles (distritos).");
+        return;
+      }
+      const distrito = distritos[0].nombre;
+
+      const payload = {
+        nombre: data.nombre.trim(),
+        descripcion: data.descripcion.trim(),
+        fecha: data.fecha, // YYYY-MM-DD
+        hora: data.hora,   // HH:mm
+        artistaId,
+        departamento,
+        provincia,
+        distrito,
+        lugar: (data.lugar || "").trim() || `${departamento}, ${provincia}`,
+        estado: estadoBackend,
+        imagenPortada,
+      };
+
+      const resp = await createEvent(payload);
+      if (!resp || !resp.success) {
+        throw new Error("Respuesta inválida del servidor");
+      }
+
+      // Actualizar UI localmente sin recargar
+      const nuevo: EventoItem = {
+        nombre: data.nombre,
+        fecha: formatFecha(data.fecha),
+        estado: data.estado,
+        descripcion: data.descripcion,
+        hora: data.hora,
+        lugar: data.lugar,
+        imagenNombre: data.imagen?.name || null,
+      };
+      setEventos((prev) => [nuevo, ...prev]);
+      alert("Evento creado con éxito");
+      handleCloseCreate();
+    } catch (e) {
+      console.error("Error al crear el evento:", e);
+      alert("No se pudo crear el evento");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Abrir editar para una fila concreta
