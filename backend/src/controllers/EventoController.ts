@@ -190,6 +190,79 @@ export class EventoController {
     }
   };
 
+  aprobarEvento = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    try {
+      const evento = await this.eventoService.aprobarEvento(eventoId, autor);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventoId: evento.id,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  rechazarEvento = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    const { motivo } = req.body as { motivo?: string };
+
+    try {
+      const evento = await this.eventoService.rechazarEvento(
+        eventoId,
+        autor,
+        motivo
+      );
+
+      // Notificar a asistentes si aplica
+      try {
+        await this.emailService.SendEventCancelledEmail(evento.id);
+      } catch (emailErr) {
+        // No bloquear la operación principal si falla el envío de correos
+        console.warn("No se pudo enviar el correo de cancelación:", emailErr);
+      }
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventoId: evento.id,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
   
 // EventoController.ts
   obtenerFiltrosUbicacion = async (req: Request, res: Response) => {
@@ -221,11 +294,11 @@ export class EventoController {
       // 1. Obtener la entidad usando el nuevo método del servicio que carga Zonas y Artista
       const eventoEntidad = await this.eventoService.obtenerDatosParaCompra(eventoId);
       
-      // 2. 🎯 APLICAR EL MAPEO A DTO 🎯
+      // 2.  APLICAR EL MAPEO A DTO
       // Esto transforma la entidad a la estructura del frontend (title, image:base64, artistName, etc.)
       const eventoDto = EventMapper.toPurchaseDTO(eventoEntidad as any); 
 
-      // 3. 🚨 RESPONDER DIRECTAMENTE CON EL DTO 🚨
+      // 3.  RESPONDER DIRECTAMENTE CON EL DTO 
       // Esto elimina la envoltura { success: true, evento: ... }
       return res.status(StatusCodes.OK).json(eventoDto); 
 

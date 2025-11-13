@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { eventoController } from "../controllers/EventoController";
 import { sessionMiddleware } from "../middlewares/SessionMiddleware";
+import { autorMiddleware } from "../middlewares/AutorMiddleware";
 
 const router = Router();
 
@@ -34,6 +35,22 @@ router.put(
   "/:id",
   sessionMiddleware.VerificarToken,
   eventoController.actualizarEvento
+);
+
+// ADMIN: aprobar un evento (ruta protegida)
+router.post(
+  "/:id/aprobar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.aprobarEvento
+);
+
+// ADMIN: rechazar/cancelar un evento (acepta { motivo?: string } en el body)
+router.post(
+  "/:id/rechazar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.rechazarEvento
 );
 
 router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);

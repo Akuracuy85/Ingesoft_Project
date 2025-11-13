@@ -12,6 +12,7 @@ import { EstadoEvento } from "../enums/EstadoEvento";
 import { Rol } from "../enums/Rol";
 import { UsuarioRepository } from "../repositories/UsuarioRepository";
 import { Organizador } from "../models/Organizador";
+import { Usuario } from "../models/Usuario";
 import { randomBytes } from "crypto";
 import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
 import { Documento } from "../models/Documento";
@@ -24,6 +25,8 @@ import { Repository } from "typeorm";
 import { TarifaDto } from "../dto/evento/TarifaDto";
 import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
+import { AccionRepository } from "../repositories/AccionRepository";
+import { TipoAccion } from "../enums/TipoAccion";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -791,6 +794,81 @@ export class EventoService {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al obtener los datos para la compra del evento.",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+  /**
+   * Aprueba un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async aprobarEvento(eventoId: number, autor: Usuario): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden aprobar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.PUBLICADO;
+    evento.fechaPublicacion = new Date();
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      // Registrar la acción
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} aprobado`,
+        tipo: TipoAccion.AprobarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al aprobar el evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Rechaza o cancela un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async rechazarEvento(eventoId: number, autor: Usuario, motivo?: string): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden rechazar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.CANCELADO;
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} rechazado${motivo ? `: ${motivo}` : ''}`,
+        tipo: TipoAccion.CancelarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al rechazar el evento",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
