@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import type { NuevoEventoForm } from "./ModalCrearEvento";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
+import { normalizeFecha } from "@/utils/normalizeFecha";
 
 interface ModalEditarEventoProps {
   open: boolean;
@@ -38,20 +39,28 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
       // Cargar departamentos
       UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
 
-      // Precargar formulario con initialData
       if (initialData) {
-        setForm({ ...initialData });
-        // Si hay departamento, cargar provincias
+        // Normalizar fecha al abrir el modal
+        const fechaNormalizada = normalizeFecha(initialData.fecha);
+        const nextForm: NuevoEventoForm = {
+          ...initialData,
+          fecha: fechaNormalizada,
+          departamento: initialData.departamento || "",
+          provincia: initialData.provincia || "",
+          distrito: initialData.distrito || "",
+        };
+        setForm(nextForm);
+
+        // Cargar provincias y distritos según la ubicación actual
         (async () => {
-          if (initialData.departamento) {
-            const provs = await UbicacionService.getProvincias(initialData.departamento).catch(() => []);
+          if (nextForm.departamento) {
+            const provs = await UbicacionService.getProvincias(nextForm.departamento).catch(() => []);
             setProvincias(provs);
           } else {
             setProvincias([]);
           }
-          // Si hay provincia, cargar distritos
-          if (initialData.departamento && initialData.provincia) {
-            const dists = await UbicacionService.getDistritos(initialData.departamento, initialData.provincia).catch(() => []);
+          if (nextForm.departamento && nextForm.provincia) {
+            const dists = await UbicacionService.getDistritos(nextForm.departamento, nextForm.provincia).catch(() => []);
             setDistritos(dists);
           } else {
             setDistritos([]);
@@ -108,8 +117,23 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
 
   const handleGuardar = () => {
     setTouchedSubmit(true);
-    // En edición: nombre, descripcion, fecha y hora obligatorios
-    if (!form.nombre.trim() || !form.descripcion.trim() || !form.fecha || !form.hora) return;
+
+    // Validación de campos obligatorios
+    if (
+      !form.nombre.trim() ||
+      !form.descripcion.trim() ||
+      !form.fecha ||
+      !form.hora ||
+      !form.departamento ||
+      !form.provincia ||
+      !form.distrito ||
+      !form.lugar.trim() ||
+      !form.estado
+    ) {
+      alert("Por favor completa todos los campos obligatorios antes de guardar.");
+      return;
+    }
+
     onSave(form);
   };
 
@@ -117,6 +141,11 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
   const descripcionError = touchedSubmit && !form.descripcion.trim();
   const fechaError = touchedSubmit && !form.fecha;
   const horaError = touchedSubmit && !form.hora;
+  const departamentoError = touchedSubmit && !form.departamento;
+  const provinciaError = touchedSubmit && !form.provincia;
+  const distritoError = touchedSubmit && !form.distrito;
+  const lugarError = touchedSubmit && !form.lugar.trim();
+  const estadoError = touchedSubmit && !form.estado;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
@@ -173,7 +202,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha<span className="text-red-500"> *</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha <span className="text-red-500">*</span>
+              </label>
               <input
                 type="date"
                 name="fecha"
@@ -186,7 +217,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               {fechaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hora<span className="text-red-500"> *</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hora <span className="text-red-500">*</span>
+              </label>
               <input
                 type="time"
                 name="hora"
@@ -203,77 +236,108 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
           {/* Ubicación: Departamento / Provincia / Distrito */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Departamento <span className="text-red-500">*</span>
+              </label>
               <select
                 name="departamento"
                 value={form.departamento}
                 onChange={handleDepartamentoChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  departamentoError ? "border-red-500" : "border-gray-300"
+                }`}
               >
                 <option value="">Selecciona departamento</option>
                 {departamentos.map((d) => (
-                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
+                  <option key={d.id} value={d.nombre}>
+                    {d.nombre}
+                  </option>
                 ))}
               </select>
+              {departamentoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Provincia <span className="text-red-500">*</span>
+              </label>
               <select
                 name="provincia"
                 value={form.provincia}
                 onChange={handleProvinciaChange}
                 disabled={!form.departamento}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
+                  provinciaError ? "border-red-500" : "border-gray-300"
+                }`}
               >
                 <option value="">Selecciona provincia</option>
                 {provincias.map((p) => (
-                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                  <option key={p.id} value={p.nombre}>
+                    {p.nombre}
+                  </option>
                 ))}
               </select>
+              {provinciaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Distrito <span className="text-red-500">*</span>
+              </label>
               <select
                 name="distrito"
                 value={form.distrito}
                 onChange={handleDistritoChange}
                 disabled={!form.departamento || !form.provincia}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
+                  distritoError ? "border-red-500" : "border-gray-300"
+                }`}
               >
                 <option value="">Selecciona distrito</option>
                 {distritos.map((di) => (
-                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
+                  <option key={di.id} value={di.nombre}>
+                    {di.nombre}
+                  </option>
                 ))}
               </select>
+              {distritoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
           </div>
 
           {/* Lugar */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Lugar</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lugar <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="lugar"
               value={form.lugar}
               onChange={onChangeText}
               placeholder="Ej: Teatro Nacional"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                lugarError ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {lugarError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
 
           {/* Estado */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Estado <span className="text-red-500">*</span>
+            </label>
             <select
               name="estado"
               value={form.estado}
               onChange={onChangeText}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                estadoError ? "border-red-500" : "border-gray-300"
+              }`}
             >
               <option value="Borrador">Borrador</option>
               <option value="Publicado">Publicado</option>
               <option value="En revisión">En revisión</option>
             </select>
+            {estadoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
 
           {/* Imagen */}
