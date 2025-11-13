@@ -208,15 +208,7 @@ export class EventoController {
       });
     }
 
-    try {
-      const evento = await this.eventoService.aprobarEvento(eventoId, autor);
-      res.status(StatusCodes.OK).json({
-        success: true,
-        eventoId: evento.id,
-      });
-    } catch (error) {
-      HandleResponseError(res, error);
-    }
+
   };
 
   rechazarEvento = async (req: Request, res: Response) => {
@@ -246,13 +238,7 @@ export class EventoController {
         motivo
       );
 
-      // Notificar a asistentes si aplica
-      try {
-        await this.emailService.SendEventCancelledEmail(evento.id);
-      } catch (emailErr) {
-        // No bloquear la operación principal si falla el envío de correos
-        console.warn("No se pudo enviar el correo de cancelación:", emailErr);
-      }
+
 
       res.status(StatusCodes.OK).json({
         success: true,
