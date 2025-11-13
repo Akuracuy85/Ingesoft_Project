@@ -1,22 +1,9 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Check, X } from "lucide-react"
+import type { Event } from "@/models/Event"
 
-export type EventStatus = "Pendiente" | "Aprobado" | "Rechazado"
-
-export interface Event {
-  id: number
-  nombre: string
-  fecha: string
-  organizador: string
-  estado: EventStatus
-  descripcion: string
-  lugar: string
-  zonas: { nombre: string; precio: number; capacidad: number }[]
-  documentos: { nombre: string; url: string; estado: string }[]
-}
+export type EventStatus = "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO"
 
 interface EventsTableProps {
   events: Event[]
@@ -26,17 +13,17 @@ interface EventsTableProps {
 }
 
 const statusConfig: Record<EventStatus, { label: string; className: string }> = {
-  Pendiente: {
+  PENDIENTE_APROBACION: {
     label: "Pendiente",
-    className: "bg-warning text-warning-foreground hover:bg-warning/80", 
+    className: "bg-yellow-200 text-yellow-900 hover:bg-yellow-300",
   },
-  Aprobado: {
+  PUBLICADO: {
     label: "Aprobado",
-    className: "bg-success text-success-foreground hover:bg-success/80",
+    className: "bg-green-200 text-green-900 hover:bg-green-300",
   },
-  Rechazado: {
+  CANCELADO: {
     label: "Rechazado",
-    className: "bg-destructive text-destructive-foreground hover:bg-destructive/80",
+    className: "bg-red-200 text-red-900 hover:bg-red-300",
   },
 }
 
@@ -44,7 +31,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
   return (
     <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full"> {/* Usar min-w-full para manejar el overflow */}
+        <table className="min-w-full">
           <thead className="bg-muted/50 border-b border-border">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -54,10 +41,13 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                 Nombre del evento
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Fecha
+                Fecha / Hora
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Organizador
+                Artista / Organizador
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Ubicación
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Estado
@@ -70,33 +60,59 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
           <tbody className="divide-y divide-border">
             {events.map((event) => (
               <tr key={event.id} className="hover:bg-muted/30 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{event.id}</td>
-                <td className="px-6 py-4 text-sm text-foreground font-medium">{event.nombre}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{event.fecha}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{event.organizador}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge className={statusConfig[event.estado].className}>{statusConfig[event.estado].label}</Badge>
+                <td className="px-6 py-4 text-sm font-medium text-foreground">{event.id}</td>
+
+                <td className="px-6 py-4 text-sm text-foreground font-medium">{event.title}</td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                  {event.date} — {event.time}
                 </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                  {event.artist?.nombre || "Sin artista"}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                  {event.departamento}, {event.provincia}
+                </td>
+
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <Badge className={statusConfig[event.estado as EventStatus].className}>
+                    {statusConfig[event.estado as EventStatus].label}
+                  </Badge>
+                </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <div className="flex gap-2">
-                    {/* Botón Ver Detalles */}
-                    <Button size="sm" variant="outline" onClick={() => onViewDetails(event)} className="gap-1.5">
+                  <div className="flex gap-2 flex-wrap">
+                    {/* Ver Detalles */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onViewDetails(event)}
+                      className="gap-1.5"
+                    >
                       <Eye className="h-3.5 w-3.5" />
                       Ver detalles
                     </Button>
-                    
-                    {/* Botones de Aprobación/Rechazo (Solo para estado Pendiente) */}
+
+                    {/* Aprobar / Rechazar */}
                     {event.estado === "Pendiente" && (
                       <>
                         <Button
                           size="sm"
                           onClick={() => onApprove(event.id)}
-                          className="gap-1.5 bg-success text-success-foreground hover:bg-success/90"
+                          className="gap-1.5 bg-green-600 text-white hover:bg-green-700"
                         >
                           <Check className="h-3.5 w-3.5" />
                           Aprobar
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => onReject(event.id)} className="gap-1.5">
+
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => onReject(event.id)}
+                          className="gap-1.5"
+                        >
                           <X className="h-3.5 w-3.5" />
                           Rechazar
                         </Button>

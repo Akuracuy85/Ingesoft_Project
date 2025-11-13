@@ -30,4 +30,9 @@ export interface Event {
     
     // Relaciones
     zonas: Zone[];
+
+    //Administrar
+    documento: string;
+    estado: string;
+    organizadorNombre: string;
 }
