@@ -4,7 +4,7 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO, createEvent, mapEstadoUIToBackend } from "@/services/EventoService";
+import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados } from "@/services/EventoService";
 import ArtistaService from "@/services/ArtistaService";
 // Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
 
@@ -14,6 +14,7 @@ import { formatFecha } from "@/utils/formatFecha";
 
 // Tipos para la tabla
 interface EventoItem {
+  id: number;
   nombre: string;
   fecha: string;
   estado: EstadoEventoUI;
@@ -21,6 +22,10 @@ interface EventoItem {
   hora?: string;
   lugar?: string;
   imagenNombre?: string | null;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  imagenPortadaBase64?: string | null;
 }
 
 // Función para clases de badge según estado
@@ -63,6 +68,7 @@ const CardEventos: React.FC = () => {
   // Modal editar
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectedEventFull, setSelectedEventFull] = useState<any | null>(null);
 
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
@@ -82,30 +88,37 @@ const CardEventos: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const resp = await listarBasicosOrganizador();
-        if (resp && Array.isArray(resp.eventos) && resp.eventos.length > 0) {
-          console.log("📦 [DEBUG] Eventos recibidos desde el backend:");
-          resp.eventos.forEach((ev: EventoBasicoOrganizadorDTO, idx: number) => {
-            const raw = typeof ev.fecha === "string" ? ev.fecha : ev.fecha?.toISOString?.() ?? "";
-            console.log(`→ #${idx + 1} | Nombre: ${ev.nombre} | Fecha original: ${raw}`);
-          });
-        } else {
-          console.log("⚠️ [DEBUG] No se recibieron eventos o el array está vacío:", resp?.eventos);
-        }
-        const items: EventoItem[] = resp.eventos.map((e: EventoBasicoOrganizadorDTO) => {
-          const ymd = typeof e.fecha === "string" ? e.fecha : e.fecha.toISOString().slice(0, 10);
-          const fechaFormateada = formatFecha(ymd);
-          console.log(`🧾 [DEBUG] Preparando item ${e.nombre} → Fecha mostrada: ${fechaFormateada}`);
+        const lista = await listarDetalladosOrganizador();
+        const items: EventoItem[] = lista.map((ev: any) => {
+          const fechaISO = ev.fechaEvento || "";
+          let fecha = "";
+          let hora = "";
+          try {
+            const d = new Date(fechaISO);
+            if (!isNaN(d.getTime())) {
+              fecha = d.toISOString().slice(0, 10);
+              hora = d.toISOString().slice(11, 16);
+            }
+          } catch {}
           return {
-            nombre: e.nombre,
-            fecha: fechaFormateada,
-            estado: mapEstadoToUI(e.estado),
+            id: ev.id,
+            nombre: ev.nombre,
+            fecha,
+            estado: mapEstadoToUI(ev.estado),
+            descripcion: ev.descripcion || "",
+            hora,
+            lugar: ev.lugar || "",
+            departamento: ev.departamento || "",
+            provincia: ev.provincia || "",
+            distrito: ev.distrito || "",
+            imagenPortadaBase64: ev.imagenBannerBase64 || null,
+            imagenNombre: ev.imagenBannerBase64 ? "portada" : null,
           };
         });
         setEventos(items);
       } catch (err: unknown) {
         if (controller.signal.aborted) return;
-        console.error("Error cargando eventos:", err);
+        console.error("Error cargando eventos detallados:", err);
         setError("Error al cargar los eventos.");
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
@@ -209,6 +222,7 @@ const CardEventos: React.FC = () => {
 
       // Actualizar UI localmente sin recargar
       const nuevo: EventoItem = {
+        id: resp.eventoId,
         nombre: data.nombre,
         fecha: formatFecha(data.fecha),
         estado: data.estado,
@@ -228,14 +242,42 @@ const CardEventos: React.FC = () => {
     }
   };
 
-  // Abrir editar para una fila concreta
-  const handleOpenEdit = (index: number) => {
-    setEditingIndex(index);
-    setIsEditOpen(true);
+  // Abrir editar para una fila concreta (fetch por id)
+  const handleOpenEdit = async (index: number) => {
+    try {
+      const ev = eventos[index];
+      if (!ev) return;
+      setIsLoading(true);
+      const detalle = await obtenerEventosDetallados(ev.id);
+      // detalle tiene formato Event público mapeado; adaptamos a shape usado por Modal (espera nombre/descripcion/fechaEvento)
+      const mapped = {
+        id: detalle.id,
+        nombre: detalle.title,
+        descripcion: detalle.description,
+        fechaEvento: `${detalle.date}T${(detalle.time || "00:00")}:00`,
+        fecha: detalle.date,
+        hora: detalle.time,
+        lugar: detalle.place,
+        estado: ev.estado === "Publicado" ? "PUBLICADO" : ev.estado === "En revisión" ? "PENDIENTE_APROBACION" : "BORRADOR",
+        departamento: detalle.departamento,
+        provincia: detalle.provincia,
+        distrito: detalle.distrito,
+        imagenBanner: detalle.image || null,
+      };
+      setSelectedEventFull(mapped);
+      setEditingIndex(index);
+      setIsEditOpen(true);
+    } catch (e) {
+      console.error("Error al obtener evento detallado:", e);
+      alert("No se pudo cargar la información completa del evento.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   const handleCloseEdit = () => {
     setEditingIndex(null);
     setIsEditOpen(false);
+    setSelectedEventFull(null);
   };
 
   // Guardar cambios de edición (solo UI por ahora)
@@ -252,6 +294,9 @@ const CardEventos: React.FC = () => {
         lugar: data.lugar,
         estado: data.estado,
         imagenNombre: data.imagen?.name || next[editingIndex].imagenNombre || null,
+        departamento: data.departamento,
+        provincia: data.provincia,
+        distrito: data.distrito,
       };
       return next;
     });
@@ -283,7 +328,10 @@ const CardEventos: React.FC = () => {
         lugar: eventos[editingIndex].lugar || "",
         estado: eventos[editingIndex].estado,
         imagen: null,
-      }
+        departamento: eventos[editingIndex].departamento || "",
+        provincia: eventos[editingIndex].provincia || "",
+        distrito: eventos[editingIndex].distrito || "",
+    }
     : null;
 
   // Render del encabezado o detalles
@@ -481,7 +529,7 @@ const CardEventos: React.FC = () => {
         <ModalEditarEvento
           open={isEditOpen}
           onClose={handleCloseEdit}
-          initialData={editInitial}
+          event={selectedEventFull}
           onSave={handleSaveEdit}
         />
 

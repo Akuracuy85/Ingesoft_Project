@@ -122,8 +122,66 @@ class EventoService extends HttpClient {
 
   async obtenerPorId(id: number): Promise<Event> {
     if (!id) throw new Error("Se requiere un ID válido de evento");
-    const respuesta = await super.get<{ success?: boolean; evento: Event }>(`/${id}`);
-    return respuesta.evento;
+    const respuesta = await super.get<{ success?: boolean; evento: any }>(`/${id}`);
+    // El backend devuelve la entidad Evento con campos backend (nombre, descripcion, fechaEvento, lugar, estado, etc.)
+    const ev = respuesta.evento;
+    if (!ev) throw new Error("Evento no encontrado");
+    // Mapear a un objeto interno para edición (no usamos el modelo público Event porque difiere)
+    return {
+      id: ev.id,
+      title: ev.nombre,
+      description: ev.descripcion,
+      date: this.extractFecha(ev.fechaEvento),
+      time: this.extractHora(ev.fechaEvento),
+      departamento: ev.departamento || "",
+      provincia: ev.provincia || "",
+      distrito: ev.distrito || "",
+      place: ev.lugar || "",
+      image: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : "") : "",
+      artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
+      category: ev.artista?.categoria?.nombre ?? undefined,
+      zonas: ev.zonas || [],
+      Cola: ev.cola || undefined,
+    } as Event;
+  }
+
+  // Nuevo: listado detallado para organizador (usa GET /evento/ que devuelve obtenerEventosDetallados)
+  async listarDetalladosOrganizador(): Promise<any[]> {
+    const resp = await super.get<{ success?: boolean; eventos: any[] }>("/");
+    const lista = Array.isArray(resp.eventos) ? resp.eventos : [];
+    // Normalizar campos clave
+    return lista.map((ev) => ({
+      id: ev.id,
+      nombre: ev.nombre ?? "",
+      descripcion: ev.descripcion ?? "",
+      estado: ev.estado ?? "BORRADOR",
+      fechaEvento: ev.fechaEvento ?? "", // ISO string
+      departamento: ev.departamento || "",
+      provincia: ev.provincia || "",
+      distrito: ev.distrito || "",
+      lugar: ev.lugar || "",
+      imagenBannerBase64: ev.imagenBanner || null,
+    }));
+  }
+
+  // Helpers privados para extraer fecha/hora desde ISO
+  private extractFecha(fechaEvento: string | Date): string {
+    try {
+      const d = typeof fechaEvento === "string" ? new Date(fechaEvento) : fechaEvento;
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().slice(0, 10);
+    } catch {
+      return "";
+    }
+  }
+  private extractHora(fechaEvento: string | Date): string {
+    try {
+      const d = typeof fechaEvento === "string" ? new Date(fechaEvento) : fechaEvento;
+      if (isNaN(d.getTime())) return "";
+      return d.toISOString().slice(11, 16);
+    } catch {
+      return "";
+    }
   }
 
   // Nuevo: listado básico para organizador
@@ -161,6 +219,10 @@ const eventoServiceInstance = new EventoService();
 export const listarBasicosOrganizador = () =>
   eventoServiceInstance.listarBasicosOrganizador();
 export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
+export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
+// Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
+export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
 
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };

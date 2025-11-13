@@ -7,145 +7,138 @@ import { normalizeFecha } from "@/utils/normalizeFecha";
 interface ModalEditarEventoProps {
   open: boolean;
   onClose: () => void;
-  initialData: NuevoEventoForm | null;
+  event: any | null; // Evento detallado completo
   onSave: (data: NuevoEventoForm) => void;
 }
 
-const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, initialData, onSave }) => {
-  const [form, setForm] = useState<NuevoEventoForm>(
-    initialData || {
-      nombre: "",
-      descripcion: "",
-      fecha: "",
-      hora: "",
-      lugar: "",
-      estado: "Borrador",
-      imagen: null,
-      departamento: "",
-      provincia: "",
-      distrito: "",
-    }
-  );
+const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, event, onSave }) => {
+  // Estados individuales
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [fecha, setFecha] = useState("");
+  const [hora, setHora] = useState("");
+  const [lugar, setLugar] = useState("");
+  const [estado, setEstado] = useState("Borrador");
+  const [imagen, setImagen] = useState<File | null>(null);
+  const [departamento, setDepartamento] = useState("");
+  const [provincia, setProvincia] = useState("");
+  const [distrito, setDistrito] = useState("");
+
   const [touchedSubmit, setTouchedSubmit] = useState(false);
 
-  // Opciones para selects
+  // Select options
   const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
 
+  // Prefill cuando cambia event
   useEffect(() => {
-    if (open) {
-      setTouchedSubmit(false);
-      // Cargar departamentos
-      UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+    if (!event) return;
+    setTouchedSubmit(false);
 
-      if (initialData) {
-        // Normalizar fecha al abrir el modal
-        const fechaNormalizada = normalizeFecha(initialData.fecha);
-        const nextForm: NuevoEventoForm = {
-          ...initialData,
-          fecha: fechaNormalizada,
-          departamento: initialData.departamento || "",
-          provincia: initialData.provincia || "",
-          distrito: initialData.distrito || "",
-        };
-        setForm(nextForm);
+    setNombre(event.nombre || event.title || "");
+    setDescripcion(event.descripcion || event.description || "");
 
-        // Cargar provincias y distritos según la ubicación actual
-        (async () => {
-          if (nextForm.departamento) {
-            const provs = await UbicacionService.getProvincias(nextForm.departamento).catch(() => []);
-            setProvincias(provs);
-          } else {
-            setProvincias([]);
-          }
-          if (nextForm.departamento && nextForm.provincia) {
-            const dists = await UbicacionService.getDistritos(nextForm.departamento, nextForm.provincia).catch(() => []);
-            setDistritos(dists);
-          } else {
-            setDistritos([]);
-          }
-        })();
-      } else {
-        // Si no hay initialData, limpiar selects
-        setForm((prev) => ({ ...prev, departamento: "", provincia: "", distrito: "" }));
-        setProvincias([]);
-        setDistritos([]);
+    // Fecha
+    if (event.fechaEvento || event.fecha || event.date) {
+      const raw = event.fechaEvento || event.fecha || event.date;
+      try {
+        const isoDate = new Date(raw).toISOString().split("T")[0];
+        setFecha(normalizeFecha(isoDate));
+        setHora(new Date(raw).toISOString().slice(11, 16));
+      } catch {
+        setFecha("");
+        setHora("");
       }
+    } else {
+      setFecha("");
+      setHora("");
     }
-  }, [open, initialData]);
 
-  if (!open || !initialData) return null;
+    setLugar(event.lugar || event.place || "");
 
-  const onChangeText = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+    // Estado backend -> UI
+    const estadoBackend = event.estado || "BORRADOR";
+    switch (estadoBackend) {
+      case "PUBLICADO":
+        setEstado("Publicado");
+        break;
+      case "PENDIENTE_APROBACION":
+        setEstado("En revisión");
+        break;
+      case "BORRADOR":
+      default:
+        setEstado("Borrador");
+    }
 
-  const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-    setForm((prev) => ({ ...prev, imagen: file }));
-  };
+    setDepartamento(event.departamento || "");
+    setProvincia(event.provincia || "");
+    setDistrito(event.distrito || "");
 
-  const handleDepartamentoChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedDep = e.target.value;
-    setForm((prev) => ({ ...prev, departamento: selectedDep, provincia: "", distrito: "" }));
-    setDistritos([]);
-    if (selectedDep) {
-      const provs = await UbicacionService.getProvincias(selectedDep).catch(() => []);
-      setProvincias(provs);
+    // Imagen: no podemos reconstruir File desde base64 fácilmente; se deja null
+    setImagen(null);
+  }, [event]);
+
+  // Carga inicial de departamentos y dependientes, y react a cambios
+  useEffect(() => {
+    if (!open) return;
+    UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+  }, [open]);
+
+  useEffect(() => {
+    // Cargar provincias cuando cambia departamento
+    if (departamento) {
+      UbicacionService.getProvincias(departamento).then(setProvincias).catch(() => setProvincias([]));
     } else {
       setProvincias([]);
+      setProvincia("");
+      setDistritos([]);
+      setDistrito("");
     }
-  };
+  }, [departamento]);
 
-  const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedProv = e.target.value;
-    setForm((prev) => ({ ...prev, provincia: selectedProv, distrito: "" }));
-    setDistritos([]);
-    if (selectedProv && form.departamento) {
-      const dists = await UbicacionService.getDistritos(form.departamento, selectedProv).catch(() => []);
-      setDistritos(dists);
+  useEffect(() => {
+    // Cargar distritos cuando cambia provincia
+    if (departamento && provincia) {
+      UbicacionService.getDistritos(departamento, provincia).then(setDistritos).catch(() => setDistritos([]));
+    } else {
+      setDistritos([]);
+      setDistrito("");
     }
-  };
+  }, [departamento, provincia]);
 
-  const handleDistritoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, distrito: e.target.value }));
-  };
+  if (!open || !event) return null;
 
   const handleGuardar = () => {
     setTouchedSubmit(true);
-
-    // Validación de campos obligatorios
-    if (
-      !form.nombre.trim() ||
-      !form.descripcion.trim() ||
-      !form.fecha ||
-      !form.hora ||
-      !form.departamento ||
-      !form.provincia ||
-      !form.distrito ||
-      !form.lugar.trim() ||
-      !form.estado
-    ) {
+    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado) {
       alert("Por favor completa todos los campos obligatorios antes de guardar.");
       return;
     }
-
-    onSave(form);
+    const data: NuevoEventoForm = {
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim(),
+      fecha,
+      hora,
+      lugar: lugar.trim(),
+      estado,
+      imagen,
+      departamento: departamento.trim(),
+      provincia: provincia.trim(),
+      distrito: distrito.trim(),
+    };
+    onSave(data);
   };
 
-  const nombreError = touchedSubmit && !form.nombre.trim();
-  const descripcionError = touchedSubmit && !form.descripcion.trim();
-  const fechaError = touchedSubmit && !form.fecha;
-  const horaError = touchedSubmit && !form.hora;
-  const departamentoError = touchedSubmit && !form.departamento;
-  const provinciaError = touchedSubmit && !form.provincia;
-  const distritoError = touchedSubmit && !form.distrito;
-  const lugarError = touchedSubmit && !form.lugar.trim();
-  const estadoError = touchedSubmit && !form.estado;
+  const nombreError = touchedSubmit && !nombre.trim();
+  const descripcionError = touchedSubmit && !descripcion.trim();
+  const fechaError = touchedSubmit && !fecha;
+  const horaError = touchedSubmit && !hora;
+  const departamentoError = touchedSubmit && !departamento;
+  const provinciaError = touchedSubmit && !provincia;
+  const distritoError = touchedSubmit && !distrito;
+  const lugarError = touchedSubmit && !lugar.trim();
+  const estadoError = touchedSubmit && !estado;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
@@ -165,32 +158,29 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
 
         {/* Form */}
         <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
-          {/* Nombre del evento */}
+          {/* Nombre */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombre del evento<span className="text-red-500"> *</span>
             </label>
             <input
               type="text"
-              name="nombre"
-              value={form.nombre}
-              onChange={onChangeText}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
               className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                 nombreError ? "border-red-500" : "border-gray-300"
               }`}
             />
             {nombreError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
-
           {/* Descripción */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Descripción<span className="text-red-500"> *</span>
             </label>
             <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={onChangeText}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
               rows={4}
               className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                 descripcionError ? "border-red-500" : "border-gray-300"
@@ -198,7 +188,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
-
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -207,9 +196,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               </label>
               <input
                 type="date"
-                name="fecha"
-                value={form.fecha}
-                onChange={onChangeText}
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
                 className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   fechaError ? "border-red-500" : "border-gray-300"
                 }`}
@@ -222,9 +210,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               </label>
               <input
                 type="time"
-                name="hora"
-                value={form.hora}
-                onChange={onChangeText}
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
                 className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   horaError ? "border-red-500" : "border-gray-300"
                 }`}
@@ -232,17 +219,15 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               {horaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
           </div>
-
-          {/* Ubicación: Departamento / Provincia / Distrito */}
+          {/* Ubicación */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Departamento <span className="text-red-500">*</span>
               </label>
               <select
-                name="departamento"
-                value={form.departamento}
-                onChange={handleDepartamentoChange}
+                value={departamento}
+                onChange={(e) => setDepartamento(e.target.value)}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   departamentoError ? "border-red-500" : "border-gray-300"
                 }`}
@@ -261,10 +246,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
                 Provincia <span className="text-red-500">*</span>
               </label>
               <select
-                name="provincia"
-                value={form.provincia}
-                onChange={handleProvinciaChange}
-                disabled={!form.departamento}
+                value={provincia}
+                onChange={(e) => setProvincia(e.target.value)}
+                disabled={!departamento}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   provinciaError ? "border-red-500" : "border-gray-300"
                 }`}
@@ -283,10 +267,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
                 Distrito <span className="text-red-500">*</span>
               </label>
               <select
-                name="distrito"
-                value={form.distrito}
-                onChange={handleDistritoChange}
-                disabled={!form.departamento || !form.provincia}
+                value={distrito}
+                onChange={(e) => setDistrito(e.target.value)}
+                disabled={!departamento || !provincia}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   distritoError ? "border-red-500" : "border-gray-300"
                 }`}
@@ -301,7 +284,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
               {distritoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
           </div>
-
           {/* Lugar */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -309,9 +291,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
             </label>
             <input
               type="text"
-              name="lugar"
-              value={form.lugar}
-              onChange={onChangeText}
+              value={lugar}
+              onChange={(e) => setLugar(e.target.value)}
               placeholder="Ej: Teatro Nacional"
               className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                 lugarError ? "border-red-500" : "border-gray-300"
@@ -319,16 +300,14 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
             />
             {lugarError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
-
           {/* Estado */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Estado <span className="text-red-500">*</span>
             </label>
             <select
-              name="estado"
-              value={form.estado}
-              onChange={onChangeText}
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
               className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                 estadoError ? "border-red-500" : "border-gray-300"
               }`}
@@ -339,38 +318,25 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, in
             </select>
             {estadoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
-
           {/* Imagen */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada del evento</label>
             <input
               type="file"
-              name="imagen"
               accept="image/*"
-              onChange={onChangeFile}
+              onChange={(e) => setImagen(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
               className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
             />
             <p className="mt-1 text-xs text-gray-500">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
-            {form.imagen && (
-              <p className="mt-1 text-xs text-gray-600">Archivo seleccionado: {form.imagen.name}</p>
-            )}
+            {imagen && <p className="mt-1 text-xs text-gray-600">Archivo seleccionado: {imagen.name}</p>}
           </div>
         </div>
-
         {/* Acciones */}
         <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md"
-          >
+          <button type="button" onClick={onClose} className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md">
             Cancelar
           </button>
-          <button
-            type="button"
-            onClick={handleGuardar}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md"
-          >
+          <button type="button" onClick={handleGuardar} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md">
             Guardar cambios
           </button>
         </div>
