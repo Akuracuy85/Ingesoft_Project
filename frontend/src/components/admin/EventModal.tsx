@@ -131,7 +131,7 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
                         S/ {zona.tarifaNormal.precio.toFixed(2)}
                       </td>
                       <td className="px-4 py-2 text-sm text-foreground font-mono">
-                        {zona.tarifaPreventa
+                        {zona.tarifaPreventa?.precio
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>

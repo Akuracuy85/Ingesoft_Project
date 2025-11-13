@@ -76,10 +76,15 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                   {event.departamento}, {event.provincia}
                 </td>
 
+                {/* Estado */}
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge className={statusConfig[event.estado as EventStatus].className}>
-                    {statusConfig[event.estado as EventStatus].label}
-                  </Badge>
+                  {statusConfig[event.estado?.toUpperCase() as EventStatus] ? (
+                    <Badge className={statusConfig[event.estado?.toUpperCase() as EventStatus].className}>
+                      {statusConfig[event.estado?.toUpperCase() as EventStatus].label}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gray-200 text-gray-700">Sin estado</Badge>
+                  )}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -96,7 +101,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                     </Button>
 
                     {/* Aprobar / Rechazar */}
-                    {event.estado === "Pendiente" && (
+                    {event.estado?.toUpperCase() === "PENDIENTE_APROBACION" && (
                       <>
                         <Button
                           size="sm"

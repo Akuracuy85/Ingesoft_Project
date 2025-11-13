@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { Rol } from "@/models/User";
-import { Search, Loader2, AlertTriangle, FileDown } from "lucide-react"
+import { Search, Loader2, AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import AdminLayout from "../AdminLayout"
@@ -96,10 +96,10 @@ export default function AdminEventos(): React.ReactElement {
   }
 
   const filteredEvents = events.filter(event => {
-    const matchesFilter = activeFilter === "Todos" || event.estado === activeFilter
+    const matchesFilter = activeFilter === "Todos" || event.estado?.toUpperCase() === activeFilter
     const matchesSearch =
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.organizadorNombre.toLowerCase().includes(searchQuery.toLowerCase())
+      event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.organizadorNombre?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -112,11 +112,6 @@ export default function AdminEventos(): React.ReactElement {
     rejectMutation(id)
     setSelectedEvent(null)
   }
-
-  const handleExport = (format: string) => {
-    console.log(`Exportando lista de eventos como ${format.toUpperCase()}...`)
-  }
-
   return (
     <AdminLayout activeItem="Gestión de eventos">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -134,14 +129,17 @@ export default function AdminEventos(): React.ReactElement {
         <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
             <div className="flex gap-2 flex-wrap">
-              {(["Todos", "Pendiente", "Aprobado", "Rechazado"] as const).map(filter => (
+              {(["Todos", "PENDIENTE_APROBACION", "PUBLICADO", "CANCELADO"] as const).map(filter => (
                 <Button
                   key={filter}
                   variant={activeFilter === filter ? "default" : "outline"}
                   onClick={() => setActiveFilter(filter as "Todos" | EventStatus)}
                   className={activeFilter === filter ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
                 >
-                  {filter}
+                  {filter === "PENDIENTE_APROBACION" ? "Pendiente" :
+                    filter === "PUBLICADO" ? "Aprobado" :
+                      filter === "CANCELADO" ? "Rechazado" :
+                        "Todos"}
                 </Button>
               ))}
             </div>
@@ -173,18 +171,6 @@ export default function AdminEventos(): React.ReactElement {
               onReject={handleReject}
             />
           )}
-        </div>
-
-        {/* Exportar */}
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            className="gap-2 bg-transparent"
-            onClick={() => handleExport("csv")}
-          >
-            <FileDown className="h-4 w-4" />
-            Exportar lista (PDF / CSV)
-          </Button>
         </div>
       </div>
 
