@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { Rol } from "@/models/User";
@@ -8,46 +8,10 @@ import { Button } from "@/components/ui/button"
 import AdminLayout from "../AdminLayout"
 import { EventsTable } from "@/components/admin/EventTable"
 import { EventDetailsModal } from "@/components/admin/EventModal"
-import EventoService from "@/services/EventoService"
 import type { Event } from "@/models/Event"
 import { useEventosAdmin } from "@/hooks/useEventosAdmin"
 export type EventStatus = "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO"
 
-const useEventos = () => {
-  const [events, setEvents] = useState<Event[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const cargarEventos = async () => {
-      try {
-        const data = await EventoService.listar({
-          categories: [],
-          artists: [],
-          dateRange: null,
-          priceRange: null,
-          location: { departamento: "", provincia: "", distrito: "" },
-        })
-        setEvents(data as Event[])
-      } catch (error) {
-        console.error("Error cargando eventos:", error)
-        setEvents([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    cargarEventos()
-  }, [])
-  const updateStatus = (id: number, nuevoEstado: EventStatus) => {
-    setEvents(prev => prev.map(e => (e.id === id ? { ...e, estado: nuevoEstado } : e)))
-  }
-
-  return {
-    eventsQuery: { data: events, isLoading },
-    approveMutation: (id: number) => updateStatus(id, "PUBLICADO"),
-    rejectMutation: (id: number) => updateStatus(id, "CANCELADO"),
-  }
-}
 
 
 export default function AdminEventos(): React.ReactElement {
