@@ -10,7 +10,7 @@ import { EventsTable } from "@/components/admin/EventTable"
 import { EventDetailsModal } from "@/components/admin/EventModal"
 import EventoService from "@/services/EventoService"
 import type { Event } from "@/models/Event"
-
+import { useEventosAdmin } from "@/hooks/useEventosAdmin"
 export type EventStatus = "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO"
 
 const useEventos = () => {
@@ -54,8 +54,7 @@ export default function AdminEventos(): React.ReactElement {
   const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
 
-  const { eventsQuery, approveMutation, rejectMutation } = useEventos()
-  const events = eventsQuery.data ?? []
+  const { events, isLoading, aprobar, rechazar } = useEventosAdmin()
 
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [activeFilter, setActiveFilter] = useState<"Todos" | EventStatus>("Todos")
@@ -102,16 +101,6 @@ export default function AdminEventos(): React.ReactElement {
       event.organizadorNombre?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesSearch
   })
-
-  const handleApprove = (id: number) => {
-    approveMutation(id)
-    setSelectedEvent(null)
-  }
-
-  const handleReject = (id: number) => {
-    rejectMutation(id)
-    setSelectedEvent(null)
-  }
   return (
     <AdminLayout activeItem="Gestión de eventos">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -158,7 +147,7 @@ export default function AdminEventos(): React.ReactElement {
 
         {/* Tabla */}
         <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
-          {eventsQuery.isLoading ? (
+          {isLoading ? (
             <div className="py-12 text-center flex justify-center items-center gap-2">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <p className="text-muted-foreground">Cargando eventos...</p>
@@ -167,8 +156,8 @@ export default function AdminEventos(): React.ReactElement {
             <EventsTable
               events={filteredEvents}
               onViewDetails={setSelectedEvent}
-              onApprove={handleApprove}
-              onReject={handleReject}
+              onApprove={aprobar}
+              onReject={rechazar}
             />
           )}
         </div>
@@ -179,8 +168,8 @@ export default function AdminEventos(): React.ReactElement {
         <EventDetailsModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onApprove={aprobar}
+          onReject={rechazar}
         />
       )}
     </AdminLayout>
