@@ -3,6 +3,9 @@ import { EstadoEvento } from "../enums/EstadoEvento";
 import { Documento } from "../models/Documento";
 import { Evento } from "../models/Evento";
 import { Zona } from "../models/Zona";
+import { Acción } from "../models/Acción";
+import { CustomError } from "../types/CustomError";
+import { StatusCodes } from "http-status-codes";
 import { Brackets, Repository } from "typeorm";
 
 export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
@@ -246,6 +249,46 @@ export class EventoRepository {
         calificaciones: true,
       },
     });
+  }
+
+  /**
+   * Cambia el estado de un evento y crea una acción asociada en la misma transacción.
+   * Esto garantiza que ambos cambios se apliquen de forma atómica.
+   */
+  async cambiarEstadoEventoConAccion(
+    eventoId: number,
+    nuevoEstado: EstadoEvento,
+    accionData: Partial<Acción>
+  ): Promise<Evento> {
+    try {
+      return await AppDataSource.manager.transaction(async (manager) => {
+        const eventoRepo = manager.getRepository(Evento);
+        const accionRepo = manager.getRepository(Acción);
+
+        const evento = await eventoRepo.findOne({ where: { id: eventoId } });
+        if (!evento) {
+          throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+        }
+
+        evento.estado = nuevoEstado;
+        if (nuevoEstado === EstadoEvento.PUBLICADO) {
+          evento.fechaPublicacion = new Date();
+        }
+
+        const eventoGuardado = await eventoRepo.save(evento);
+
+        const nuevaAccion = accionRepo.create(accionData);
+        await accionRepo.save(nuevaAccion);
+
+        return eventoGuardado;
+      });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al actualizar el estado del evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   /**
