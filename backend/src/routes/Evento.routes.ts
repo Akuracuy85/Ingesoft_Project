@@ -38,7 +38,7 @@ router.put(
 );
 
 // ADMIN: aprobar un evento (ruta protegida)
-router.post(
+router.patch(
   "/:id/aprobar",
   sessionMiddleware.VerificarToken,
   autorMiddleware.VerificarEsAdmin,
@@ -46,7 +46,7 @@ router.post(
 );
 
 // ADMIN: rechazar/cancelar un evento (acepta { motivo?: string } en el body)
-router.post(
+router.patch(
   "/:id/rechazar",
   sessionMiddleware.VerificarToken,
   autorMiddleware.VerificarEsAdmin,
