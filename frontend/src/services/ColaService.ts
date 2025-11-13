@@ -1,5 +1,4 @@
 import HttpClient from "./Client";
-import type { TurnoCola } from "../models/TurnoCola";
 
 class ColaService extends HttpClient {
   constructor() {
@@ -16,7 +15,7 @@ class ColaService extends HttpClient {
     return res?.data;
   }
 
-  async obtenerPosicion(colaId: number): Promise<TurnoCola> {
+  async obtenerPosicion(colaId: number): Promise<number> {
     const res = await this.get(`/verificar/${colaId}`);
     return res?.data;
   }

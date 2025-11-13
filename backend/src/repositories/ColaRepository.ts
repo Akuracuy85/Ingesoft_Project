@@ -27,6 +27,9 @@ export class ColaRepository {
     const turnos = await this.turnoColaRepository.find({
       where: { cola: { id: colaId } },
       order: { ingreso: "ASC" },
+      relations: {
+        cliente: true,
+      }
     });
 
     const index = turnos.findIndex(t => t.cliente.id === clienteId);
