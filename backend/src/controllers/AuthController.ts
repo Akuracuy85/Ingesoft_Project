@@ -1,7 +1,7 @@
-import { AuthService } from "@/services/AuthService";
-import { CrearCookieDeSesion } from "@/utils/CookieUtils";
-import { HandleResponseError } from "@/utils/Errors";
-import { GenerarAccessToken, VerificarRefreshToken } from "@/utils/JWTUtils";
+import { AuthService } from "../services/AuthService";
+import { CrearCookieDeSesion } from "../utils/CookieUtils";
+import { HandleResponseError } from "../utils/Errors";
+import { GenerarAccessToken, VerificarRefreshToken } from "../utils/JWTUtils";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
@@ -31,10 +31,11 @@ export class AuthController {
   Login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
-      const { accessToken, refreshToken } = await this.authService.AutenticarUsuario(email, password);
+      const { accessToken, refreshToken, rol } = await this.authService.AutenticarUsuario(email, password);
       CrearCookieDeSesion(res, accessToken, refreshToken);
       res.status(StatusCodes.OK).json({
         success: true,
+        rol: rol
       });
     } catch (error) {
       HandleResponseError(res, error);

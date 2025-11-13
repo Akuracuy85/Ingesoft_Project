@@ -3,7 +3,7 @@
 import type { Tarifa } from "./Tarifa";
 
 export interface Zone {
-    id: number;
+    id?: number;
     nombre: string;
     capacidad: number;
     cantidadComprada: number;

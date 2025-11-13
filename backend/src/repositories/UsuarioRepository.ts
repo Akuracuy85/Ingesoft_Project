@@ -1,8 +1,8 @@
-import { AppDataSource } from "@/database/data-source";
-import { Rol } from "@/enums/Rol";
-import { Usuario } from "@/models/Usuario";
-import { Cliente } from "@/models/Cliente";
-import { Organizador } from "@/models/Organizador";
+import { AppDataSource } from "../database/data-source";
+import { Rol } from "../enums/Rol";
+import { Usuario } from "../models/Usuario";
+import { Cliente } from "../models/Cliente";
+import { Organizador } from "../models/Organizador";
 import { Repository } from "typeorm";
 
 export class UsuarioRepository {
@@ -21,7 +21,7 @@ export class UsuarioRepository {
   }
 
   async buscarPorId(id: number): Promise<Usuario | null> {
-    return await this.repository.findOneBy({ id });
+    return await this.repository.findOne({ where: { id } });
   }
 
   async buscarPorEmail(email: string): Promise<Usuario | null> {

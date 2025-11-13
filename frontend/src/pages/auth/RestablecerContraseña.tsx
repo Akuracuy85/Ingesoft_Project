@@ -10,7 +10,6 @@ export const RestablecerContraseña = () => {
   const [mostrarPopup, setMostrarPopup] = useState(false);
   const navigate = useNavigate();
 
-  // Acción al hacer clic en "Enviar solicitud"
   const handleSubmit = () => {
     if (email && captchaValido) {
       setMostrarPopup(true);

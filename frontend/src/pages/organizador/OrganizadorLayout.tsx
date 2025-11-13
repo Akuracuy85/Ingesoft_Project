@@ -17,13 +17,9 @@ interface OrganizadorLayoutProps {
 const OrganizadorLayout: React.FC<OrganizadorLayoutProps> = ({ children, activeItem }) => {
   return (
     <div className="flex h-screen bg-background text-foreground">
-
       <SidebarOrganizador activeItem={activeItem} />
-
-
       <div className="flex flex-col flex-1">
         <HeaderOrganizador />
-
         <main className="flex-1 overflow-y-auto p-6 bg-card">
           {children || <Outlet />}
         </main>

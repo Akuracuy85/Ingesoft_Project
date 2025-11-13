@@ -1,9 +1,9 @@
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { Usuario } from "@/models/Usuario";
-import { Rol } from "@/enums/Rol";
-import { CustomError } from "@/types/CustomError";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { Usuario } from "../models/Usuario";
+import { Rol } from "../enums/Rol";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { PasswordHasher } from "@/types/PasswordHasher";
+import { PasswordHasher } from "../types/PasswordHasher";
 
 export class UsuarioService {
   private static instance: UsuarioService;
@@ -128,15 +128,15 @@ export class UsuarioService {
       throw new CustomError("Error al desactivar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
   async getAllUser(): Promise<Usuario[]> {
-    try {
-      // Llama al método del repositorio para obtener todos los usuarios
-      return await this.usuarioRepository.getAllUser();
-    } catch (error) {
-      if (error instanceof CustomError) throw error;
-      throw new CustomError("Error al obtener todos los usuarios de la base de datos", StatusCodes.INTERNAL_SERVER_ERROR);
-    }
-  }
-  
+    try {
+      // Llama al método del repositorio para obtener todos los usuarios
+      return await this.usuarioRepository.getAllUser();
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al obtener todos los usuarios de la base de datos", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

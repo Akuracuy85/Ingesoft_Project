@@ -1,18 +1,22 @@
 import { Request, Response } from "express";
-import { EventoService } from "@/services/EventoService";
-import { HandleResponseError } from "@/utils/Errors";
+import { EventoService } from "../services/EventoService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { IFiltrosEvento } from "@/repositories/EventoRepository";
-import { Evento } from "@/models/Evento";
+import { IFiltrosEvento } from "../repositories/EventoRepository";
+import { Evento } from "../models/Evento";
 
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
+import { EstadoEvento } from "@/enums/EstadoEvento";
+import { EmailService } from "@/services/EmailService";
 
 export class EventoController {
   private static instance: EventoController;
   private eventoService: EventoService;
+  private emailService: EmailService;
 
   private constructor() {
     this.eventoService = EventoService.getInstance();
+    this.emailService = EmailService.getInstance();
   }
 
   public static getInstance(): EventoController {
@@ -169,6 +173,14 @@ export class EventoController {
         req.body,
         organizadorId
       );
+
+      if(evento.estado === EstadoEvento.CANCELADO) {
+        await this.emailService.SendEventCancelledEmail(evento.id);
+      }
+      else {
+        await this.emailService.SendUpdateEventEmail(evento.id);
+      }
+
       res.status(StatusCodes.OK).json({
         success: true,
         eventoId: evento.id,

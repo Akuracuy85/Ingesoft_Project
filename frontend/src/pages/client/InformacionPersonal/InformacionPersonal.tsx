@@ -1,5 +1,3 @@
-"use client";
-
 import ClientLayout from "../ClientLayout";
 import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
@@ -16,8 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../../components/ui/alert-dialog";
-import { User, Mail, CreditCard, Phone, FileText, Trash2, Plus, Star } from "lucide-react";
-import { clientUserService } from "../../../services/ClientUserService";
+import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-react";
+import PerfilService from "../../../services/PerfilService";
 
 export default function InformacionPersonal() {
   const [userInfo, setUserInfo] = useState({
@@ -63,8 +61,8 @@ export default function InformacionPersonal() {
           setSavedCard(mockCard);
           setPoints(mockPoints.totalPoints);
         } else {
-          const profile = await clientUserService.getProfile();
-          const pointsData = await clientUserService.getPoints();
+          const profile = await PerfilService.getProfile();
+          const pointsData = await PerfilService.getPuntos();
 
           setUserInfo({
             fullName: profile.nombre,
@@ -101,7 +99,7 @@ export default function InformacionPersonal() {
   const handleSaveChanges = async () => {
     try {
       if (!USE_MOCK) {
-        await clientUserService.updateProfile({
+        await PerfilService.updateProfile({
           nombre: userInfo.fullName,
           email: userInfo.email,
           dni: userInfo.dni,
@@ -118,7 +116,7 @@ export default function InformacionPersonal() {
   const handleDeleteCard = async () => {
     try {
       if (!USE_MOCK && savedCard?.id) {
-        await clientUserService.deletePaymentMethod(savedCard.id);
+        await PerfilService.deletePaymentMethod(savedCard.id);
       }
       setSavedCard(null);
       setShowDeleteAlert(false);
@@ -136,10 +134,10 @@ export default function InformacionPersonal() {
       </ClientLayout>
     );
   }
-
+  /*
   function setShowCardModal(arg0: boolean): void {
     throw new Error("Function not implemented.");
-  }
+  }*/
 
   return (
     <ClientLayout showFilterButton={false}>

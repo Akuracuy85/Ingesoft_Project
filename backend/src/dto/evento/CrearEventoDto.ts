@@ -1,4 +1,4 @@
-import { EstadoEvento } from "@/enums/EstadoEvento";
+import { EstadoEvento } from "../../enums/EstadoEvento";
 
 export interface CrearEventoDto {
   nombre: string;
@@ -9,6 +9,7 @@ export interface CrearEventoDto {
   departamento: string;
   provincia: string;
   distrito: string;
+  lugar: string;
   estado: EstadoEvento;
   imagenPortada?: string; // base64 opcional
 }

@@ -2,7 +2,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -36,6 +35,9 @@ export class Evento {
 
   @Column({type: "text"})
   distrito: string;
+
+  @Column({ type: "text" })
+  lugar: string;
 
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;
