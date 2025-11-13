@@ -16,10 +16,9 @@ class AdminEventoService extends HttpClient {
       zonas: e.zonas ?? [],
     }))
   }
-  async cambiarEstado(id: number, nuevoEstado: string, comentario?: string) {
+  async cambiarEstado(id: number, nuevoEstado: string) {
     return await super.put(`/estado/${id}`, {
-      estado: nuevoEstado,
-      comentario,
+      estado: nuevoEstado
     })
   }
 }

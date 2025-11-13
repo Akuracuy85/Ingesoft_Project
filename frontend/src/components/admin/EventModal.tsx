@@ -1,7 +1,5 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { X, Check, XIcon, FileText, MapPin, CalendarDays, User } from "lucide-react"
 import type { Event } from "@/models/Event"
 
@@ -11,19 +9,17 @@ interface EventDetailsModalProps {
   event: Event
   onClose: () => void
   onApprove: (eventId: number) => void
-  onReject: (eventId: number, comment?: string) => void
+  onReject: (eventId: number) => void
 }
 
 export function EventDetailsModal({ event, onClose, onApprove, onReject }: EventDetailsModalProps) {
-  const [comment, setComment] = useState("")
-
   const handleApprove = () => {
     onApprove(event.id)
     onClose()
   }
 
   const handleReject = () => {
-    onReject(event.id, comment)
+    onReject(event.id)
     onClose()
   }
 
@@ -178,19 +174,6 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
           {/* Comentario y acciones */}
           {event.estado === "PENDIENTE_APROBACION" && (
             <>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Comentario de aprobación o rechazo (opcional)
-                </label>
-                <Textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Escribe un comentario para el organizador..."
-                  className="mt-2"
-                  rows={3}
-                />
-              </div>
-
               <div className="flex gap-3 pt-3 border-t border-border">
                 <Button
                   onClick={handleApprove}

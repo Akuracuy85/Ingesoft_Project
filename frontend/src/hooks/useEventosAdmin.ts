@@ -22,9 +22,9 @@ export function useEventosAdmin() {
     cargar()
   }, [])
 
-  const actualizarEstado = async (id: number, nuevo: EventStatus, comentario?: string) => {
+  const actualizarEstado = async (id: number, nuevo: EventStatus) => {
     try {
-      await AdminEventoService.cambiarEstado(id, nuevo, comentario)
+      await AdminEventoService.cambiarEstado(id, nuevo)
       setEvents(prev =>
         prev.map(e => (e.id === id ? { ...e, estado: nuevo } : e))
       )
@@ -37,6 +37,6 @@ export function useEventosAdmin() {
     events,
     isLoading,
     aprobar: (id: number) => actualizarEstado(id, "PUBLICADO"),
-    rechazar: (id: number, comentario?: string) => actualizarEstado(id, "CANCELADO", comentario),
+    rechazar: (id: number) => actualizarEstado(id, "CANCELADO"),
   }
 }
