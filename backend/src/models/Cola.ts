@@ -8,7 +8,7 @@ export class Cola {
   @Column({ type: "datetime" })
   creadoEn: Date;
   @Column()
-  estado: string;
+  activa: boolean;
   @OneToOne(() => Evento, evento => evento.cola, { onDelete: "CASCADE" })
   @JoinColumn()
   evento: Evento;
