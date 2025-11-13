@@ -7,8 +7,10 @@ import { Button } from "../../../components/ui/button"
 import { Card } from "../../../components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
 import { Clock, Users, CheckCircle2 } from "lucide-react"
+import ColaService from "@/services/ColaService";
+import type { TurnoCola } from "@/models/TurnoCola";
 //import turnoColaService from "../../../services/TurnoColaService"
-import type { TurnoCola } from "../../../models/TurnoCola"
+
 
 export default function ColaVirtual() {
   const [turno, setTurno] = useState<TurnoCola | null>(null)
@@ -26,6 +28,7 @@ export default function ColaVirtual() {
     const fetchTurno = async () => {
       try {
         //const data = await turnoColaService.getAll()
+        console.log("Evento en cola virtual:", evento);
         const miTurno = {
           id: 1,
           posicion: 5,
@@ -44,6 +47,8 @@ export default function ColaVirtual() {
 
     fetchTurno()
   }, [])
+
+
 
   useEffect(() => {
     if (!turno) return;
