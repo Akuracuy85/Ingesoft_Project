@@ -213,6 +213,12 @@ const CardEventos: React.FC = () => {
         return;
       }
 
+      // Validaciones de ubicación y lugar (requeridos)
+      if (!data.departamento || !data.provincia || !data.distrito || !data.lugar.trim()) {
+        alert("Por favor completa la ubicación (departamento, provincia, distrito) y el lugar.");
+        return;
+      }
+
       // Estado para backend
       const estadoBackend = mapEstadoUIToBackend(data.estado);
 
@@ -232,10 +238,10 @@ const CardEventos: React.FC = () => {
         fecha: data.fecha, // YYYY-MM-DD
         hora: data.hora,   // HH:mm
         artistaId: data.artistaId,
-        departamento: data.departamento?.trim() || null,
-        provincia: data.provincia?.trim() || null,
-        distrito: data.distrito?.trim() || null,
-        lugar: (data.lugar || "").trim() || undefined,
+        departamento: data.departamento.trim(),
+        provincia: data.provincia.trim(),
+        distrito: data.distrito.trim(),
+        lugar: data.lugar.trim(),
         estado: estadoBackend,
         imagenPortada,
       };
