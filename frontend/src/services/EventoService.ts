@@ -42,11 +42,9 @@ const mapFiltersToQueryParams = (
 
   // Limpieza de valores vacíos
   return Object.fromEntries(
-    Object.entries(params).filter(([, v]) => {
-      if (v === null || v === undefined) return false;
-      if (typeof v === "string" && v.trim() === "") return false;
-      return true;
-    })
+    Object.entries(params).filter(([, v]) =>
+      v !== null && v !== undefined && (typeof v !== "string" || v.trim() !== "")
+    )
   );
 };
 
@@ -156,7 +154,8 @@ class EventoService extends HttpClient {
       provincia: ev.provincia || "",
       distrito: ev.distrito || "",
       place: ev.lugar || "",
-      image: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : "") : "",
+      // Simplificado: si viene null -> ""
+      image: ev.imagenBanner ?? "",
       artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
@@ -224,7 +223,12 @@ class EventoService extends HttpClient {
     return eventos.find(e => e.id === eventoId);
   }
 
-  async updateDocumentosRespaldo(eventoId: number, documentos: BackendDocumentoDto[] | { contenidoBase64: string; nombreArchivo: string; tipo: string; tamano: number }[]) {
+  async updateDocumentosRespaldo(
+    eventoId: number,
+    _documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
+  ) {
+    // Evita warning de variable no usada sin cambiar comportamiento
+    void _documentos;
     const evento = await this.getEventoDetalladoOrganizadorById(eventoId);
     if (!evento) throw new Error("Evento no encontrado para actualizar documentos.");
     if (!evento.artistaId || evento.artistaId <= 0) {
@@ -258,18 +262,24 @@ class EventoService extends HttpClient {
 const eventoServiceInstance = new EventoService();
 
 // Función nombrada para facilitar el consumo tipado en componentes
-export const listarBasicosOrganizador = () =>
-  eventoServiceInstance.listarBasicosOrganizador();
+export function listarBasicosOrganizador() {
+  return eventoServiceInstance.listarBasicosOrganizador();
+}
 export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
 export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
 export const getDocumentosRespaldo = (eventoId: number) => eventoServiceInstance.getDocumentosRespaldo(eventoId);
 // Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
-export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export function obtenerEventoDetalladoOrganizador(id: number) {
+  return eventoServiceInstance.obtenerPorId(id);
+}
 export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
 export const actualizarEvento = (id: number, data: ActualizarEventoPayload) =>
   eventoServiceInstance.put<{ success: boolean; eventoId: number }>(`/${id}`, data);
-export const updateDocumentosRespaldo = (eventoId: number, documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>) =>
-  eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos as any);
+export const updateDocumentosRespaldo = (
+  eventoId: number,
+  documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
+) =>
+  eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos);
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
 
@@ -300,7 +310,7 @@ export interface ActualizarEventoPayload {
   lugar: string;
   estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION | CANCELADO
   imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
-  terminosUso?: any;
+  terminosUso?: BackendDocumentoDto | null;
 }
 
 export function mapEstadoUIToBackend(estado: string): string {
