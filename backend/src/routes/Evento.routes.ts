@@ -23,6 +23,13 @@ router.get(
   eventoController.obtenerEventosDetallados
 );
 
+router.get(
+  "/listar-todos",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.obtenerTodos
+);
+
 router.get("/:id", eventoController.obtenerPorId);
 
 router.post(
@@ -56,12 +63,5 @@ router.patch(
 router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
 
 router.get("/publicados", eventoController.listarPublicados);
-
-router.get(
-  "/listartodos",
-  sessionMiddleware.VerificarToken,
-  autorMiddleware.VerificarEsAdmin,
-  eventoController.obtenerTodos
-);
 
 export default router;

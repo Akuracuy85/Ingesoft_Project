@@ -303,7 +303,6 @@ export class EventoController {
         message: "No autorizado. Se requiere autenticación de administrador.",
       });
     }
-    console.log("AAAAAAAAAAAA");
     try {
       const eventos = await this.eventoService.obtenerTodosLosEventos();
       res.status(StatusCodes.OK).json({

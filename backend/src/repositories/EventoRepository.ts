@@ -339,11 +339,11 @@ export class EventoRepository {
   }
 
   async obtenerTodosLosEventos(): Promise<Evento[]> {
-    console.log("AAAAAAAAAAAA");
     return await this.repository.find({
       relations: {
         organizador: true, // Para saber quién es el organizador
-        artista: true,     // Para ver el artista principal
+        artista: true,  // Para ver el artista principal
+        zonas: true
       },
       order: {
         fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero
