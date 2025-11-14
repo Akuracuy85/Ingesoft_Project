@@ -1,4 +1,4 @@
-// src/components/client/Body/SeleccionEventos/BodySeleccionEventos.tsx (CORREGIDO Y FINAL)
+// src/components/client/Body/SeleccionEventos/BodySeleccionEventos.tsx
 
 import React from "react";
 import { FeaturedEvent } from "./Banner/FeaturedEvent"; // Asegúrate de ajustar esta ruta
@@ -6,7 +6,7 @@ import { EventList } from "./EventList/EventList"; // Asegúrate de ajustar esta
 import { type Event } from '@/models/Event'; 
 import { type FiltersType } from "../../../../types/FiltersType"; 
 
-// 🛑 INTERFAZ: Recibe todos los datos necesarios del padre
+// INTERFAZ: Recibe todos los datos necesarios del padre
 interface BodySeleccionEventosProps {
     events: Event[];
     featuredEvents: Event[]; 
@@ -76,7 +76,7 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
                     <div className="w-full max-w-6xl flex justify-center items-center p-6 h-96">
                         <div className="text-center p-8 border border-indigo-200 rounded-lg bg-indigo-50">
                             <h3 className="text-2xl font-bold text-indigo-800 mb-2">
-                                ¡No hay resultados! 😔
+                                ¡No hay resultados!
                             </h3>
                             <p className="text-indigo-600">
                                 No se encontraron eventos que coincidan con tus filtros.
