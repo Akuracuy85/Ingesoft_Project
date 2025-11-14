@@ -330,15 +330,16 @@ export class EventoRepository {
 
   async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
     const qb = this.repository.createQueryBuilder("evento");
-    qb.leftJoin("evento.entradas", "entrada")
-      .leftJoin("entrada.ordenCompra", "ordenCompra")
+
+    qb.leftJoin("evento.ordenesCompra", "ordenCompra")
       .leftJoin("ordenCompra.cliente", "cliente")
       .select("cliente.email", "email")
       .where("evento.id = :eventoId", { eventoId })
       .andWhere("ordenCompra.estado = :estado", { estado: "COMPLETADA" })
       .distinct(true);
+
     const resultados = await qb.getRawMany<{ email: string }>();
-    return resultados.map((r) => r.email);
+    return resultados.map(r => r.email);
   }
 
   async obtenerTodosLosEventos(): Promise<Evento[]> {
