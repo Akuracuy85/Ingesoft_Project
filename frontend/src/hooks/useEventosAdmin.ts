@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import AdminEventoService from "@/services/AdminEventoService"
 import type { Event } from "@/models/Event"
-import type { EventStatus } from "@/components/admin/EventTable"
 
 export function useEventosAdmin() {
   const [events, setEvents] = useState<Event[]>([])

@@ -94,7 +94,7 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
           {/* Zonas */}
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-3 block">
-              Zonas y tarifas
+              Zonas
             </label>
             <div className="bg-muted/30 rounded-lg border border-border overflow-hidden">
               <table className="w-full">
@@ -109,12 +109,6 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
                     <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
                       Vendidas
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
-                      Tarifa normal
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
-                      Tarifa preventa
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -123,14 +117,6 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
                       <td className="px-4 py-2 text-sm text-foreground">{zona.nombre}</td>
                       <td className="px-4 py-2 text-sm text-foreground">{zona.capacidad}</td>
                       <td className="px-4 py-2 text-sm text-foreground">{zona.cantidadComprada}</td>
-                      <td className="px-4 py-2 text-sm text-foreground font-mono">
-                        S/ {zona.tarifaNormal.precio.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-2 text-sm text-foreground font-mono">
-                        {zona.tarifaPreventa?.precio
-                          ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
-                          : "—"}
-                      </td>
                     </tr>
                   ))}
                 </tbody>

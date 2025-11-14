@@ -7,52 +7,67 @@ class AdminEventoService extends HttpClient {
   }
 
   async listarTodos(): Promise<Event[]> {
-  const respuesta = await super.get<any>("/listar-todos");
+    const respuesta = await super.get<any>("/listar-todos")
 
-  const eventos = Array.isArray(respuesta)
-    ? respuesta
-    : Array.isArray(respuesta?.data)
+    const eventos = Array.isArray(respuesta)
+      ? respuesta
+      : Array.isArray(respuesta?.data)
       ? respuesta.data
       : Array.isArray(respuesta?.eventos)
-        ? respuesta.eventos
-        : [];
-  console.log("📊 Eventos originales del backend:", eventos);
+      ? respuesta.eventos
+      : []
 
-  return eventos.map((e: any) => {
-    let estadoNormalizado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO" =
-      "PENDIENTE_APROBACION";
-    if (typeof e.estado === "string") {
-      const upper = e.estado.toUpperCase();
-      if (upper.includes("PUBLIC")) estadoNormalizado = "PUBLICADO";
-      else if (upper.includes("CANCEL")) estadoNormalizado = "CANCELADO";
-    }
-    let date = "";
-    let time = "";
-    if (e.fechaEvento) {
-      const fecha = new Date(e.fechaEvento);
-      date = fecha.toISOString().split("T")[0];
-      time = fecha.toISOString().split("T")[1]?.slice(0, 5) || "";
-    }
+    console.log("Eventos originales del backend:", eventos)
 
-    return {
-      id: e.id,
-      title: e.nombre ?? "",
-      description: e.descripcion ?? "",
-      date,
-      time,
-      departamento: e.departamento ?? "",
-      provincia: e.provincia ?? "",
-      distrito: e.distrito ?? "",
-      place: e.lugar ?? "",
-      image: e.imagenBanner ? "data:image/png;base64," + (e.imagenBanner.data?.toString("base64") ?? "") : "",
-      artist: e.artista ?? { id: 0, nombre: "Sin artista" },
-      zonas: e.zonas ?? [],
-      organizadorNombre: e.organizador?.nombre ?? "Sin organizador",
-      estado: estadoNormalizado,
-      documento: "",
-    };
-  });
-}
+    // 🧹 Filtra para excluir los BORRADOR u otros estados inválidos
+    const filtrados = eventos.filter((e: any) => {
+      const estado = e.estado?.toUpperCase?.() || ""
+      return ["PENDIENTE_APROBACION", "PUBLICADO", "CANCELADO"].includes(estado)
+    })
+
+    return filtrados.map((e: any) => {
+      let estadoNormalizado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO" =
+        "PENDIENTE_APROBACION"
+
+      if (typeof e.estado === "string") {
+        const upper = e.estado.toUpperCase()
+        if (upper.includes("PUBLIC")) estadoNormalizado = "PUBLICADO"
+        else if (upper.includes("CANCEL")) estadoNormalizado = "CANCELADO"
+        else if (upper.includes("PEND")) estadoNormalizado = "PENDIENTE_APROBACION"
+      }
+
+      let date = ""
+      let time = ""
+      if (e.fechaEvento) {
+        const fecha = new Date(e.fechaEvento)
+        date = fecha.toISOString().split("T")[0]
+        time = fecha.toISOString().split("T")[1]?.slice(0, 5) || ""
+      }
+
+      return {
+        id: e.id,
+        title: e.nombre ?? "",
+        description: e.descripcion ?? "",
+        date,
+        time,
+        departamento: e.departamento ?? "",
+        provincia: e.provincia ?? "",
+        distrito: e.distrito ?? "",
+        place: e.lugar ?? "",
+        image: e.imagenBanner
+          ? "data:image/png;base64," + (e.imagenBanner.data?.toString("base64") ?? "")
+          : "",
+        artist: e.artista ?? { id: 0, nombre: "Sin artista" },
+        zonas: e.zonas ?? [],
+        organizadorNombre:
+          e.organizador?.RazonSocial ??
+          e.organizador?.nombre ??
+          "Sin organizador",
+        estado: estadoNormalizado,
+        documento: "",
+      }
+    })
+  }
 
 
   async aprobarEvento(id: number) {

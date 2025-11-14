@@ -44,7 +44,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                 Fecha / Hora
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Artista / Organizador
+                Organizador
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Ubicación
@@ -69,7 +69,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {event.artist?.nombre || "Sin artista"}
+                  {event.organizador?.RazonSocial || "Sin Organizador"}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
