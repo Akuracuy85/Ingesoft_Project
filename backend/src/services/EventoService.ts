@@ -27,6 +27,7 @@ import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
 import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
+import { ConvertirFechaUTCaPeru } from "@/utils/FechaUtils";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -59,7 +60,7 @@ export class EventoService {
         );
       return eventos.map(({ nombre, fechaEvento, estado }) => ({
         nombre,
-        fecha: fechaEvento,
+        fecha: ConvertirFechaUTCaPeru(fechaEvento),
         estado,
       }));
     } catch (error) {
@@ -87,7 +88,7 @@ export class EventoService {
         nombre: evento.nombre,
         descripcion: evento.descripcion,
         estado: evento.estado,
-        fechaEvento: evento.fechaEvento.toISOString(),
+        fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento).toISOString(), //Restando 5 horas para hacer match con perú
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
@@ -152,6 +153,7 @@ export class EventoService {
   async obtenerDetalleEvento(id: number): Promise<Evento> {
     try {
       const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
+      evento.fechaEvento = ConvertirFechaUTCaPeru(evento.fechaEvento); //Restamos 5 horas para que esté en hora de perú
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
