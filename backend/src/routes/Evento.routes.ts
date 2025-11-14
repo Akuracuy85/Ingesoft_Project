@@ -57,4 +57,11 @@ router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
 
 router.get("/publicados", eventoController.listarPublicados);
 
+router.get(
+  "/listartodos",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.obtenerTodos
+);
+
 export default router;

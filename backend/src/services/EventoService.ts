@@ -165,7 +165,7 @@ export class EventoService {
     }
   }
 
-  
+
   async crearEvento(data: CrearEventoDto, organizadorId: number) {
     this.validarDatosObligatorios(data);
     const organizador = await this.obtenerOrganizador(organizadorId);
@@ -770,22 +770,22 @@ export class EventoService {
     return randomBytes(4).toString("hex").toUpperCase();
   }
 
-/**
-   * Obtiene la entidad de Evento, INCLUYENDO las relaciones de Zonas y Artista,
-   * para ser utilizada en el mapeo a DTO para la vista de compra.
-   */
+  /**
+     * Obtiene la entidad de Evento, INCLUYENDO las relaciones de Zonas y Artista,
+     * para ser utilizada en el mapeo a DTO para la vista de compra.
+     */
   async obtenerDatosParaCompra(id: number): Promise<Evento> {
     try {
       // 🚨 Usamos el método que garantiza las relaciones necesarias para el DTO
-      const evento = await this.eventoRepository.buscarPorIdParaCompra(id); 
+      const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
 
       if (!evento) {
         throw new CustomError("Evento no encontrado.", StatusCodes.NOT_FOUND);
       }
-      
+
       // Opcional pero recomendado: Asegurar que solo devolvemos eventos publicados
       if (evento.estado !== EstadoEvento.PUBLICADO) {
-         throw new CustomError("Evento no disponible para la compra.", StatusCodes.BAD_REQUEST);
+        throw new CustomError("Evento no disponible para la compra.", StatusCodes.BAD_REQUEST);
       }
 
       return evento;
@@ -917,6 +917,19 @@ export class EventoService {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al obtener los emails de los asistentes al evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async obtenerTodosLosEventos(): Promise<Evento[]> {
+    try {
+      const eventos = await this.eventoRepository.obtenerTodosLosEventos();
+      return eventos;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener todos los eventos",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
