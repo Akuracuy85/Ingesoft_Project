@@ -17,9 +17,8 @@ class AdminEventoService extends HttpClient {
       ? respuesta.eventos
       : []
 
-    console.log("Eventos originales del backend:", eventos)
+    //console.log("Eventos originales del backend:", eventos)
 
-    // 🧹 Filtra para excluir los BORRADOR u otros estados inválidos
     const filtrados = eventos.filter((e: any) => {
       const estado = e.estado?.toUpperCase?.() || ""
       return ["PENDIENTE_APROBACION", "PUBLICADO", "CANCELADO"].includes(estado)
