@@ -29,7 +29,6 @@ interface EventEntity {
     nombre: string;
     descripcion: string;
     fechaEvento: Date;
-    lugar: string;
     departamento: string;
     provincia: string;
     distrito: string;
@@ -151,7 +150,7 @@ export class EventMapper {
             artistName: entity.artista.nombre,
             category: entity.artista.categoria?.nombre, // <-- AÑADIDO
             zonas: zonasDto, // <-- AÑADIDO
-            placeEspecific: placeEspecific, // <-- AÑADIDO
+            //placeEspecific: placeEspecific, // <-- AÑADIDO
         };
     }
 
