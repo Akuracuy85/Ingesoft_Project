@@ -27,6 +27,7 @@ import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
 import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
+import { ColaService } from "./ColaService";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -830,6 +831,13 @@ export class EventoService {
         tipo: TipoAccion.AprobarEvento,
         autor,
       });
+
+      try {
+        const colaService = ColaService.getInstance();
+        await colaService.crearCola(guardado.id);
+      } catch (colaErr) {
+        console.warn("No se pudo crear la cola para el evento aprobado:", colaErr);
+      }
       return guardado;
     } catch (error) {
       throw new CustomError(

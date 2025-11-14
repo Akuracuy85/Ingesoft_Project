@@ -215,13 +215,6 @@ export class EventoController {
     try {
       const evento = await this.eventoService.aprobarEvento(eventoId, autor);
 
-      // Crear la cola para el evento aprobado; no bloquear la respuesta si falla.
-      try {
-        await this.colaService.crearCola(evento.id);
-      } catch (colaErr) {
-        console.warn("No se pudo crear la cola para el evento:", colaErr);
-      }
-
       res.status(StatusCodes.OK).json({
         success: true,
         eventoId: evento.id,
