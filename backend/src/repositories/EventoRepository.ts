@@ -339,6 +339,19 @@ export class EventoRepository {
     return resultados.map((r) => r.email);
   }
 
+  async obtenerTodosLosEventos(): Promise<Evento[]> {
+    return await this.repository.find({
+      relations: {
+        organizador: true, // Para saber quién es el organizador
+        artista: true,  // Para ver el artista principal
+        zonas: true
+      },
+      order: {
+        fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero
+      },
+    });
+  }
+
 }
 
 export const eventoRepository = EventoRepository.getInstance();
