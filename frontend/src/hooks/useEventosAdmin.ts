@@ -22,21 +22,32 @@ export function useEventosAdmin() {
     cargar()
   }, [])
 
-  const actualizarEstado = async (id: number, nuevo: EventStatus) => {
+  const aprobar = async (id: number) => {
     try {
-      await AdminEventoService.cambiarEstado(id, nuevo)
+      await AdminEventoService.aprobarEvento(id)
       setEvents(prev =>
-        prev.map(e => (e.id === id ? { ...e, estado: nuevo } : e))
+        prev.map(e => (e.id === id ? { ...e, estado: "PUBLICADO" } : e))
       )
     } catch (error) {
-      console.error("Error cambiando estado:", error)
+      console.error("Error aprobando evento:", error)
+    }
+  }
+
+  const rechazar = async (id: number) => {
+    try {
+      await AdminEventoService.rechazarEvento(id)
+      setEvents(prev =>
+        prev.map(e => (e.id === id ? { ...e, estado: "CANCELADO" } : e))
+      )
+    } catch (error) {
+      console.error("Error rechazando evento:", error)
     }
   }
 
   return {
     events,
     isLoading,
-    aprobar: (id: number) => actualizarEstado(id, "PUBLICADO"),
-    rechazar: (id: number) => actualizarEstado(id, "CANCELADO"),
+    aprobar,
+    rechazar,
   }
 }
