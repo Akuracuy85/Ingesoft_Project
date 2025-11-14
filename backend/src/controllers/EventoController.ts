@@ -6,8 +6,8 @@ import { IFiltrosEvento } from "../repositories/EventoRepository";
 import { Evento } from "../models/Evento";
 
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { EmailService } from "@/services/EmailService";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { EmailService } from "../services/EmailService";
 
 export class EventoController {
   private static instance: EventoController;
