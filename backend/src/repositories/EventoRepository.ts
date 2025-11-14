@@ -143,6 +143,7 @@ export class EventoRepository {
   async listarEventosFiltrados(filtros: IFiltrosEvento): Promise<Evento[]> {
     const qb = this.repository.createQueryBuilder("evento");
     qb.distinct(true);
+    
     qb.andWhere("evento.fechaEvento >= :fechaActual", { fechaActual: new Date() });
     qb.andWhere("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
     qb.leftJoinAndSelect("evento.artista", "artista").leftJoinAndSelect(
