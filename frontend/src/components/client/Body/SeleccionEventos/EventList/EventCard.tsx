@@ -9,7 +9,7 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place /*, image, time*/ } = event;
+  const { title, date, place, placeEspecific /*, image, time*/ } = event;
 
   return (
     <Link to={`${event.id}/detalle`}>
@@ -20,7 +20,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
            (Puedes usar scale-105 si prefieres un efecto más notorio)
       */}
       <div 
-        className="flex flex-col w-[253px] h-[248px] bg-neutral-100 rounded overflow-hidden shadow-md 
+        className="flex flex-col w-[253px] h-[256px] bg-neutral-100 rounded overflow-hidden shadow-md 
                    transition-all duration-300 ease-in-out 
                    hover:shadow-xl hover:scale-[1.03]"
       >
@@ -33,6 +33,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <p className="font-semibold text-sm">{title}</p>
           <p className="text-sm">{date}</p>
           <p className="text-sm">{place}</p>
+          <p className="text-sm">{placeEspecific}</p>
         </div>
       </div>
     </Link>

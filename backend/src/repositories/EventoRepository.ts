@@ -247,6 +247,7 @@ export class EventoRepository {
         },
         artista: true,
         calificaciones: true,
+        cola: true,
       },
     });
   }
@@ -304,7 +305,7 @@ export class EventoRepository {
           tarifaPreventa: true
         }, // Necesario para 'zonasDisponibles'
         artista: true, // Necesario para mapear 'artistName'
-
+        cola: true,
       },
     });
   }
