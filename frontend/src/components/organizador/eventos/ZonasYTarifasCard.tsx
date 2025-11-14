@@ -173,6 +173,35 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
     }
   };
 
+  // Helpers para imagen de zona (no forzamos esquema; probamos propiedades comunes)
+  const buildImageSrc = (value?: string | null): string | null => {
+    if (!value) return null;
+    const v = String(value).trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:")) return v;
+    return `data:image/*;base64,${v}`;
+  };
+  const getZonaImageSrc = (z: unknown): string | null => {
+    const obj = (typeof z === 'object' && z !== null) ? (z as Record<string, unknown>) : undefined;
+    if (!obj) return null;
+    const candidates = [
+      obj['mapaUrl'],
+      obj['imagenUrl'],
+      obj['imageUrl'],
+      obj['mapa'],
+      obj['imagen'],
+      obj['image'],
+      obj['mapaBase64'],
+      obj['imagenBase64'],
+    ];
+    for (const c of candidates) {
+      const val = typeof c === 'string' ? c : undefined;
+      const src = buildImageSrc(val);
+      if (src) return src;
+    }
+    return null;
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
       {/* Encabezado */}
@@ -222,12 +251,20 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
               zones.map((z, i) => (
                 <tr key={z.id || i} className="border-t border-gray-200">
                   <td className="px-4 py-2">
-                    <input
-                      type="text"
-                      value={z.nombre}
-                      onChange={(e) => handleChangeCampo(i, "nombre", e.target.value)}
-                      className="border border-gray-300 rounded-md px-2 py-1 w-full"
-                    />
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const src = getZonaImageSrc(z);
+                        return src ? (
+                          <img src={src} alt={`Mapa ${z.nombre}`} className="w-10 h-10 rounded object-cover border border-gray-200" />
+                        ) : null;
+                      })()}
+                      <input
+                        type="text"
+                        value={z.nombre}
+                        onChange={(e) => handleChangeCampo(i, "nombre", e.target.value)}
+                        className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-2">
                     <input

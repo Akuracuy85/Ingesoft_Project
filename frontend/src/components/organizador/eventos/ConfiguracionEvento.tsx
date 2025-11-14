@@ -1,5 +1,4 @@
-import React from "react";
-import ZonasYTarifasCard, { type ZonasYTarifasCardProps } from "./ZonasYTarifasCard";
+import ZonasYTarifasCard from "./ZonasYTarifasCard";
 import TerminosCard from "./TerminosCard";
 import DocumentosCard from "./DocumentosCard";
 
@@ -24,7 +23,7 @@ export default function ConfiguracionEvento({ evento }: { evento: EventoSeleccio
         <ZonasYTarifasCard eventoId={evento.eventoId} eventoEstadoUI={evento.estado} eventoNombre={evento.nombre} />
       </div>
       <TerminosCard />
-      <DocumentosCard />
+      <DocumentosCard eventoId={evento.eventoId} />
     </div>
   );
 }

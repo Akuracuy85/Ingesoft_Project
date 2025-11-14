@@ -42,11 +42,9 @@ const mapFiltersToQueryParams = (
 
   // Limpieza de valores vacíos
   return Object.fromEntries(
-    Object.entries(params).filter(([, v]) => {
-      if (v === null || v === undefined) return false;
-      if (typeof v === "string" && v.trim() === "") return false;
-      return true;
-    })
+    Object.entries(params).filter(([, v]) =>
+      v !== null && v !== undefined && (typeof v !== "string" || v.trim() !== "")
+    )
   );
 };
 
@@ -73,11 +71,13 @@ interface BackendEventoEntity {
   distrito?: string;
   lugar?: string;
   estado: string;
-  imagenBanner?: string | null | Buffer;
+  imagenBanner?: string | null; // Simplificado: representamos solo base64 string o null
   artista?: { id: number; nombre: string; categoria?: { nombre: string } };
-  zonas?: any[]; // se podría tipar más
-  cola?: any;
+  zonas?: unknown[]; // se podría tipar más adelante
+  cola?: unknown;
+  documentosRespaldo?: BackendDocumentoDto[];
 }
+interface BackendDocumentoDto { id?: number; nombreArchivo: string; tipo: string; tamano: number; url: string; }
 interface EventoDetalladoOrganizador {
   id: number;
   nombre: string;
@@ -89,6 +89,9 @@ interface EventoDetalladoOrganizador {
   distrito: string;
   lugar: string;
   imagenBannerBase64: string | null;
+  documentosRespaldo: BackendDocumentoDto[];
+  terminosUso?: BackendDocumentoDto | null;
+  artistaId?: number | null;
 }
 
 function extractYMD(value: string | Date): string {
@@ -105,20 +108,6 @@ function extractYMD(value: string | Date): string {
 class EventoService extends HttpClient {
   constructor() {
     super("/evento");
-  }
-
-  async listar(filters: FiltersType): Promise<Event[]> {
-    const path = "/publicados";
-    const params = mapFiltersToQueryParams(filters);
-    const respuesta = await super.get<EventsWrapper<Event> | Event[]>(path, { params });
-    if (Array.isArray(respuesta)) return respuesta as Event[];
-    if (respuesta && Array.isArray((respuesta as EventsWrapper<Event>).eventos)) {
-      return (respuesta as EventsWrapper<Event>).eventos as Event[];
-    }
-    if (respuesta && Array.isArray((respuesta as EventsWrapper<Event>).data)) {
-      return (respuesta as EventsWrapper<Event>).data as Event[];
-    }
-    return [];
   }
 
   async listarDestacados(): Promise<Event[]> {
@@ -165,7 +154,8 @@ class EventoService extends HttpClient {
       provincia: ev.provincia || "",
       distrito: ev.distrito || "",
       place: ev.lugar || "",
-      image: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : "") : "",
+      // Simplificado: si viene null -> ""
+      image: ev.imagenBanner ?? "",
       artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
@@ -188,6 +178,9 @@ class EventoService extends HttpClient {
       distrito: ev.distrito || "",
       lugar: ev.lugar || "",
       imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
+      documentosRespaldo: ev.documentosRespaldo || [],
+      terminosUso: null,
+      artistaId: ev.artista?.id ?? null,
     }));
   }
 
@@ -218,21 +211,75 @@ class EventoService extends HttpClient {
     // El backend espera los campos exactos del CrearEventoDto
     return await super.post<{ success: boolean; eventoId: number }>("/", data);
   }
+
+  async getDocumentosRespaldo(eventoId: number): Promise<BackendDocumentoDto[]> {
+    const eventos = await this.listarDetalladosOrganizador();
+    const evento = eventos.find(e => e.id === eventoId);
+    return evento?.documentosRespaldo || [];
+  }
+
+  async getEventoDetalladoOrganizadorById(eventoId: number): Promise<EventoDetalladoOrganizador | undefined> {
+    const eventos = await this.listarDetalladosOrganizador();
+    return eventos.find(e => e.id === eventoId);
+  }
+
+  async updateDocumentosRespaldo(
+    eventoId: number,
+    _documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
+  ) {
+    // Evita warning de variable no usada sin cambiar comportamiento
+    void _documentos;
+    const evento = await this.getEventoDetalladoOrganizadorById(eventoId);
+    if (!evento) throw new Error("Evento no encontrado para actualizar documentos.");
+    if (!evento.artistaId || evento.artistaId <= 0) {
+      throw new Error("Debes asignar un artista al evento antes de gestionar documentos de respaldo.");
+    }
+    // Separar fecha y hora
+    let fecha = ""; let hora = "";
+    try {
+      const d = new Date(evento.fechaEvento);
+      fecha = d.toISOString().slice(0,10);
+      hora = d.toISOString().slice(11,16);
+    } catch { /* noop */ }
+    const payload: ActualizarEventoPayload = {
+      nombre: evento.nombre,
+      descripcion: evento.descripcion,
+      fecha,
+      hora,
+      artistaId: evento.artistaId,
+      departamento: evento.departamento,
+      provincia: evento.provincia,
+      distrito: evento.distrito,
+      lugar: evento.lugar,
+      estado: evento.estado,
+      imagenPortada: evento.imagenBannerBase64 || undefined,
+      terminosUso: undefined,
+    };
+    await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}`, payload);
+  }
 }
 
 const eventoServiceInstance = new EventoService();
 
 // Función nombrada para facilitar el consumo tipado en componentes
-export const listarBasicosOrganizador = () =>
-  eventoServiceInstance.listarBasicosOrganizador();
+export function listarBasicosOrganizador() {
+  return eventoServiceInstance.listarBasicosOrganizador();
+}
 export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
 export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
+export const getDocumentosRespaldo = (eventoId: number) => eventoServiceInstance.getDocumentosRespaldo(eventoId);
 // Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
-export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export function obtenerEventoDetalladoOrganizador(id: number) {
+  return eventoServiceInstance.obtenerPorId(id);
+}
 export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
 export const actualizarEvento = (id: number, data: ActualizarEventoPayload) =>
   eventoServiceInstance.put<{ success: boolean; eventoId: number }>(`/${id}`, data);
-
+export const updateDocumentosRespaldo = (
+  eventoId: number,
+  documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
+) =>
+  eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos);
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
 
@@ -241,14 +288,14 @@ export interface CrearEventoPayload {
   nombre: string;
   descripcion: string;
   fecha: string; // YYYY-MM-DD
-  hora: string; // HH:mm
-  artistaId: number;
-  departamento?: string | null;
-  provincia?: string | null;
-  distrito?: string | null;
-  lugar?: string;
+  hora: string;  // HH:mm
+  artistaId: number; // obligatorio
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
   estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
-  imagenPortada?: string; // base64 sin prefijo
+  imagenPortada?: string; // base64 sin prefijo (opcional)
 }
 
 export interface ActualizarEventoPayload {
@@ -261,8 +308,9 @@ export interface ActualizarEventoPayload {
   provincia: string;
   distrito: string;
   lugar: string;
-  estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION
+  estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION | CANCELADO
   imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
+  terminosUso?: BackendDocumentoDto | null;
 }
 
 export function mapEstadoUIToBackend(estado: string): string {
@@ -271,6 +319,8 @@ export function mapEstadoUIToBackend(estado: string): string {
       return "PUBLICADO";
     case "En revisión":
       return "PENDIENTE_APROBACION";
+    case "Cancelado":
+      return "CANCELADO";
     case "Borrador":
     default:
       return "BORRADOR";

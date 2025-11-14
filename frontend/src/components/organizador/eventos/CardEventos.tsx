@@ -5,7 +5,6 @@ import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
 import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento } from "@/services/EventoService";
-import ArtistaService from "@/services/ArtistaService";
 // Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
 
 // Moved to utils for reuse
@@ -106,6 +105,8 @@ const CardEventos: React.FC = () => {
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  // Nuevo: input de archivo para portada en edición
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Modal eliminar
   const [eventoAEliminar, setEventoAEliminar] = useState<{ index: number; nombre: string } | null>(null);
@@ -115,7 +116,7 @@ const CardEventos: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   // Cargar desde backend (detallados) reutilizable
-  const loadEventos = async () => {
+  const loadEventos = async (): Promise<EventoItem[]> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -145,9 +146,11 @@ const CardEventos: React.FC = () => {
         };
       });
       setEventos(items);
+      return items;
     } catch (err) {
       console.error("Error cargando eventos detallados:", err);
       setError("Error al cargar los eventos.");
+      return [];
     } finally {
       setIsLoading(false);
     }
@@ -209,6 +212,16 @@ const CardEventos: React.FC = () => {
         alert("Por favor completa nombre, descripción, fecha y hora.");
         return;
       }
+      if (!data.artistaId || data.artistaId <= 0) {
+        alert("Debes seleccionar un artista para el evento.");
+        return;
+      }
+
+      // Validaciones de ubicación y lugar (requeridos)
+      if (!data.departamento || !data.provincia || !data.distrito || !data.lugar.trim()) {
+        alert("Por favor completa la ubicación (departamento, provincia, distrito) y el lugar.");
+        return;
+      }
 
       // Estado para backend
       const estadoBackend = mapEstadoUIToBackend(data.estado);
@@ -223,24 +236,16 @@ const CardEventos: React.FC = () => {
         }
       }
 
-      // Obtener artista (mínimo requerido por backend actual)
-      const artistas = await ArtistaService.getArtistas();
-      if (!artistas || artistas.length === 0) {
-        alert("No hay artistas disponibles para asignar al evento.");
-        return;
-      }
-      const artistaId = Number(artistas[0].id);
-
       const payload = {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fecha: data.fecha, // YYYY-MM-DD
         hora: data.hora,   // HH:mm
-        artistaId,
-        departamento: data.departamento?.trim() || null,
-        provincia: data.provincia?.trim() || null,
-        distrito: data.distrito?.trim() || null,
-        lugar: (data.lugar || "").trim() || undefined,
+        artistaId: data.artistaId,
+        departamento: data.departamento.trim(),
+        provincia: data.provincia.trim(),
+        distrito: data.distrito.trim(),
+        lugar: data.lugar.trim(),
         estado: estadoBackend,
         imagenPortada,
       };
@@ -368,6 +373,102 @@ const CardEventos: React.FC = () => {
     }
   };
 
+  // Helper: construye un src válido desde base64 crudo o URL
+  const buildImageSrc = (value?: string | null): string | null => {
+    if (!value) return null;
+    const v = String(value).trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:")) {
+      return v;
+    }
+    // Asumimos base64 sin prefijo
+    return `data:image/*;base64,${v}`;
+  };
+
+  // Maneja click del botón Subir portada en edición
+  const handleUploadCoverClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Maneja el cambio de archivo, sube la portada y refresca el evento
+  const handleCoverFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      const file = e.target.files?.[0];
+      // permitir seleccionar el mismo archivo nuevamente
+      e.target.value = "";
+      if (!file) return;
+
+      if (!eventoSeleccionado) {
+        alert("Selecciona un evento antes de subir la portada.");
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      // Convertir a base64 como en la creación
+      const imagenPortada = await fileToBase64(file);
+
+      // Obtener detalle actual para construir payload completo requerido por backend
+      const detalle = await obtenerEventosDetallados(eventoSeleccionado.id);
+
+      const artistaId = detalle.artist?.id || 0;
+      if (!artistaId) {
+        alert("No se puede actualizar la portada: el evento no tiene artista asignado.");
+        return;
+      }
+
+      const fecha = detalle.date;
+      const hora = detalle.time || "00:00";
+      const departamento = detalle.departamento || "";
+      const provincia = detalle.provincia || "";
+      const distrito = detalle.distrito || "";
+      const lugar = (detalle.place || "").trim();
+
+      if (!fecha || !hora || !departamento || !provincia || !distrito || !lugar) {
+        alert("No se puede actualizar la portada: faltan datos obligatorios del evento.");
+        return;
+      }
+
+      // Mantener estado actual mapeado a backend
+      const estado = mapEstadoUIToBackend(eventoSeleccionado.estado);
+
+      const payload = {
+        nombre: detalle.title || eventoSeleccionado.nombre,
+        descripcion: detalle.description || "",
+        fecha,
+        hora,
+        artistaId,
+        departamento,
+        provincia,
+        distrito,
+        lugar,
+        estado,
+        imagenPortada,
+      };
+
+      const resp = await actualizarEvento(eventoSeleccionado.id, payload);
+      if (!resp || !(resp as { success?: boolean }).success) {
+        alert("No se pudo actualizar la portada del evento.");
+        return;
+      }
+
+      // Refrescar lista y re-seleccionar evento
+      const items = await loadEventos();
+      const idx = items.findIndex((it) => it.id === eventoSeleccionado.id);
+      if (idx >= 0) {
+        setSelectedIndex(idx);
+        setEventoSeleccionado(items[idx]);
+      }
+      alert("Portada actualizada correctamente.");
+    } catch (err) {
+      console.error("Error al subir la portada:", err);
+      alert("No se pudo actualizar la portada del evento.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Render del encabezado o detalles
   const renderTopCard = () => {
     // Siempre renderiza el encabezado principal
@@ -437,26 +538,44 @@ const CardEventos: React.FC = () => {
             {/* Encabezado de portada con botón alineado a la derecha */}
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-medium">Imagen de portada del evento</h3>
-              <button
-                type="button"
-                className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
-              >
-                <Upload className="h-4 w-4" /> Subir portada
-              </button>
+              <div>
+                <button
+                  type="button"
+                  onClick={handleUploadCoverClick}
+                  className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
+                >
+                  <Upload className="h-4 w-4" /> Subir portada
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCoverFileChange}
+                />
+              </div>
             </div>
             <p className="text-sm text-gray-500 mb-3">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
 
             {/* Área de imagen */}
-            {eventoSeleccionado.imagenNombre ? (
-              <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
-                <div className="text-sm text-gray-600">Portada: {eventoSeleccionado.imagenNombre}</div>
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
-                <ImageOff className="h-8 w-8 mb-2" />
-                <p>No hay imagen de portada</p>
-              </div>
-            )}
+            {(() => {
+              const portadaSrc = buildImageSrc(eventoSeleccionado.imagenPortadaBase64);
+              return portadaSrc ? (
+                <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white">
+                  <img
+                    src={portadaSrc}
+                    alt={`Portada de ${eventoSeleccionado.nombre}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
+                  <ImageOff className="h-8 w-8 mb-2" />
+                  <p>No hay imagen de portada</p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -594,4 +713,3 @@ const CardEventos: React.FC = () => {
 };
 
 export default CardEventos;
-
