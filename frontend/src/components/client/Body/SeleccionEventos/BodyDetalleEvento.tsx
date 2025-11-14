@@ -14,6 +14,7 @@ interface EventoDetalle {
   nombre: string;
   imagenBanner: string | null;
   fechaEvento: string;
+  date: string;
   departamento: string;
   provincia: string;
   distrito: string;
@@ -92,7 +93,7 @@ export const BodyDetalleEvento: React.FC = () => {
               {evento.artista?.nombre || "Artista invitado"}
             </h2>
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">{evento.fechaEvento}</span>
+              <span className="font-semibold">{evento.date}</span>
               <br />
 
               {/* Mostrar lugar del evento */}
@@ -103,13 +104,6 @@ export const BodyDetalleEvento: React.FC = () => {
                 </>
               )}
 
-              {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
-              <br />
-              {horaEvento}
-            </p>
-            <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">{evento.fechaEvento}</span>
-              <br />
               {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
               <br />
               {horaEvento}
