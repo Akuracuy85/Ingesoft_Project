@@ -14,11 +14,14 @@ interface EventoDetalle {
   nombre: string;
   imagenBanner: string | null;
   fechaEvento: string;
+  date: string;
   departamento: string;
   provincia: string;
   distrito: string;
   artista: ArtistaDetalle | null;
   zonas: Zone[];
+  time: string | null;
+  lugar: string | null;
 }
 
 export const BodyDetalleEvento: React.FC = () => {
@@ -92,6 +95,15 @@ export const BodyDetalleEvento: React.FC = () => {
             <p className="mt-6 text-lg md:text-xl text-gray-200">
               <span className="font-semibold">{evento.date}</span>
               <br />
+
+              {/* Mostrar lugar del evento */}
+              {evento.lugar && (
+                <>
+                  {evento.lugar}
+                  <br />
+                </>
+              )}
+
               {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
               <br />
               {horaEvento}

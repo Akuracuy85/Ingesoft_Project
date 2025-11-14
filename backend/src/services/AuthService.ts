@@ -1,4 +1,4 @@
-import { Rol } from "@/enums/Rol";
+import { Rol } from "../enums/Rol";
 import { UsuarioRepository } from "../repositories/UsuarioRepository";
 import { CustomError } from "../types/CustomError";
 import { PasswordHasher } from "../types/PasswordHasher";

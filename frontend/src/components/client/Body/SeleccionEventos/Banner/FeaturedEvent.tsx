@@ -22,6 +22,8 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
 
   const event = events[currentIndex];
 
+  const distritoProvincia = `${event.provincia}, ${event.distrito}`;
+
   // Pequeña optimización: no es necesario 'event = events[currentIndex]'
   // Puedes usar 'events[currentIndex]' directamente abajo.
 
@@ -49,10 +51,12 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         <p className="text-lg md:text-xl mb-1">
           📅 {events[currentIndex].date}
         </p>     
+        <p className="text-lg md:text-xl mb-1">
+          📍 {distritoProvincia}
+        </p>
         <p className="text-lg md:text-xl mb-4">
           📍 {events[currentIndex].place}
         </p>
-
         {/* ✅ Botón con estado 'focus' */}
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}

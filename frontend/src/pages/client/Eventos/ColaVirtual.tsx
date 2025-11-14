@@ -6,56 +6,60 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/button"
 import { Card } from "../../../components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
-import { Clock, Users, CheckCircle2 } from "lucide-react"
-//import turnoColaService from "../../../services/TurnoColaService"
-import type { TurnoCola } from "../../../models/TurnoCola"
+import { Clock, CheckCircle2 } from "lucide-react"
+import ColaService from "@/services/ColaService";
 
 export default function ColaVirtual() {
-  const [turno, setTurno] = useState<TurnoCola | null>(null)
-  const [totalInQueue, setTotalInQueue] = useState(0)
-  const [progress, setProgress] = useState(0)
-  const [showValidationModal, setShowValidationModal] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [turno, setTurno] = useState<number | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
-
   const { evento, tipoTarifa } = location.state || {};
 
   useEffect(() => {
     const fetchTurno = async () => {
       try {
-        //const data = await turnoColaService.getAll()
-        const miTurno = {
-          id: 1,
-          posicion: 5,
-          ingreso: new Date().toISOString(),
-          estado: "en_cola",
-        }
-        setTurno(miTurno)
-        setTotalInQueue(/*data.length ||*/ 1240)
-        setProgress(Math.max(5, 100 - (miTurno.posicion / 500) * 100))
+        const turno = await ColaService.obtenerPosicion(evento.cola.id);
+        setTurno(turno);
+        setProgress(Math.max(5, 100 - (turno / 500) * 100));
       } catch (error) {
         console.error("Error al obtener turno:", error)
-      } finally {
-        setLoading(false)
+      }
+    };
+
+    const ingresarACola = async () => {
+      try{
+        await ColaService.ingresarUsuarioACola(evento.cola.id);
+      } catch (error) {
+        console.error("Error al ingresar a la cola:", error)
       }
     }
 
-    fetchTurno()
-  }, [])
+    const encapsular = async () => {
+      setLoading(true);
+      await ingresarACola();
+      await fetchTurno();
+      setLoading(false);
+    }
+
+    encapsular();
+
+  }, []);
 
   useEffect(() => {
     if (!turno) return;
 
-    const interval = setInterval(() => {
-      setTurno((prev) => {
-        if (!prev) return prev;
-        const nuevaPos = prev.posicion > 1 ? prev.posicion - 1 : 1;
+    const interval = setInterval(async () => {
+      try {
+        const turno = await ColaService.obtenerPosicion(evento.cola.id);
 
-        setProgress(Math.max(5, 100 - (nuevaPos / 500) * 100));
+        setTurno(turno);
+        setProgress(Math.max(5, 100 - (turno / 500) * 100));
 
-        if (nuevaPos === 1) {
+        if (turno === 1) {
           setTimeout(() => {
             navigate(`/eventos/${evento.id}/compra`, {
               state: { evento, tipoTarifa },
@@ -63,36 +67,43 @@ export default function ColaVirtual() {
           }, 2000);
         }
 
-        return { ...prev, posicion: nuevaPos };
-      });
-    }, 5000);
+        await ColaService.enviarHeartbeat(evento.cola.id);
+
+      } catch (error) {
+        console.error("Error en polling posición:", error);
+      }
+
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [turno, evento, tipoTarifa, navigate]);
+  }, [turno]);
 
-  const canPurchase = turno?.posicion === 1
+  const canPurchase = turno === 1;
 
-  if (loading) {
+  if (loading || !turno) {
     return (
       <ClientLayout>
         <div className="flex justify-center items-center min-h-screen">
-          <p className="text-muted-foreground animate-pulse">Cargando tu posición en la cola...</p>
+          <p className="text-muted-foreground animate-pulse">
+            Cargando tu posición en la cola...
+          </p>
         </div>
       </ClientLayout>
-    )
+    );
   }
 
   return (
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <main className="container mx-auto px-4 py-8 max-w-4xl">
+
           {/* Título */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
               Tu posición en la cola virtual
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Gracias por tu compra. Estás en la cola para acceder al evento. Mantén esta ventana abierta hasta que llegue tu turno.
+            <p className="text-muted-foreground">
+              Mantén la ventana abierta hasta que llegue tu turno.
             </p>
           </div>
 
@@ -101,15 +112,16 @@ export default function ColaVirtual() {
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#D59B2C]/10 mb-4">
                 <span className="text-4xl font-bold text-[#D59B2C]">
-                  #{turno?.posicion ?? "-"}
+                  #{turno}
                 </span>
               </div>
-              <h2 className="text-xl font-semibold text-foreground mb-2">Tu posición actual</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Tu posición actual
+              </h2>
               <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 <span>
-                  Tiempo estimado: {Math.ceil((turno?.posicion ?? 0) / 120)}{" "}
-                  {Math.ceil((turno?.posicion ?? 0) / 120) === 1 ? "minuto" : "minutos"}
+                  Tiempo estimado: {Math.ceil(turno / 120)} min
                 </span>
               </div>
             </div>
@@ -123,49 +135,32 @@ export default function ColaVirtual() {
                 />
               </div>
             </div>
-
-            {/* Estadísticas */}
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>Participantes en cola: {totalInQueue.toLocaleString()}</span>
-            </div>
           </Card>
 
-          {/* Info extra */}
-          <Card className="p-6 bg-muted/50 border-dashed mb-6">
-            <p className="text-sm text-muted-foreground text-center leading-relaxed">
-              Esta cola garantiza el acceso justo a las entradas. No cierres esta ventana mientras esperas tu turno.
-            </p>
-          </Card>
-
-          {/* Botón de compra */}
+          {/* Botón */}
           <Button
             disabled={!canPurchase}
-            className={`w-full h-14 text-lg font-semibold ${canPurchase
+            className={`w-full h-14 text-lg font-semibold ${
+              canPurchase
                 ? "bg-[#D59B2C] hover:bg-[#C08A25] text-white animate-pulse"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
+            }`}
             onClick={() => setShowValidationModal(true)}
           >
             {canPurchase ? "Ingresar a la compra" : "Esperando tu turno..."}
           </Button>
         </main>
 
-        {/* Modal de validación */}
+        {/* Modal */}
         <Dialog open={showValidationModal} onOpenChange={setShowValidationModal}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Validación de puesto</DialogTitle>
             </DialogHeader>
             <div className="py-6 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 mb-4">
-                <CheckCircle2 className="w-10 h-10 text-success" />
-              </div>
-              <p className="text-lg font-semibold text-foreground mb-2">
-                Tu posición actual es #{turno?.posicion}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Se ha validado correctamente tu estado en la cola.
+              <CheckCircle2 className="w-10 h-10 text-green-600 mx-auto" />
+              <p className="text-lg font-semibold text-foreground mt-4">
+                Tu posición actual es #{turno}
               </p>
             </div>
             <Button
@@ -176,13 +171,7 @@ export default function ColaVirtual() {
             </Button>
           </DialogContent>
         </Dialog>
-
-        {/* Fondo decorativo */}
-        <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#D59B2C]/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-[#D59B2C]/5 rounded-full blur-3xl" />
-        </div>
       </div>
     </ClientLayout>
-  )
+  );
 }

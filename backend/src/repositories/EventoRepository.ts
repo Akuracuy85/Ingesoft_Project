@@ -143,7 +143,7 @@ export class EventoRepository {
   async listarEventosFiltrados(filtros: IFiltrosEvento): Promise<Evento[]> {
     const qb = this.repository.createQueryBuilder("evento");
     qb.distinct(true);
-
+    qb.andWhere("evento.fechaEvento >= :fechaActual", { fechaActual: new Date() });
     qb.leftJoinAndSelect("evento.artista", "artista").leftJoinAndSelect(
       "artista.categoria",
       "categoria"
@@ -247,6 +247,7 @@ export class EventoRepository {
         },
         artista: true,
         calificaciones: true,
+        cola: true,
       },
     });
   }
@@ -304,7 +305,7 @@ export class EventoRepository {
           tarifaPreventa: true
         }, // Necesario para 'zonasDisponibles'
         artista: true, // Necesario para mapear 'artistName'
-
+        cola: true,
       },
     });
   }
@@ -336,6 +337,19 @@ export class EventoRepository {
       .distinct(true);
     const resultados = await qb.getRawMany<{ email: string }>();
     return resultados.map((r) => r.email);
+  }
+
+  async obtenerTodosLosEventos(): Promise<Evento[]> {
+    return await this.repository.find({
+      relations: {
+        organizador: true, // Para saber quién es el organizador
+        artista: true,  // Para ver el artista principal
+        zonas: true
+      },
+      order: {
+        fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero
+      },
+    });
   }
 
 }

@@ -5,6 +5,8 @@ dotenv.config();
 import app from "./app";
 import { AppDataSource } from "./database/data-source";
 
+import "./jobs/colaJob";
+
 const PORT = process.env.PORT || 3000;
 
 AppDataSource.initialize()

@@ -118,10 +118,9 @@ export class EventMapper {
             minute: '2-digit',
             hour12: false
         });
-
-        const place = entity.lugar
-            ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
-            : `${entity.distrito}, ${entity.provincia}`;
+        
+        //const place = `${entity.distrito}, ${entity.provincia}`;
+        const place = entity.lugar;
         const mimeType = entity.mimeType || 'image/jpeg'; 
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
         
@@ -151,6 +150,7 @@ export class EventMapper {
             artistName: entity.artista.nombre,
             category: entity.artista.categoria?.nombre, // <-- AÑADIDO
             zonas: zonasDto, // <-- AÑADIDO
+            //placeEspecific: placeEspecific, // <-- AÑADIDO
         };
     }
 
@@ -166,9 +166,8 @@ export class EventMapper {
         // 1. Mapeo de Propiedades Base
         const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
         const timeString = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const place = entity.lugar
-            ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
-            : `${entity.distrito}, ${entity.provincia}`;
+        //const place = `${entity.distrito}, ${entity.provincia}`;
+        const place = entity.lugar;
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
 
         // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)
