@@ -110,26 +110,25 @@ class EventoService extends HttpClient {
     super("/evento");
   }
 
-  async listarDestacados(): Promise<Event[]> {
-    const today = new Date();
-    const featuredFilter: FiltersType = {
-      categories: [],
-      artists: [],
-      dateRange: { start: today, end: null },
-      priceRange: null,
-      location: { departamento: "", provincia: "", distrito: "" },
-    };
-    const params = mapFiltersToQueryParams(featuredFilter);
+  async listar(filters?: FiltersType): Promise<Event[]> {
     const path = "/publicados";
+
+    // Si NO vienen filtros → devolver todos los eventos sin filtros
+    if (!filters) {
+      const respuesta = await super.get<EventsWrapper<Event> | Event[]>(path);
+      return Array.isArray(respuesta)
+        ? respuesta
+        : respuesta.eventos ?? respuesta.data ?? [];
+    }
+
+    // Si hay filtros → mapearlos y aplicarlos
+    const params = mapFiltersToQueryParams(filters);
+
     const respuesta = await super.get<EventsWrapper<Event> | Event[]>(path, { params });
-    const eventos = Array.isArray(respuesta)
-      ? (respuesta as Event[])
-      : Array.isArray((respuesta as EventsWrapper<Event>).eventos)
-      ? ((respuesta as EventsWrapper<Event>).eventos as Event[])
-      : Array.isArray((respuesta as EventsWrapper<Event>).data)
-      ? ((respuesta as EventsWrapper<Event>).data as Event[])
-      : [];
-    return eventos.slice(0, 5);
+
+    return Array.isArray(respuesta)
+      ? respuesta
+      : respuesta.eventos ?? respuesta.data ?? [];
   }
 
   async buscarDatosCompraPorId(id: string): Promise<EventDetailsForPurchase> {
