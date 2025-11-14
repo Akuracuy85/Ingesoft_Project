@@ -7,6 +7,8 @@ import type { Tarifa } from "@/models/Tarifa";
 type BackendEventoRaw = Partial<Event> & {
   fechaEvento?: string; // ISO o "YYYY-MM-DDTHH:mm:ss"
   zonas?: ZonaRaw[];
+  place?: string;
+  placeEspecific?: string;
 };
 
 type ZonaRaw = {

@@ -5,6 +5,13 @@ export interface Artist {
   nombre: string;
 }
 
+export interface Organizador {
+  id: number;
+  nombre: string;
+  RUC?: string;
+  RazonSocial?: string;
+}
+
 export interface Event {
   id: number;
   title: string;
@@ -26,4 +33,7 @@ export interface Event {
   category?: string;
   zonas: Zone[];
   Cola?: Cola;
+  estado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO";
+  organizador: Organizador;
+  documento: string;
 }

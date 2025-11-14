@@ -8,10 +8,9 @@ export interface Zone {
     capacidad: number;
     cantidadComprada: number;
     
-    // ✅ Campo obligatorio: Mapeado de tarifaNormal
+    // Campo obligatorio: Mapeado de tarifaNormal
     tarifaNormal: Tarifa; 
     
-    // 🛑 CORRECCIÓN: Usamos '?' para hacerlo opcional y permitimos 'null'
-    // Esto significa que la propiedad puede estar ausente (undefined) o presente con valor (Tarifa | null)
+    // Usamos '?' para hacerlo opcional y permitimos 'null'
     tarifaPreventa?: Tarifa | null; 
 }
