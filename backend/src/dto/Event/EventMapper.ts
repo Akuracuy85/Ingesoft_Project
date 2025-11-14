@@ -118,10 +118,12 @@ export class EventMapper {
             minute: '2-digit',
             hour12: false
         });
-
-        const place = entity.lugar
-            ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
-            : `${entity.distrito}, ${entity.provincia}`;
+        const placeEspecific = entity.lugar; // <-- AÑADIDO
+        //const place = entity.lugar
+        //    ? `${entity.lugar} - ${entity.distrito}, ${entity.provincia}`
+        //    : `${entity.distrito}, ${entity.provincia}`;
+        const place = `${entity.distrito}, ${entity.provincia}`;
+        
         const mimeType = entity.mimeType || 'image/jpeg'; 
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
         
@@ -151,6 +153,7 @@ export class EventMapper {
             artistName: entity.artista.nombre,
             category: entity.artista.categoria?.nombre, // <-- AÑADIDO
             zonas: zonasDto, // <-- AÑADIDO
+            placeEspecific: placeEspecific, // <-- AÑADIDO
         };
     }
 
