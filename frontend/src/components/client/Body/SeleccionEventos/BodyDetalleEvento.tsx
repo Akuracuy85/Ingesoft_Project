@@ -19,8 +19,6 @@ interface EventoDetalle {
   provincia: string;
   distrito: string;
   artista: ArtistaDetalle | null;
-  date: string
-  time: string;
   zonas: Zone[];
   time: string | null;
   lugar: string | null;
