@@ -8,15 +8,18 @@ import { Evento } from "../models/Evento";
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
 import { EstadoEvento } from "../enums/EstadoEvento";
 import { EmailService } from "../services/EmailService";
+import { ColaService } from "../services/ColaService";
 
 export class EventoController {
   private static instance: EventoController;
   private eventoService: EventoService;
   private emailService: EmailService;
+    private colaService: ColaService;
 
   private constructor() {
     this.eventoService = EventoService.getInstance();
     this.emailService = EmailService.getInstance();
+      this.colaService = ColaService.getInstance();
   }
 
   public static getInstance(): EventoController {
@@ -210,10 +213,14 @@ export class EventoController {
 
 
     try {
-      const evento = await this.eventoService.aprobarEvento(
-        eventoId,
-        autor
-      );
+      const evento = await this.eventoService.aprobarEvento(eventoId, autor);
+
+      // Crear la cola para el evento aprobado; no bloquear la respuesta si falla.
+      try {
+        await this.colaService.crearCola(evento.id);
+      } catch (colaErr) {
+        console.warn("No se pudo crear la cola para el evento:", colaErr);
+      }
 
       res.status(StatusCodes.OK).json({
         success: true,
