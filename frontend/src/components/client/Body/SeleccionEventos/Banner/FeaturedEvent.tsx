@@ -31,7 +31,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
     <section className="relative w-full h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-lg shadow-md">
       {/* Imagen de fondo */}
       <img
-        src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"//{events[currentIndex].image}
+        src={events[currentIndex].image}
         alt={events[currentIndex].title}
         // ✅ Añadimos 'key' para forzar a React a 
         // recargar la imagen con la transición
