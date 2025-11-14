@@ -174,16 +174,11 @@ export class EventoController {
         organizadorId
       );
 
-      // Envío de correos no bloqueante: sólo cuando aplique.
-      try {
-        if (evento.estado === EstadoEvento.CANCELADO) {
-          await this.emailService.SendEventCancelledEmail(evento.id);
-        } else if (evento.estado === EstadoEvento.PUBLICADO) {
-          await this.emailService.SendUpdateEventEmail(evento.id);
-        }
-      } catch (mailErr) {
-        // Loggear y continuar, sin afectar la respuesta HTTP.
-        console.warn("Fallo al enviar correo de evento:", (mailErr as Error)?.message);
+      if(evento.estado === EstadoEvento.CANCELADO) {
+        await this.emailService.SendEventCancelledEmail(evento.id);
+      }
+      else {
+        await this.emailService.SendUpdateEventEmail(evento.id);
       }
 
       res.status(StatusCodes.OK).json({

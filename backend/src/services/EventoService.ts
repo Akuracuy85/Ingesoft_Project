@@ -280,23 +280,6 @@ export class EventoService {
     }
   }
 
-  // Nuevo: obtener evento por ID sin restricciones de estado (para flujos internos como correo)
-  async obtenerEventoPorId(id: number): Promise<Evento> {
-    try {
-      const evento = await this.eventoRepository.buscarPorId(id);
-      if (!evento) {
-        throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
-      }
-      return evento;
-    } catch (error) {
-      if (error instanceof CustomError) throw error;
-      throw new CustomError(
-        "Error al obtener el evento",
-        StatusCodes.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
   private async obtenerOrganizador(organizadorId: number): Promise<Organizador> {
     const usuario = await this.usuarioRepository.buscarPorId(organizadorId);
 
