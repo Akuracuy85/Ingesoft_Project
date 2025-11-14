@@ -3,16 +3,18 @@ import { Upload, FileText, X } from "lucide-react";
 import type { DocumentoRespaldo } from "@/models/DocumentoRespaldo";
 import { getDocumentosRespaldo, updateDocumentosRespaldo } from "@/services/EventoService";
 
-interface DocumentosCardProps { eventoId: number; }
-
 // Adaptar DTO para enviar al backend (DocumentoDto)
 interface DocumentoDtoPayload {
   id?: number;
   nombreArchivo: string;
   tipo: string;
   tamano: number;
-  url?: string;
+  url?: string; // mantenemos opcional para documentos nuevos sin URL
   contenidoBase64?: string;
+}
+
+interface DocumentosCardProps {
+  eventoId: number;
 }
 
 export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
@@ -21,27 +23,32 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
   const [error, setError] = useState<string | null>(null);
 
   const cargar = async () => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const docs = await getDocumentosRespaldo(eventoId);
       // Mapear a DocumentoRespaldo UI agregando estado ficticio
-      const mapped: DocumentoRespaldo[] = docs.map(d => ({
+      const mapped: DocumentoRespaldo[] = docs.map((d) => ({
         id: d.id,
         nombreArchivo: d.nombreArchivo,
         tipo: d.tipo,
         tamano: d.tamano,
         url: d.url,
-        estado: 'Pendiente',
+        estado: "Pendiente",
       }));
       setDocumentos(mapped);
     } catch (e) {
-      setError('No se pudieron cargar los documentos');
+      console.error(e);
+      setError("No se pudieron cargar los documentos");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { cargar(); }, [eventoId]);
+  useEffect(() => {
+    cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventoId]);
 
   const filesToDto = async (files: FileList): Promise<DocumentoDtoPayload[]> => {
     const list: DocumentoDtoPayload[] = [];
@@ -50,10 +57,10 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
         const fr = new FileReader();
         fr.onload = () => {
           const result = fr.result as string;
-          const commaIdx = result.indexOf(',');
+          const commaIdx = result.indexOf(",");
           resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
         };
-        fr.onerror = reject;
+        fr.onerror = () => reject(new Error("No se pudo leer el archivo"));
         fr.readAsDataURL(file);
       });
       list.push({ nombreArchivo: file.name, tipo: file.type, tamano: file.size, contenidoBase64: base64 });
@@ -66,18 +73,25 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
     if (!files || files.length === 0) return;
     try {
       setLoading(true);
+      setError(null);
       const nuevos = await filesToDto(files);
-      // Construir payload documentosRespaldo: existentes + nuevos
-      const existentes: DocumentoDtoPayload[] = documentos.map(d => ({ id: d.id, nombreArchivo: d.nombreArchivo, tipo: d.tipo, tamano: d.tamano, url: d.url }));
-      const payloadDocs = [...existentes, ...nuevos];
-      await updateDocumentosRespaldo(eventoId, payloadDocs as any);
+      // Construir payload documentosRespaldo: existentes + nuevos (existentes en formato DTO)
+      const existentes: DocumentoDtoPayload[] = documentos.map((d) => ({
+        id: d.id,
+        nombreArchivo: d.nombreArchivo,
+        tipo: d.tipo,
+        tamano: d.tamano,
+        url: d.url,
+      }));
+      const payloadDocs: DocumentoDtoPayload[] = [...existentes, ...nuevos];
+      await updateDocumentosRespaldo(eventoId, payloadDocs);
       await cargar();
     } catch (err) {
-      console.error('Error subiendo documentos', err);
-      setError('Error al subir documentos');
+      console.error("Error subiendo documentos", err);
+      setError("Error al subir documentos");
     } finally {
       setLoading(false);
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -85,21 +99,28 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
     if (!id) return;
     try {
       setLoading(true);
+      setError(null);
       // Mantener sólo otros documentos
-      const restantes = documentos.filter(d => d.id !== id);
-      const payloadDocs: DocumentoDtoPayload[] = restantes.map(d => ({ id: d.id, nombreArchivo: d.nombreArchivo, tipo: d.tipo, tamano: d.tamano, url: d.url }));
-      await updateDocumentosRespaldo(eventoId, payloadDocs as any);
+      const restantes = documentos.filter((d) => d.id !== id);
+      const payloadDocs: DocumentoDtoPayload[] = restantes.map((d) => ({
+        id: d.id,
+        nombreArchivo: d.nombreArchivo,
+        tipo: d.tipo,
+        tamano: d.tamano,
+        url: d.url,
+      }));
+      await updateDocumentosRespaldo(eventoId, payloadDocs);
       await cargar();
     } catch (err) {
-      console.error('Error eliminando documento', err);
-      setError('No se pudo eliminar');
+      console.error("Error eliminando documento", err);
+      setError("No se pudo eliminar");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+    <div>
       {/* Encabezado */}
       <div className="flex items-center gap-3 mb-4">
         <div className="bg-gray-100 p-2 rounded-md">

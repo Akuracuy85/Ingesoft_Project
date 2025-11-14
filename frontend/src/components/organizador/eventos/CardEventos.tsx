@@ -5,7 +5,6 @@ import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
 import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento } from "@/services/EventoService";
-import ArtistaService from "@/services/ArtistaService";
 // Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
 
 // Moved to utils for reuse
@@ -209,6 +208,10 @@ const CardEventos: React.FC = () => {
         alert("Por favor completa nombre, descripción, fecha y hora.");
         return;
       }
+      if (!data.artistaId || data.artistaId <= 0) {
+        alert("Debes seleccionar un artista para el evento.");
+        return;
+      }
 
       // Estado para backend
       const estadoBackend = mapEstadoUIToBackend(data.estado);
@@ -223,20 +226,12 @@ const CardEventos: React.FC = () => {
         }
       }
 
-      // Obtener artista (mínimo requerido por backend actual)
-      const artistas = await ArtistaService.getArtistas();
-      if (!artistas || artistas.length === 0) {
-        alert("No hay artistas disponibles para asignar al evento.");
-        return;
-      }
-      const artistaId = Number(artistas[0].id);
-
       const payload = {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fecha: data.fecha, // YYYY-MM-DD
         hora: data.hora,   // HH:mm
-        artistaId,
+        artistaId: data.artistaId,
         departamento: data.departamento?.trim() || null,
         provincia: data.provincia?.trim() || null,
         distrito: data.distrito?.trim() || null,
@@ -594,4 +589,3 @@ const CardEventos: React.FC = () => {
 };
 
 export default CardEventos;
-
