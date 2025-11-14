@@ -62,6 +62,34 @@ interface EventoBasicoOrganizadorDTO {
   estado: string;
 }
 
+interface BackendEventoEntity {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  fechaEvento: string | Date;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  lugar?: string;
+  estado: string;
+  imagenBanner?: string | null | Buffer;
+  artista?: { id: number; nombre: string; categoria?: { nombre: string } };
+  zonas?: any[]; // se podría tipar más
+  cola?: any;
+}
+interface EventoDetalladoOrganizador {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+  fechaEvento: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  imagenBannerBase64: string | null;
+}
+
 function extractYMD(value: string | Date): string {
   if (typeof value === "string") {
     const m = value.match(/^\d{4}-\d{2}-\d{2}/);
@@ -122,8 +150,7 @@ class EventoService extends HttpClient {
 
   async obtenerPorId(id: number): Promise<Event> {
     if (!id) throw new Error("Se requiere un ID válido de evento");
-    const respuesta = await super.get<{ success?: boolean; evento: any }>(`/${id}`);
-    // El backend devuelve la entidad Evento con campos backend (nombre, descripcion, fechaEvento, lugar, estado, etc.)
+    const respuesta = await super.get<{ success?: boolean; evento: BackendEventoEntity }>(`/${id}`);
     const ev = respuesta.evento;
     if (!ev) throw new Error("Evento no encontrado");
     // Mapear a un objeto interno para edición (no usamos el modelo público Event porque difiere)
@@ -146,21 +173,20 @@ class EventoService extends HttpClient {
   }
 
   // Nuevo: listado detallado para organizador (usa GET /evento/ que devuelve obtenerEventosDetallados)
-  async listarDetalladosOrganizador(): Promise<any[]> {
-    const resp = await super.get<{ success?: boolean; eventos: any[] }>("/");
+  async listarDetalladosOrganizador(): Promise<EventoDetalladoOrganizador[]> {
+    const resp = await super.get<{ success?: boolean; eventos: BackendEventoEntity[] }>("/");
     const lista = Array.isArray(resp.eventos) ? resp.eventos : [];
-    // Normalizar campos clave
     return lista.map((ev) => ({
       id: ev.id,
       nombre: ev.nombre ?? "",
       descripcion: ev.descripcion ?? "",
       estado: ev.estado ?? "BORRADOR",
-      fechaEvento: ev.fechaEvento ?? "", // ISO string
+      fechaEvento: typeof ev.fechaEvento === "string" ? ev.fechaEvento : ev.fechaEvento.toISOString(),
       departamento: ev.departamento || "",
       provincia: ev.provincia || "",
       distrito: ev.distrito || "",
       lugar: ev.lugar || "",
-      imagenBannerBase64: ev.imagenBanner || null,
+      imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
     }));
   }
 
@@ -223,6 +249,8 @@ export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDet
 // Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
 export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
 export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export const actualizarEvento = (id: number, data: ActualizarEventoPayload) =>
+  eventoServiceInstance.put<{ success: boolean; eventoId: number }>(`/${id}`, data);
 
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
@@ -240,6 +268,20 @@ export interface CrearEventoPayload {
   lugar?: string;
   estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
   imagenPortada?: string; // base64 sin prefijo
+}
+
+export interface ActualizarEventoPayload {
+  nombre: string;
+  descripcion: string;
+  fecha: string; // YYYY-MM-DD
+  hora: string; // HH:mm
+  artistaId: number;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION
+  imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
 }
 
 export function mapEstadoUIToBackend(estado: string): string {

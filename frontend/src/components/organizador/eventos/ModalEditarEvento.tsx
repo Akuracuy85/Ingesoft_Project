@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import type { NuevoEventoForm } from "./ModalCrearEvento";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 import { normalizeFecha } from "@/utils/normalizeFecha";
+import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
 
+interface EventoEditable {
+  id: number;
+  nombre?: string; title?: string;
+  descripcion?: string; description?: string;
+  fechaEvento?: string; fecha?: string; date?: string;
+  hora?: string; time?: string;
+  lugar?: string; place?: string;
+  estado?: string;
+  departamento?: string; provincia?: string; distrito?: string;
+  artistaId?: number; artist?: { id: number };
+}
 interface ModalEditarEventoProps {
   open: boolean;
   onClose: () => void;
-  event: any | null; // Evento detallado completo
-  onSave: (data: NuevoEventoForm) => void;
+  event: EventoEditable | null; // Evento detallado completo
+  onUpdated: () => void; // nuevo callback para refrescar lista
 }
 
-const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, event, onSave }) => {
+const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, event, onUpdated }) => {
   // Estados individuales
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -109,25 +120,58 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
 
   if (!open || !event) return null;
 
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     setTouchedSubmit(true);
+    if (!event) return;
     if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado) {
       alert("Por favor completa todos los campos obligatorios antes de guardar.");
       return;
     }
-    const data: NuevoEventoForm = {
+
+    // Convertir imagen si hay nueva
+    let imagenPortadaBase64: string | null | undefined = undefined;
+    if (imagen) {
+      try {
+        const base64Result = await new Promise<string>((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => {
+            const result = fr.result as string;
+            const commaIdx = result.indexOf(",");
+            resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+          };
+          fr.onerror = reject;
+          fr.readAsDataURL(imagen);
+        });
+        imagenPortadaBase64 = base64Result;
+      } catch {
+        console.warn("No se pudo convertir la imagen, se enviará sin cambios.");
+      }
+    }
+
+    const estadoBackend = mapEstadoUIToBackend(estado);
+
+    const payload = {
       nombre: nombre.trim(),
       descripcion: descripcion.trim(),
       fecha,
       hora,
-      lugar: lugar.trim(),
-      estado,
-      imagen,
+      artistaId: event.artistaId || event.artist?.id || 0,
       departamento: departamento.trim(),
       provincia: provincia.trim(),
       distrito: distrito.trim(),
+      lugar: lugar.trim(),
+      estado: estadoBackend,
+      imagenPortada: imagenPortadaBase64, // undefined => no cambiar, null => eliminar, string => nueva
     };
-    onSave(data);
+
+    try {
+      await actualizarEvento(event.id, payload);
+      onClose();
+      onUpdated();
+    } catch (error) {
+      console.error("Error actualizando evento:", error);
+      alert("No se pudo actualizar el evento.");
+    }
   };
 
   const nombreError = touchedSubmit && !nombre.trim();

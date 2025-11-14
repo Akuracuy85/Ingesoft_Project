@@ -81,31 +81,29 @@ const CardEventos: React.FC = () => {
   const [eventoSeleccionado, setEventoSeleccionado] = useState<EventoItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Cargar desde backend al montar
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchEventos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const lista = await listarDetalladosOrganizador();
-        const items: EventoItem[] = lista.map((ev: any) => {
-          const fechaISO = ev.fechaEvento || "";
-          let fecha = "";
-          let hora = "";
-          try {
-            const d = new Date(fechaISO);
-            if (!isNaN(d.getTime())) {
-              fecha = d.toISOString().slice(0, 10);
-              hora = d.toISOString().slice(11, 16);
-            }
-          } catch {}
-          return {
-            id: ev.id,
-            nombre: ev.nombre,
-            fecha,
-            estado: mapEstadoToUI(ev.estado),
-            descripcion: ev.descripcion || "",
+  // Cargar desde backend (detallados) reutilizable
+  const loadEventos = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const lista = await listarDetalladosOrganizador();
+      const items: EventoItem[] = lista.map((ev: any) => {
+        const fechaISO = ev.fechaEvento || "";
+        let fecha = "";
+        let hora = "";
+        try {
+          const d = new Date(fechaISO);
+          if (!isNaN(d.getTime())) {
+            fecha = d.toISOString().slice(0, 10);
+            hora = d.toISOString().slice(11, 16);
+          }
+        } catch {}
+        return {
+          id: ev.id,
+          nombre: ev.nombre,
+          fecha,
+          estado: mapEstadoToUI(ev.estado),
+          descripcion: ev.descripcion || "",
             hora,
             lugar: ev.lugar || "",
             departamento: ev.departamento || "",
@@ -113,19 +111,20 @@ const CardEventos: React.FC = () => {
             distrito: ev.distrito || "",
             imagenPortadaBase64: ev.imagenBannerBase64 || null,
             imagenNombre: ev.imagenBannerBase64 ? "portada" : null,
-          };
-        });
-        setEventos(items);
-      } catch (err: unknown) {
-        if (controller.signal.aborted) return;
-        console.error("Error cargando eventos detallados:", err);
-        setError("Error al cargar los eventos.");
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    };
-    fetchEventos();
-    return () => controller.abort();
+        };
+      });
+      setEventos(items);
+    } catch (err) {
+      console.error("Error cargando eventos detallados:", err);
+      setError("Error al cargar los eventos.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Montaje inicial
+  useEffect(() => {
+    loadEventos();
   }, []);
 
   useEffect(() => {
@@ -263,6 +262,8 @@ const CardEventos: React.FC = () => {
         provincia: detalle.provincia,
         distrito: detalle.distrito,
         imagenBanner: detalle.image || null,
+        artistaId: detalle.artist?.id,
+        artist: detalle.artist,
       };
       setSelectedEventFull(mapped);
       setEditingIndex(index);
@@ -278,29 +279,6 @@ const CardEventos: React.FC = () => {
     setEditingIndex(null);
     setIsEditOpen(false);
     setSelectedEventFull(null);
-  };
-
-  // Guardar cambios de edición (solo UI por ahora)
-  const handleSaveEdit = (data: NuevoEventoForm) => {
-    if (editingIndex === null) return;
-    setEventos((prev) => {
-      const next = [...prev];
-      next[editingIndex] = {
-        ...next[editingIndex],
-        nombre: data.nombre,
-        descripcion: data.descripcion,
-        fecha: data.fecha,
-        hora: data.hora,
-        lugar: data.lugar,
-        estado: data.estado,
-        imagenNombre: data.imagen?.name || next[editingIndex].imagenNombre || null,
-        departamento: data.departamento,
-        provincia: data.provincia,
-        distrito: data.distrito,
-      };
-      return next;
-    });
-    handleCloseEdit();
   };
 
   // Confirmar eliminación (solo UI)
@@ -530,7 +508,7 @@ const CardEventos: React.FC = () => {
           open={isEditOpen}
           onClose={handleCloseEdit}
           event={selectedEventFull}
-          onSave={handleSaveEdit}
+          onUpdated={loadEventos}
         />
 
         {/* Modal de confirmación de eliminación */}
