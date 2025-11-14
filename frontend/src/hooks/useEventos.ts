@@ -1,4 +1,4 @@
-// src/hooks/useEventos.ts (CORREGIDO PARA PERSISTENCIA)
+// src/hooks/useEventos.ts
 
 import { useState, useEffect, useCallback } from 'react';
 import EventoService from '../services/EventoService';
@@ -8,7 +8,7 @@ import type { FiltersType } from '../types/FiltersType';
 
 export const useEventos = () => {
     // 1. Obtener los filtros actuales del Context
-    const { filters } = useFilters(); // 🛑 Esta llamada ahora funciona gracias al main.tsx
+    const { filters } = useFilters(); //  Esta llamada ahora funciona gracias al main.tsx
     
     // 2. Estado local para los datos
     const [events, setEvents] = useState<Event[]>([]);

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { colaController } from "../controllers/ColaController"; 
 import { sessionMiddleware } from "../middlewares/SessionMiddleware";
-import { autorMiddleware } from "@/middlewares/AutorMiddleware";
+import { autorMiddleware } from "../middlewares/AutorMiddleware";
 
 const colaRoutes = Router();
 
