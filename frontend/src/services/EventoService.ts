@@ -166,7 +166,7 @@ class EventoService extends HttpClient {
       distrito: ev.distrito || "",
       place: ev.lugar || "",
       image: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : "") : "",
-      artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
+      artist: { id: ev.artista?.id ?? 0, nombre: (ev.artista?.nombre || "").trim() },
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
       Cola: ev.cola || undefined,

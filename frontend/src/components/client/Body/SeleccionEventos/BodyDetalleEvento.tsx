@@ -19,7 +19,7 @@ interface EventoDetalle {
   departamento: string;
   provincia: string;
   distrito: string;
-  artist: ArtistaDetalle | null; // 👈 CAMBIO: usamos 'artist', igual que en Event
+  artist: ArtistaDetalle | null;
   zonas: Zone[];
   time: string | null;
   lugar: string | null;
@@ -100,6 +100,17 @@ export const BodyDetalleEvento: React.FC = () => {
     });
   };
 
+  const formatFechaLarga = (iso: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+
+  return d.toLocaleDateString("es-PE", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
     <main className="w-full overflow-x-hidden">
       {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
@@ -120,11 +131,13 @@ export const BodyDetalleEvento: React.FC = () => {
               {evento.artist?.nombre || "Artista invitado"}
             </h2>
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">{evento.date}</span>
+              <span className="font-semibold">
+                {formatFechaLarga(evento.date)}
+              </span>
               <br />
-              {evento.lugar && (
+              {evento.place && (
                 <>
-                  {evento.lugar}
+                  {evento.place}
                   <br />
                 </>
               )}
