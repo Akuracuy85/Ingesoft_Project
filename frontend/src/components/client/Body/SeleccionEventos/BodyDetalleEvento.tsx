@@ -104,7 +104,7 @@ export const BodyDetalleEvento: React.FC = () => {
                 </>
               )}
 
-              {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
+              {`${evento.distrito}, ${evento.provincia}`}
               <br />
               {horaEvento}
             </p>
