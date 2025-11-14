@@ -61,6 +61,8 @@ export const useEventoDetalle = (id: number | string | undefined) => {
           zonas,
           date: dateDMY || data.date || "",
           time: timeHM || data.time || "",
+          place: data.place ?? "",
+          placeEspecific: data.placeEspecific ?? "",
         });
       } catch (err: unknown) {
         console.error("Error al cargar el detalle del evento:", err);

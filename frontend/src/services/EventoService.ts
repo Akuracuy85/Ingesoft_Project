@@ -5,6 +5,7 @@ import HttpClient from "./Client";
 import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
 import type { PriceRangeType } from "../types/PriceRangeType";
+import { extractFecha, extractHora } from "../utils/date-utils";
 
 export type EventDetailsForPurchase = Event & {
   zonasDisponibles: ZonePurchaseDetail[];
@@ -60,6 +61,34 @@ interface EventoBasicoOrganizadorDTO {
   nombre: string;
   fecha: string | Date;
   estado: string;
+}
+
+interface BackendEventoEntity {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  fechaEvento: string | Date;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  lugar?: string;
+  estado: string;
+  imagenBanner?: string | null | Buffer;
+  artista?: { id: number; nombre: string; categoria?: { nombre: string } };
+  zonas?: any[]; // se podría tipar más
+  cola?: any;
+}
+interface EventoDetalladoOrganizador {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+  fechaEvento: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  imagenBannerBase64: string | null;
 }
 
 function extractYMD(value: string | Date): string {
@@ -122,8 +151,44 @@ class EventoService extends HttpClient {
 
   async obtenerPorId(id: number): Promise<Event> {
     if (!id) throw new Error("Se requiere un ID válido de evento");
-    const respuesta = await super.get<{ success?: boolean; evento: Event }>(`/${id}`);
-    return respuesta.evento;
+    const respuesta = await super.get<{ success?: boolean; evento: BackendEventoEntity }>(`/${id}`);
+    const ev = respuesta.evento;
+    if (!ev) throw new Error("Evento no encontrado");
+    // Mapear a un objeto interno para edición (no usamos el modelo público Event porque difiere)
+    return {
+      id: ev.id,
+      title: ev.nombre,
+      description: ev.descripcion,
+      date: extractFecha(ev.fechaEvento),
+      time: extractHora(ev.fechaEvento),
+      departamento: ev.departamento || "",
+      provincia: ev.provincia || "",
+      distrito: ev.distrito || "",
+      place: ev.lugar || "",
+      image: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : "") : "",
+      artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
+      category: ev.artista?.categoria?.nombre ?? undefined,
+      zonas: ev.zonas || [],
+      Cola: ev.cola || undefined,
+    } as Event;
+  }
+
+  // Nuevo: listado detallado para organizador (usa GET /evento/ que devuelve obtenerEventosDetallados)
+  async listarDetalladosOrganizador(): Promise<EventoDetalladoOrganizador[]> {
+    const resp = await super.get<{ success?: boolean; eventos: BackendEventoEntity[] }>("/");
+    const lista = Array.isArray(resp.eventos) ? resp.eventos : [];
+    return lista.map((ev) => ({
+      id: ev.id,
+      nombre: ev.nombre ?? "",
+      descripcion: ev.descripcion ?? "",
+      estado: ev.estado ?? "BORRADOR",
+      fechaEvento: typeof ev.fechaEvento === "string" ? ev.fechaEvento : ev.fechaEvento.toISOString(),
+      departamento: ev.departamento || "",
+      provincia: ev.provincia || "",
+      distrito: ev.distrito || "",
+      lugar: ev.lugar || "",
+      imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
+    }));
   }
 
   // Nuevo: listado básico para organizador
@@ -148,6 +213,11 @@ class EventoService extends HttpClient {
 
     return { eventos: normalizados };
   }
+
+  async createEvent(data: CrearEventoPayload): Promise<{ success: boolean; eventoId: number }> {
+    // El backend espera los campos exactos del CrearEventoDto
+    return await super.post<{ success: boolean; eventoId: number }>("/", data);
+  }
 }
 
 const eventoServiceInstance = new EventoService();
@@ -155,6 +225,54 @@ const eventoServiceInstance = new EventoService();
 // Función nombrada para facilitar el consumo tipado en componentes
 export const listarBasicosOrganizador = () =>
   eventoServiceInstance.listarBasicosOrganizador();
+export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
+export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
+// Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
+export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
+export const actualizarEvento = (id: number, data: ActualizarEventoPayload) =>
+  eventoServiceInstance.put<{ success: boolean; eventoId: number }>(`/${id}`, data);
 
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
+
+// Payload de creación (refleja backend CrearEventoDto)
+export interface CrearEventoPayload {
+  nombre: string;
+  descripcion: string;
+  fecha: string; // YYYY-MM-DD
+  hora: string; // HH:mm
+  artistaId: number;
+  departamento?: string | null;
+  provincia?: string | null;
+  distrito?: string | null;
+  lugar?: string;
+  estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
+  imagenPortada?: string; // base64 sin prefijo
+}
+
+export interface ActualizarEventoPayload {
+  nombre: string;
+  descripcion: string;
+  fecha: string; // YYYY-MM-DD
+  hora: string; // HH:mm
+  artistaId: number;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION
+  imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
+}
+
+export function mapEstadoUIToBackend(estado: string): string {
+  switch (estado) {
+    case "Publicado":
+      return "PUBLICADO";
+    case "En revisión":
+      return "PENDIENTE_APROBACION";
+    case "Borrador":
+    default:
+      return "BORRADOR";
+  }
+}

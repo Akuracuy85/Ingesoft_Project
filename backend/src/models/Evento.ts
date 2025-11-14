@@ -26,7 +26,8 @@ export class Evento {
   descripcion: string;
   @Column({ type: "datetime" })
   fechaEvento: Date;
-
+  @Column({type: "text"})
+  lugar: string;
   @Column({type: "text"})
   departamento: string;
 
@@ -36,8 +37,8 @@ export class Evento {
   @Column({type: "text"})
   distrito: string;
 
-  @Column({ type: "text" })
-  lugar: string;
+  @Column({ type: "text", nullable: true })
+  lugar: string | null;
 
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;

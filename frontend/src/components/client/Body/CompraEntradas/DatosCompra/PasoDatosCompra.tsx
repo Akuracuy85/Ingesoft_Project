@@ -6,8 +6,9 @@ import ResumenCompra from "./ResumenCompra";
 import CompraService from "../../../../../services/CompraService";
 import { type CrearOrdenDto } from "../../../../../types/CrearOrdenDTO";
 import { FormularioDatosCompra } from "./FormularioDatosCompra";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PagoNiubiz from "./PagoNiubiz";
+import ColaService from "@/services/ColaService";
 
 interface DatosCompraProps {
   eventoId: number;
@@ -46,6 +47,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // --- Crear lista de asistentes según cantidad por zona ---
   const allAttendees: Attendee[] = summaryItems.flatMap((item) =>
@@ -246,7 +248,9 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             try {
               if (purchaseType === "normal") {
                 await CompraService.confirmarStandar(pendingOrderId);
+                ColaService.eliminarTurno(location.state.evento.cola.id);
                 alert(" Pago completado. Se asignaron puntos por la compra.");
+
               } else if (purchaseType === "preferencial") {
                 await CompraService.confirmarPreventa(pendingOrderId);
                 alert(" Pago completado. Se descontaron puntos por la preventa.");

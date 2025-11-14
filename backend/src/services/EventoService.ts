@@ -12,6 +12,7 @@ import { EstadoEvento } from "../enums/EstadoEvento";
 import { Rol } from "../enums/Rol";
 import { UsuarioRepository } from "../repositories/UsuarioRepository";
 import { Organizador } from "../models/Organizador";
+import { Usuario } from "../models/Usuario";
 import { randomBytes } from "crypto";
 import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
 import { Documento } from "../models/Documento";
@@ -24,6 +25,8 @@ import { Repository } from "typeorm";
 import { TarifaDto } from "../dto/evento/TarifaDto";
 import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
+import { AccionRepository } from "../repositories/AccionRepository";
+import { TipoAccion } from "../enums/TipoAccion";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -162,7 +165,7 @@ export class EventoService {
     }
   }
 
-  
+
   async crearEvento(data: CrearEventoDto, organizadorId: number) {
     this.validarDatosObligatorios(data);
     const organizador = await this.obtenerOrganizador(organizadorId);
@@ -176,10 +179,10 @@ export class EventoService {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fechaEvento,
+        lugar: data.lugar.trim(),
         departamento: data.departamento.trim(),
         provincia: data.provincia.trim(),
         distrito: data.distrito.trim(),
-        lugar: data.lugar.trim(),
         estado,
         fechaPublicacion: new Date(),
         aforoTotal: 0,
@@ -242,6 +245,7 @@ export class EventoService {
     evento.descripcion = data.descripcion.trim();
     evento.estado = estado;
     evento.fechaEvento = fechaEvento;
+    evento.lugar = data.lugar.trim();
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
     evento.distrito = data.distrito.trim();
@@ -681,6 +685,7 @@ export class EventoService {
       "fecha",
       "hora",
       "artistaId",
+      "lugar",
       "departamento",
       "provincia",
       "distrito",
@@ -767,22 +772,22 @@ export class EventoService {
     return randomBytes(4).toString("hex").toUpperCase();
   }
 
-/**
-   * Obtiene la entidad de Evento, INCLUYENDO las relaciones de Zonas y Artista,
-   * para ser utilizada en el mapeo a DTO para la vista de compra.
-   */
+  /**
+     * Obtiene la entidad de Evento, INCLUYENDO las relaciones de Zonas y Artista,
+     * para ser utilizada en el mapeo a DTO para la vista de compra.
+     */
   async obtenerDatosParaCompra(id: number): Promise<Evento> {
     try {
       // 🚨 Usamos el método que garantiza las relaciones necesarias para el DTO
-      const evento = await this.eventoRepository.buscarPorIdParaCompra(id); 
+      const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
 
       if (!evento) {
         throw new CustomError("Evento no encontrado.", StatusCodes.NOT_FOUND);
       }
-      
+
       // Opcional pero recomendado: Asegurar que solo devolvemos eventos publicados
       if (evento.estado !== EstadoEvento.PUBLICADO) {
-         throw new CustomError("Evento no disponible para la compra.", StatusCodes.BAD_REQUEST);
+        throw new CustomError("Evento no disponible para la compra.", StatusCodes.BAD_REQUEST);
       }
 
       return evento;
@@ -791,6 +796,81 @@ export class EventoService {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al obtener los datos para la compra del evento.",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+  /**
+   * Aprueba un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async aprobarEvento(eventoId: number, autor: Usuario): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden aprobar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.PUBLICADO;
+    evento.fechaPublicacion = new Date();
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      // Registrar la acción
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} aprobado`,
+        tipo: TipoAccion.AprobarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al aprobar el evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Rechaza o cancela un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async rechazarEvento(eventoId: number, autor: Usuario, motivo?: string): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden rechazar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.CANCELADO;
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} rechazado${motivo ? `: ${motivo}` : ''}`,
+        tipo: TipoAccion.CancelarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al rechazar el evento",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
@@ -839,6 +919,19 @@ export class EventoService {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al obtener los emails de los asistentes al evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async obtenerTodosLosEventos(): Promise<Evento[]> {
+    try {
+      const eventos = await this.eventoRepository.obtenerTodosLosEventos();
+      return eventos;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener todos los eventos",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
