@@ -33,7 +33,8 @@ interface EventEntity {
     provincia: string;
     distrito: string;
     lugar: string;
-    imagenBanner: BinaryData; 
+    imagenBanner: BinaryData;
+    imagenLugar: BinaryData;
     mimeType?: string; 
     artista: ArtistEntity;
 }
@@ -123,7 +124,7 @@ export class EventMapper {
         const place = entity.lugar;
         const mimeType = entity.mimeType || 'image/jpeg'; 
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
-        
+        const imagePlaceBase64 = bufferToBase64(entity.imagenLugar, mimeType);
         const zonasDto = (entity.zonas || []).map(zona => ({
             id: zona.id,
             nombre: zona.nombre,
@@ -147,6 +148,7 @@ export class EventMapper {
             distrito: entity.distrito, // <-- AÑADIDO
             place: place,
             image: imageBase64,
+            imagePlace: imagePlaceBase64,
             artistName: entity.artista.nombre,
             category: entity.artista.categoria?.nombre, // <-- AÑADIDO
             zonas: zonasDto, // <-- AÑADIDO
