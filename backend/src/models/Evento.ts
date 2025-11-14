@@ -27,8 +27,8 @@ export class Evento {
   descripcion: string;
   @Column({ type: "datetime" })
   fechaEvento: Date;
-  //@Column({type: "text"})
-  //lugar: string;
+  @Column({type: "text"})
+  lugar: string;
   @Column({type: "text"})
   departamento: string;
 

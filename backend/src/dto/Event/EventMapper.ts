@@ -29,6 +29,7 @@ interface EventEntity {
     nombre: string;
     descripcion: string;
     fechaEvento: Date;
+    lugar: string;
     departamento: string;
     provincia: string;
     distrito: string;
@@ -118,7 +119,8 @@ export class EventMapper {
             hour12: false 
         });
         
-        const place = `${entity.distrito}, ${entity.provincia}`;
+        //const place = `${entity.distrito}, ${entity.provincia}`;
+        const place = entity.lugar;
         const mimeType = entity.mimeType || 'image/jpeg'; 
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
         
@@ -163,7 +165,8 @@ export class EventMapper {
         // 1. Mapeo de Propiedades Base
         const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
         const timeString = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const place = `${entity.distrito}, ${entity.provincia}`;
+        //const place = `${entity.distrito}, ${entity.provincia}`;
+        const place = entity.lugar;
         const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
 
         // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)

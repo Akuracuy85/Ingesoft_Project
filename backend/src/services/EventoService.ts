@@ -174,6 +174,7 @@ export class EventoService {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fechaEvento,
+        lugar: data.lugar.trim(),
         departamento: data.departamento.trim(),
         provincia: data.provincia.trim(),
         distrito: data.distrito.trim(),
@@ -239,6 +240,7 @@ export class EventoService {
     evento.descripcion = data.descripcion.trim();
     evento.estado = estado;
     evento.fechaEvento = fechaEvento;
+    evento.lugar = data.lugar.trim();
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
     evento.distrito = data.distrito.trim();
@@ -570,6 +572,7 @@ export class EventoService {
       "fecha",
       "hora",
       "artistaId",
+      "lugar",
       "departamento",
       "provincia",
       "distrito",
