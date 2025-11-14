@@ -9,7 +9,7 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, distrito, provincia /*, image, time*/ } = event;
+  const { title, date, place, distrito, provincia, image /*, image, time*/ } = event;
 
   const provinciaDistrito = `${provincia}, ${distrito}`;
 
@@ -27,7 +27,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
                    hover:shadow-xl hover:scale-[1.03]"
       >
         <img
-          src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2" //{image}
+          src={image}
           alt={title}
           className="w-full h-[150px] object-cover"
         />
