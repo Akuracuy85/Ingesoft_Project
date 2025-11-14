@@ -369,6 +369,18 @@ const CardEventos: React.FC = () => {
     }
   };
 
+  // Helper: construye un src válido desde base64 crudo o URL
+  const buildImageSrc = (value?: string | null): string | null => {
+    if (!value) return null;
+    const v = String(value).trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:")) {
+      return v;
+    }
+    // Asumimos base64 sin prefijo
+    return `data:image/*;base64,${v}`;
+  };
+
   // Render del encabezado o detalles
   const renderTopCard = () => {
     // Siempre renderiza el encabezado principal
@@ -448,16 +460,24 @@ const CardEventos: React.FC = () => {
             <p className="text-sm text-gray-500 mb-3">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
 
             {/* Área de imagen */}
-            {eventoSeleccionado.imagenNombre ? (
-              <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
-                <div className="text-sm text-gray-600">Portada: {eventoSeleccionado.imagenNombre}</div>
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
-                <ImageOff className="h-8 w-8 mb-2" />
-                <p>No hay imagen de portada</p>
-              </div>
-            )}
+            {(() => {
+              const portadaSrc = buildImageSrc(eventoSeleccionado.imagenPortadaBase64);
+              return portadaSrc ? (
+                <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white">
+                  <img
+                    src={portadaSrc}
+                    alt={`Portada de ${eventoSeleccionado.nombre}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
+                  <ImageOff className="h-8 w-8 mb-2" />
+                  <p>No hay imagen de portada</p>
+                </div>
+              );
+            })()}
           </div>
         )}
 
