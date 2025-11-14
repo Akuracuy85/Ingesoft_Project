@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { AccionService } from "@/services/AccionService"; // Asegúrate de que la ruta sea correcta
-import { HandleResponseError } from "@/utils/Errors";
+import { AccionService } from "../services/AccionService"; // Asegúrate de que la ruta sea correcta
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { TipoAccion } from "@/enums/TipoAccion"; 
+import { TipoAccion } from "../enums/TipoAccion"; 
 
 export class AccionController {
     private static instance: AccionController;

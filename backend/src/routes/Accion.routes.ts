@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { accionController } from "@/controllers/AccionController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware"; 
+import { accionController } from "../controllers/AccionController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware"; 
 
 const router = Router();
 

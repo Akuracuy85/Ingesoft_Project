@@ -1,8 +1,8 @@
-import { AppDataSource } from "@/database/data-source";
+import { AppDataSource } from "../database/data-source";
 import { Repository, Between, FindOptionsWhere } from "typeorm";
-import { Acción } from "@/models/Acción"; 
-import { Usuario } from "@/models/Usuario";
-import { TipoAccion } from "@/enums/TipoAccion";
+import { Acción } from "../models/Acción"; 
+import { Usuario } from "../models/Usuario";
+import { TipoAccion } from "../enums/TipoAccion";
 
 // Interfaz para definir los filtros de búsqueda
 interface FiltrosAccion {

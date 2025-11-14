@@ -1,8 +1,8 @@
-import { AccionRepository } from "@/repositories/AccionRepository"; // Asume la ruta
-import { TipoAccion } from "@/enums/TipoAccion"; // Asume la ruta
-import { Acción } from "@/models/Acción"; // Asume la ruta
-import { Usuario } from "@/models/Usuario";
-import { CustomError } from "@/types/CustomError";
+import { AccionRepository } from "../repositories/AccionRepository"; // Asume la ruta
+import { TipoAccion } from "../enums/TipoAccion"; // Asume la ruta
+import { Acción } from "../models/Acción"; // Asume la ruta
+import { Usuario } from "../models/Usuario";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 
 // Interfaz para definir los filtros que recibe el Service
