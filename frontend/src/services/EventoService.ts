@@ -5,6 +5,7 @@ import HttpClient from "./Client";
 import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
 import type { PriceRangeType } from "../types/PriceRangeType";
+import { extractFecha, extractHora } from "../utils/date-utils";
 
 export type EventDetailsForPurchase = Event & {
   zonasDisponibles: ZonePurchaseDetail[];
@@ -158,8 +159,8 @@ class EventoService extends HttpClient {
       id: ev.id,
       title: ev.nombre,
       description: ev.descripcion,
-      date: this.extractFecha(ev.fechaEvento),
-      time: this.extractHora(ev.fechaEvento),
+      date: extractFecha(ev.fechaEvento),
+      time: extractHora(ev.fechaEvento),
       departamento: ev.departamento || "",
       provincia: ev.provincia || "",
       distrito: ev.distrito || "",
@@ -188,26 +189,6 @@ class EventoService extends HttpClient {
       lugar: ev.lugar || "",
       imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
     }));
-  }
-
-  // Helpers privados para extraer fecha/hora desde ISO
-  private extractFecha(fechaEvento: string | Date): string {
-    try {
-      const d = typeof fechaEvento === "string" ? new Date(fechaEvento) : fechaEvento;
-      if (isNaN(d.getTime())) return "";
-      return d.toISOString().slice(0, 10);
-    } catch {
-      return "";
-    }
-  }
-  private extractHora(fechaEvento: string | Date): string {
-    try {
-      const d = typeof fechaEvento === "string" ? new Date(fechaEvento) : fechaEvento;
-      if (isNaN(d.getTime())) return "";
-      return d.toISOString().slice(11, 16);
-    } catch {
-      return "";
-    }
   }
 
   // Nuevo: listado básico para organizador
