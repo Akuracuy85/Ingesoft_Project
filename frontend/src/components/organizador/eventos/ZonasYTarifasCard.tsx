@@ -3,6 +3,7 @@ import { MapPin, ImageOff, Upload, Plus, Trash2, Save } from "lucide-react";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { actualizarEvento, obtenerEventosDetallados, mapEstadoUIToBackend } from "@/services/EventoService";
+import EventoService from "@/services/EventoService"; // instancia por defecto para usar obtenerPorId
 
 interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; }
 
