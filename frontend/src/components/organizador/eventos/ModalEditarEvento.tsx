@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 import { normalizeFecha } from "@/utils/normalizeFecha";
 import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
+import ArtistaService, { type Artista } from "@/services/ArtistaService";
 
 interface EventoEditable {
   id: number;
@@ -34,6 +35,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [departamento, setDepartamento] = useState("");
   const [provincia, setProvincia] = useState("");
   const [distrito, setDistrito] = useState("");
+  const [artistaId, setArtistaId] = useState<number | null>(null);
 
   const [touchedSubmit, setTouchedSubmit] = useState(false);
 
@@ -41,6 +43,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
+  const [artistas, setArtistas] = useState<Artista[]>([]);
 
   // Prefill cuando cambia event
   useEffect(() => {
@@ -52,11 +55,12 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
 
     // Fecha
     if (event.fechaEvento || event.fecha || event.date) {
-      const raw = event.fechaEvento || event.fecha || event.date;
+      const raw = event.fechaEvento ?? event.fecha ?? event.date;
       try {
-        const isoDate = new Date(raw).toISOString().split("T")[0];
+        const d = new Date(raw as string);
+        const isoDate = d.toISOString().split("T")[0];
         setFecha(normalizeFecha(isoDate));
-        setHora(new Date(raw).toISOString().slice(11, 16));
+        setHora(d.toISOString().slice(11, 16));
       } catch {
         setFecha("");
         setHora("");
@@ -86,6 +90,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     setProvincia(event.provincia || "");
     setDistrito(event.distrito || "");
 
+    // Artista actual
+    setArtistaId(event.artistaId || event.artist?.id || null);
+
     // Imagen: no podemos reconstruir File desde base64 fácilmente; se deja null
     setImagen(null);
   }, [event]);
@@ -94,6 +101,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   useEffect(() => {
     if (!open) return;
     UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+    // Cargar artistas
+    ArtistaService.getArtistas().then(setArtistas).catch(() => setArtistas([]));
   }, [open]);
 
   useEffect(() => {
@@ -123,7 +132,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const handleGuardar = async () => {
     setTouchedSubmit(true);
     if (!event) return;
-    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado) {
+    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado || !artistaId) {
       alert("Por favor completa todos los campos obligatorios antes de guardar.");
       return;
     }
@@ -132,7 +141,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     let imagenPortadaBase64: string | null | undefined = undefined;
     if (imagen) {
       try {
-        const base64Result = await new Promise<string>((resolve, reject) => {
+        imagenPortadaBase64 = await new Promise<string>((resolve, reject) => {
           const fr = new FileReader();
           fr.onload = () => {
             const result = fr.result as string;
@@ -142,7 +151,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           fr.onerror = reject;
           fr.readAsDataURL(imagen);
         });
-        imagenPortadaBase64 = base64Result;
       } catch {
         console.warn("No se pudo convertir la imagen, se enviará sin cambios.");
       }
@@ -155,7 +163,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       descripcion: descripcion.trim(),
       fecha,
       hora,
-      artistaId: event.artistaId || event.artist?.id || 0,
+      artistaId: artistaId,
       departamento: departamento.trim(),
       provincia: provincia.trim(),
       distrito: distrito.trim(),
@@ -183,6 +191,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const distritoError = touchedSubmit && !distrito;
   const lugarError = touchedSubmit && !lugar.trim();
   const estadoError = touchedSubmit && !estado;
+  const artistaError = touchedSubmit && !artistaId;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
@@ -232,6 +241,32 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
+
+          {/* Artista */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Artista <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="artistaId"
+              value={artistaId ?? ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                const parsed = val ? Number(val) : NaN;
+                setArtistaId(!isNaN(parsed) && parsed > 0 ? parsed : null);
+              }}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                artistaError ? "border-red-500" : "border-gray-300"
+              }`}
+            >
+              <option value="">Selecciona artista</option>
+              {artistas.map((a) => (
+                <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+              ))}
+            </select>
+            {artistaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
