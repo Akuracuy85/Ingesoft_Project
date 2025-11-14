@@ -14,7 +14,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imagenBanner: string | null;
+  imagenBanner: string | null;   // ← YA EXISTENTE
+  imagenLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
   date: string;
   departamento: string;
   provincia: string;
@@ -87,7 +88,6 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const horaEvento = evento.time || "";
 
-  // Rango global de fechas por tipo (tomamos la primera zona que tenga cada tarifa)
   const primeraZonaConPreventa = zonas.find((z) => z.tarifaPreventa);
   const primeraZonaConNormal = zonas.find((z) => z.tarifaNormal);
 
@@ -95,16 +95,13 @@ export const BodyDetalleEvento: React.FC = () => {
   const rangoNormal = primeraZonaConNormal?.tarifaNormal || null;
 
   const handleColaClick = (tipo: string) => {
-    navigate(`/cola`, {
-      state: { evento, tipoTarifa: tipo },
-    });
+    navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });
   };
 
   const formatFechaLarga = (iso: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-
-  return d.toLocaleDateString("es-PE", {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString("es-PE", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -117,47 +114,52 @@ export const BodyDetalleEvento: React.FC = () => {
       <section
         className="relative bg-cover bg-center bg-no-repeat text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 py-32 min-h-[85vh]"
         style={{
-          backgroundImage: `url(https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2)`,
+          backgroundImage: `url(${evento.imagenBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+
           <div className="text-center md:text-left">
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
               {evento.nombre}
             </h1>
+
             <h2 className="text-2xl md:text-4xl font-bold leading-tight drop-shadow-lg">
-              {evento.artist?.nombre || "Artista invitado"}
+              {evento.artist?.nombre?.trim() || "Artista invitado"}
             </h2>
+
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">
-                {formatFechaLarga(evento.date)}
-              </span>
+              <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
-              {evento.place && (
+
+              {evento.lugar && (
                 <>
-                  {evento.place}
+                  {evento.lugar}
                   <br />
                 </>
               )}
+
               {`${evento.distrito}, ${evento.provincia}`}
               <br />
+
               {horaEvento}
             </p>
           </div>
         </div>
       </section>
 
-      {/* === SECCIÓN 2: MAPA Y TARIFAS === */}
+      {/* === SECCIÓN 2: MAPA/LUGAR Y TARIFAS === */}
       <div className="bg-[#fff4ea] px-4 md:px-12 pt-10 pb-16 w-full">
         <section className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-24">
-          {/* Mapa */}
+
+          {/* Imagen del lugar */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={mapaAsientos}
-              alt="Mapa de Asientos"
-              className="w-full max-w-md object-contain mix-blend-multiply"
+              src={evento.imagenLugar || mapaAsientos}
+              alt="Lugar del Evento"
+              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg"
             />
           </div>
 
@@ -176,12 +178,14 @@ export const BodyDetalleEvento: React.FC = () => {
                       className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       <div className="font-semibold">{tipo.toUpperCase()}</div>
+
                       {tipo === "Preventa" && rangoPreventa && (
                         <div className="text-[11px] text-gray-400 font-normal mt-1">
                           ({formatDMY(rangoPreventa.fechaInicio)} →{" "}
                           {formatDMY(rangoPreventa.fechaFin)})
                         </div>
                       )}
+
                       {tipo === "Normal" && rangoNormal && (
                         <div className="text-[11px] text-gray-400 font-normal mt-1">
                           ({formatDMY(rangoNormal.fechaInicio)} →{" "}
@@ -201,14 +205,12 @@ export const BodyDetalleEvento: React.FC = () => {
                         {zona.nombre}
                       </td>
 
-                      {/* PREVENTA: solo precio */}
                       <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                         {zona.tarifaPreventa
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>
 
-                      {/* NORMAL: solo precio */}
                       <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                         {zona.tarifaNormal
                           ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
@@ -255,9 +257,7 @@ export const BodyDetalleEvento: React.FC = () => {
           >
             {tiposTarifas.map((tipo) => {
               const tarifa =
-                tipo === "Preventa"
-                  ? rangoPreventa
-                  : rangoNormal;
+                tipo === "Preventa" ? rangoPreventa : rangoNormal;
 
               const activo = tarifa && isTarifaActiva(tarifa);
               const agotado = zonas.some(isZonaAgotada);
