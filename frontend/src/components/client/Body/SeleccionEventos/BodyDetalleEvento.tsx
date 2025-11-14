@@ -19,6 +19,8 @@ interface EventoDetalle {
   distrito: string;
   artista: ArtistaDetalle | null;
   zonas: Zone[];
+  time: string | null;
+  lugar: string | null;
 }
 
 export const BodyDetalleEvento: React.FC = () => {
@@ -90,7 +92,7 @@ export const BodyDetalleEvento: React.FC = () => {
               {evento.artista?.nombre || "Artista invitado"}
             </h2>
             <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">{evento.date}</span>
+              <span className="font-semibold">{evento.fechaEvento}</span>
               <br />
               {`${evento.departamento}, ${evento.provincia}, ${evento.distrito}`}
               <br />
