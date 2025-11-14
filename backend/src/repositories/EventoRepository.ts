@@ -347,7 +347,8 @@ export class EventoRepository {
       relations: {
         organizador: true, // Para saber quién es el organizador
         artista: true,  // Para ver el artista principal
-        zonas: true
+        zonas: true,
+        cola: true,
       },
       order: {
         fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero

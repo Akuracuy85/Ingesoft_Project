@@ -24,8 +24,8 @@ export interface Event {
   provincia: string;
   distrito: string;
   place: string;
-  //placeEspecific: string;
-
+  placeEspecific: string;
+  lugar?: string | null;
   image: string;
 
   artist: Artist;

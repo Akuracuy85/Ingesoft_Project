@@ -95,6 +95,7 @@ export const BodyDetalleEvento: React.FC = () => {
   const rangoNormal = primeraZonaConNormal?.tarifaNormal || null;
 
   const handleColaClick = (tipo: string) => {
+    console.log(evento)
     navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });
   };
 
