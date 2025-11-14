@@ -8,6 +8,7 @@ export interface ActualizarEventoDto {
   fecha: string; // formato YYYY-MM-DD
   hora: string; // formato HH:mm
   artistaId: number;
+  lugar: string;
   departamento: string;
   provincia: string;
   distrito: string;

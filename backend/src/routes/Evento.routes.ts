@@ -23,6 +23,13 @@ router.get(
   eventoController.obtenerEventosDetallados
 );
 
+router.get(
+  "/listar-todos",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.obtenerTodos
+);
+
 router.get("/:id", eventoController.obtenerPorId);
 
 router.post(

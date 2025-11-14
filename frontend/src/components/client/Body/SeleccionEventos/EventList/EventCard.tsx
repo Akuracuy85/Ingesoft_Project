@@ -9,7 +9,9 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, placeEspecific /*, image, time*/ } = event;
+  const { title, date, place, distrito, provincia /*, image, time*/ } = event;
+
+  const provinciaDistrito = `${provincia}, ${distrito}`;
 
   return (
     <Link to={`${event.id}/detalle`}>
@@ -32,8 +34,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         <div className="p-2.5 flex flex-col gap-1 text-black bg-neutral-100">
           <p className="font-semibold text-sm">{title}</p>
           <p className="text-sm">{date}</p>
+          <p className="text-sm">{provinciaDistrito}</p>
           <p className="text-sm">{place}</p>
-          <p className="text-sm">{placeEspecific}</p>
         </div>
       </div>
     </Link>
