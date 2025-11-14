@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 
-export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión";
+export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
 
 export interface NuevoEventoForm {
   nombre: string;
@@ -11,6 +12,10 @@ export interface NuevoEventoForm {
   lugar: string;
   estado: EstadoEventoUI;
   imagen: File | null;
+  // Nuevos campos de ubicación
+  departamento: string;
+  provincia: string;
+  distrito: string;
 }
 
 const defaultForm: NuevoEventoForm = {
@@ -21,6 +26,9 @@ const defaultForm: NuevoEventoForm = {
   lugar: "",
   estado: "Borrador",
   imagen: null,
+  departamento: "",
+  provincia: "",
+  distrito: "",
 };
 
 interface ModalCrearEventoProps {
@@ -33,11 +41,20 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   const [form, setForm] = useState<NuevoEventoForm>({ ...defaultForm });
   const [touchedSubmit, setTouchedSubmit] = useState(false);
 
+  // Opciones de selects
+  const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
+  const [provincias, setProvincias] = useState<LocationOption[]>([]);
+  const [distritos, setDistritos] = useState<LocationOption[]>([]);
+
   // Reset del formulario al abrir
   useEffect(() => {
     if (open) {
       setForm({ ...defaultForm });
       setTouchedSubmit(false);
+      // Cargar departamentos
+      UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+      setProvincias([]);
+      setDistritos([]);
     }
   }, [open]);
 
@@ -53,14 +70,63 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
     setForm((prev) => ({ ...prev, imagen: file }));
   };
 
+  const handleDepartamentoChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDep = e.target.value;
+    setForm((prev) => ({ ...prev, departamento: selectedDep, provincia: "", distrito: "" }));
+    setDistritos([]);
+    if (selectedDep) {
+      const provs = await UbicacionService.getProvincias(selectedDep).catch(() => []);
+      setProvincias(provs);
+    } else {
+      setProvincias([]);
+    }
+  };
+
+  const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedProv = e.target.value;
+    setForm((prev) => ({ ...prev, provincia: selectedProv, distrito: "" }));
+    setDistritos([]);
+    if (selectedProv && form.departamento) {
+      const dists = await UbicacionService.getDistritos(form.departamento, selectedProv).catch(() => []);
+      setDistritos(dists);
+    }
+  };
+
+  const handleDistritoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({ ...prev, distrito: e.target.value }));
+  };
+
   const handleGuardar = () => {
     setTouchedSubmit(true);
-    if (!form.nombre.trim() || !form.descripcion.trim()) return;
-    onSave(form);
+
+    // Validación de campos obligatorios
+    if (
+      !form.nombre.trim() ||
+      !form.descripcion.trim() ||
+      !form.fecha ||
+      !form.hora ||
+      !form.departamento ||
+      !form.provincia ||
+      !form.distrito ||
+      !form.lugar.trim()
+    ) {
+      alert("Por favor completa todos los campos obligatorios.");
+      return;
+    }
+
+    // Forzar estado = "Borrador" antes de enviar
+    const data: NuevoEventoForm = { ...form, estado: "Borrador" };
+    onSave(data);
   };
 
   const nombreError = touchedSubmit && !form.nombre.trim();
   const descripcionError = touchedSubmit && !form.descripcion.trim();
+  const fechaError = touchedSubmit && !form.fecha;
+  const horaError = touchedSubmit && !form.hora;
+  const departamentoError = touchedSubmit && !form.departamento;
+  const provinciaError = touchedSubmit && !form.provincia;
+  const distritoError = touchedSubmit && !form.distrito;
+  const lugarError = touchedSubmit && !form.lugar.trim();
 
   if (!open) return null;
 
@@ -114,54 +180,118 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha <span className="text-red-500">*</span>
+              </label>
               <input
                 type="date"
                 name="fecha"
                 value={form.fecha}
                 onChange={onChangeText}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  fechaError ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fechaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hora <span className="text-red-500">*</span>
+              </label>
               <input
                 type="time"
                 name="hora"
                 value={form.hora}
                 onChange={onChangeText}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  horaError ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {horaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+          </div>
+
+          {/* Ubicación: Departamento / Provincia / Distrito */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Departamento <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="departamento"
+                value={form.departamento}
+                onChange={handleDepartamentoChange}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  departamentoError ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Selecciona departamento</option>
+                {departamentos.map((d) => (
+                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
+                ))}
+              </select>
+              {departamentoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Provincia <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="provincia"
+                value={form.provincia}
+                onChange={handleProvinciaChange}
+                disabled={!form.departamento}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
+                  provinciaError ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Selecciona provincia</option>
+                {provincias.map((p) => (
+                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                ))}
+              </select>
+              {provinciaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Distrito <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="distrito"
+                value={form.distrito}
+                onChange={handleDistritoChange}
+                disabled={!form.departamento || !form.provincia}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
+                  distritoError ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Selecciona distrito</option>
+                {distritos.map((di) => (
+                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
+                ))}
+              </select>
+              {distritoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
           </div>
 
           {/* Lugar */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Lugar</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lugar <span className="text-red-500">*</span></label>
             <input
               type="text"
               name="lugar"
               value={form.lugar}
               onChange={onChangeText}
               placeholder="Ej: Teatro Nacional"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                lugarError ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {lugarError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
 
-          {/* Estado */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select
-              name="estado"
-              value={form.estado}
-              onChange={onChangeText}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-            >
-              <option value="Borrador">Borrador</option>
-              <option value="Publicado">Publicado</option>
-              <option value="En revisión">En revisión</option>
-            </select>
-          </div>
+          {/* Estado (oculto en creación) */}
+          {/* Campo de estado removido del UI. Se fuerza a "Borrador" al guardar. */}
 
           {/* Imagen */}
           <div>
@@ -203,4 +333,3 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 };
 
 export default ModalCrearEvento;
-

@@ -4,13 +4,47 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import { listarBasicosOrganizador, type EventoBasicoOrganizadorDTO } from "@/services/EventoService";
+import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento } from "@/services/EventoService";
+import ArtistaService from "@/services/ArtistaService";
+// Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
+
 // Moved to utils for reuse
 import { formatFecha } from "@/utils/formatFecha";
 
+// Tipos locales auxiliares
+type EventoDetalladoOrganizador = {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+  fechaEvento: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  imagenBannerBase64: string | null;
+};
+
+interface EditEventData {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+  fechaEvento?: string;
+  fecha?: string;
+  hora?: string;
+  lugar?: string;
+  estado?: string;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  imagenBanner?: string | null;
+  artistaId?: number;
+  artist?: { id: number };
+}
 
 // Tipos para la tabla
 interface EventoItem {
+  id: number;
   nombre: string;
   fecha: string;
   estado: EstadoEventoUI;
@@ -18,6 +52,10 @@ interface EventoItem {
   hora?: string;
   lugar?: string;
   imagenNombre?: string | null;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  imagenPortadaBase64?: string | null;
 }
 
 // Función para clases de badge según estado
@@ -29,6 +67,8 @@ function getBadgeClass(estado: EstadoEventoUI): string {
       return "bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm";
     case "En revisión":
       return "border border-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm";
+    case "Cancelado":
+      return "bg-red-100 text-red-700 rounded-full px-3 py-1 text-sm";
     default:
       return "rounded-full px-3 py-1 text-sm";
   }
@@ -43,6 +83,8 @@ function mapEstadoToUI(estadoApi: string): EstadoEventoUI {
       return "Borrador";
     case "PENDIENTE_APROBACION":
       return "En revisión";
+    case "CANCELADO":
+      return "Cancelado";
     default:
       return "Borrador";
   }
@@ -59,7 +101,7 @@ const CardEventos: React.FC = () => {
 
   // Modal editar
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectedEventFull, setSelectedEventFull] = useState<EditEventData | null>(null);
 
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
@@ -72,44 +114,48 @@ const CardEventos: React.FC = () => {
   const [eventoSeleccionado, setEventoSeleccionado] = useState<EventoItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Cargar desde backend al montar
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchEventos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const resp = await listarBasicosOrganizador();
-        if (resp && Array.isArray(resp.eventos) && resp.eventos.length > 0) {
-          console.log("📦 [DEBUG] Eventos recibidos desde el backend:");
-          resp.eventos.forEach((ev: EventoBasicoOrganizadorDTO, idx: number) => {
-            const raw = typeof ev.fecha === "string" ? ev.fecha : ev.fecha?.toISOString?.() ?? "";
-            console.log(`→ #${idx + 1} | Nombre: ${ev.nombre} | Fecha original: ${raw}`);
-          });
-        } else {
-          console.log("⚠️ [DEBUG] No se recibieron eventos o el array está vacío:", resp?.eventos);
+  // Cargar desde backend (detallados) reutilizable
+  const loadEventos = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const lista = await listarDetalladosOrganizador();
+      const items: EventoItem[] = (lista as EventoDetalladoOrganizador[]).map((ev) => {
+        const fechaISO = ev.fechaEvento || "";
+        let fecha = "";
+        let hora = "";
+        const d = new Date(fechaISO);
+        if (!isNaN(d.getTime())) {
+          fecha = d.toISOString().slice(0, 10);
+          hora = d.toISOString().slice(11, 16);
         }
-        const items: EventoItem[] = resp.eventos.map((e: EventoBasicoOrganizadorDTO) => {
-          const ymd = typeof e.fecha === "string" ? e.fecha : e.fecha.toISOString().slice(0, 10);
-          const fechaFormateada = formatFecha(ymd);
-          console.log(`🧾 [DEBUG] Preparando item ${e.nombre} → Fecha mostrada: ${fechaFormateada}`);
-          return {
-            nombre: e.nombre,
-            fecha: fechaFormateada,
-            estado: mapEstadoToUI(e.estado),
-          };
-        });
-        setEventos(items);
-      } catch (err: unknown) {
-        if (controller.signal.aborted) return;
-        console.error("Error cargando eventos:", err);
-        setError("Error al cargar los eventos.");
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    };
-    fetchEventos();
-    return () => controller.abort();
+        return {
+          id: ev.id,
+          nombre: ev.nombre,
+          fecha,
+          estado: mapEstadoToUI(ev.estado),
+          descripcion: ev.descripcion || "",
+          hora,
+          lugar: ev.lugar || "",
+          departamento: ev.departamento || "",
+          provincia: ev.provincia || "",
+          distrito: ev.distrito || "",
+          imagenPortadaBase64: ev.imagenBannerBase64 || null,
+          imagenNombre: ev.imagenBannerBase64 ? "portada" : null,
+        };
+      });
+      setEventos(items);
+    } catch (err) {
+      console.error("Error cargando eventos detallados:", err);
+      setError("Error al cargar los eventos.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Montaje inicial
+  useEffect(() => {
+    loadEventos();
   }, []);
 
   useEffect(() => {
@@ -138,79 +184,189 @@ const CardEventos: React.FC = () => {
   const handleOpenCreate = () => setIsCreateOpen(true);
   const handleCloseCreate = () => setIsCreateOpen(false);
 
-  // Guardar desde crear (solo UI por ahora)
-  const handleSaveCreate = (data: NuevoEventoForm) => {
-    const nuevo: EventoItem = {
-      nombre: data.nombre,
-      fecha: data.fecha || "",
-      estado: data.estado,
-      descripcion: data.descripcion,
-      hora: data.hora,
-      lugar: data.lugar,
-      imagenNombre: data.imagen?.name || null,
-    };
-    setEventos((prev) => [nuevo, ...prev]);
-    alert(`Evento guardado:\n${JSON.stringify(nuevo, null, 2)}`);
-    handleCloseCreate();
+  // Utilidad: convertir File a base64 (sin prefijo data:...)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIdx = result.indexOf(",");
+        resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
-  // Abrir editar para una fila concreta
-  const handleOpenEdit = (index: number) => {
-    setEditingIndex(index);
-    setIsEditOpen(true);
-  };
-  const handleCloseEdit = () => {
-    setEditingIndex(null);
-    setIsEditOpen(false);
-  };
+  // Guardar desde crear: ahora conectado al backend
+  const handleSaveCreate = async (data: NuevoEventoForm) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  // Guardar cambios de edición (solo UI por ahora)
-  const handleSaveEdit = (data: NuevoEventoForm) => {
-    if (editingIndex === null) return;
-    setEventos((prev) => {
-      const next = [...prev];
-      next[editingIndex] = {
-        ...next[editingIndex],
+      // Validaciones mínimas
+      if (!data.nombre.trim() || !data.descripcion.trim() || !data.fecha || !data.hora) {
+        alert("Por favor completa nombre, descripción, fecha y hora.");
+        return;
+      }
+
+      // Estado para backend
+      const estadoBackend = mapEstadoUIToBackend(data.estado);
+
+      // Imagen (opcional)
+      let imagenPortada: string | undefined;
+      if (data.imagen) {
+        try {
+          imagenPortada = await fileToBase64(data.imagen);
+        } catch (e) {
+          console.warn("No se pudo convertir la imagen a base64, se enviará sin imagen.", e);
+        }
+      }
+
+      // Obtener artista (mínimo requerido por backend actual)
+      const artistas = await ArtistaService.getArtistas();
+      if (!artistas || artistas.length === 0) {
+        alert("No hay artistas disponibles para asignar al evento.");
+        return;
+      }
+      const artistaId = Number(artistas[0].id);
+
+      const payload = {
+        nombre: data.nombre.trim(),
+        descripcion: data.descripcion.trim(),
+        fecha: data.fecha, // YYYY-MM-DD
+        hora: data.hora,   // HH:mm
+        artistaId,
+        departamento: data.departamento?.trim() || null,
+        provincia: data.provincia?.trim() || null,
+        distrito: data.distrito?.trim() || null,
+        lugar: (data.lugar || "").trim() || undefined,
+        estado: estadoBackend,
+        imagenPortada,
+      };
+
+      const resp = await createEvent(payload);
+      if (!resp || !resp.success) {
+        console.error("Respuesta inválida del servidor al crear evento", resp);
+        alert("No se pudo crear el evento");
+        return;
+      }
+
+      // Actualizar UI localmente sin recargar
+      const nuevo: EventoItem = {
+        id: resp.eventoId,
         nombre: data.nombre,
+        fecha: formatFecha(data.fecha),
+        estado: data.estado,
         descripcion: data.descripcion,
-        fecha: data.fecha,
         hora: data.hora,
         lugar: data.lugar,
-        estado: data.estado,
-        imagenNombre: data.imagen?.name || next[editingIndex].imagenNombre || null,
+        imagenNombre: data.imagen?.name || null,
       };
-      return next;
-    });
-    handleCloseEdit();
-  };
-
-  // Confirmar eliminación (solo UI)
-  const confirmarEliminacion = () => {
-    if (!eventoAEliminar) return;
-    setEventos((prev) => prev.filter((_, i) => i !== eventoAEliminar.index));
-    // Si el eliminado es el seleccionado, limpiar selección
-    if (selectedIndex === eventoAEliminar.index) {
-      setSelectedIndex(null);
-      setEventoSeleccionado(null);
-    } else if (selectedIndex !== null && eventoAEliminar.index < selectedIndex) {
-      // Ajustar índice si se elimina un elemento anterior a la selección
-      setSelectedIndex((prev) => (prev !== null ? prev - 1 : null));
+      setEventos((prev) => [nuevo, ...prev]);
+      alert("Evento creado con éxito");
+      handleCloseCreate();
+    } catch (e) {
+      console.error("Error al crear el evento:", e);
+      alert("No se pudo crear el evento");
+    } finally {
+      setIsLoading(false);
     }
-    setEventoAEliminar(null);
   };
 
-  // Datos iniciales para el modal de edición en el shape de NuevoEventoForm
-  const editInitial: NuevoEventoForm | null = editingIndex !== null
-    ? {
-        nombre: eventos[editingIndex].nombre || "",
-        descripcion: eventos[editingIndex].descripcion || "",
-        fecha: eventos[editingIndex].fecha || "",
-        hora: eventos[editingIndex].hora || "",
-        lugar: eventos[editingIndex].lugar || "",
-        estado: eventos[editingIndex].estado,
-        imagen: null,
+  // Abrir editar para una fila concreta (fetch por id)
+  const handleOpenEdit = async (index: number) => {
+    try {
+      const ev = eventos[index];
+      if (!ev) return;
+      setIsLoading(true);
+      const detalle = await obtenerEventosDetallados(ev.id);
+      const mapped: EditEventData = {
+        id: detalle.id,
+        nombre: detalle.title,
+        descripcion: detalle.description,
+        fechaEvento: `${detalle.date}T${(detalle.time || "00:00")}:00`,
+        fecha: detalle.date,
+        hora: detalle.time,
+        lugar: detalle.place,
+        estado: ev.estado === "Publicado" ? "PUBLICADO" : ev.estado === "En revisión" ? "PENDIENTE_APROBACION" : ev.estado === "Cancelado" ? "CANCELADO" : "BORRADOR",
+        departamento: detalle.departamento,
+        provincia: detalle.provincia,
+        distrito: detalle.distrito,
+        imagenBanner: detalle.image || null,
+        artistaId: detalle.artist?.id,
+        artist: detalle.artist ? { id: detalle.artist.id } : undefined,
+      };
+      setSelectedEventFull(mapped);
+      setIsEditOpen(true);
+    } catch (e) {
+      console.error("Error al obtener evento detallado:", e);
+      alert("No se pudo cargar la información completa del evento.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditOpen(false);
+    setSelectedEventFull(null);
+  };
+
+  // Confirmar eliminación (cancelación lógica vía PUT)
+  const handleConfirmDelete = async () => {
+    try {
+      if (!eventoAEliminar) return;
+      const evListado = eventos[eventoAEliminar.index];
+      if (!evListado) return;
+
+      // Obtener detalle actual para construir payload completo
+      const detalle = await obtenerEventosDetallados(evListado.id);
+
+      const artistaId = detalle.artist?.id || 0;
+      if (!artistaId) {
+        alert("No se pudo cancelar: el evento no tiene artista asignado.");
+        return;
       }
-    : null;
+
+      const fecha = detalle.date;
+      const hora = detalle.time || "00:00";
+      const departamento = detalle.departamento || "";
+      const provincia = detalle.provincia || "";
+      const distrito = detalle.distrito || "";
+      const lugar = (detalle.place || "").trim();
+
+      if (!fecha || !hora || !departamento || !provincia || !distrito || !lugar) {
+        alert("No se pudo cancelar: faltan datos obligatorios del evento.");
+        return;
+      }
+
+      const payload = {
+        nombre: detalle.title || evListado.nombre,
+        descripcion: detalle.description || "",
+        fecha,
+        hora,
+        artistaId,
+        departamento,
+        provincia,
+        distrito,
+        lugar,
+        estado: "CANCELADO", // solo cambiamos estado
+      };
+
+      const resp = await actualizarEvento(evListado.id, payload);
+      if (resp && (resp as { success?: boolean }).success) {
+        alert("Evento cancelado correctamente");
+        setEventoAEliminar(null); // cerrar modal
+        await loadEventos(); // refrescar listado
+        return;
+      }
+
+      alert("No se pudo cancelar el evento");
+    } catch (error) {
+      console.error("Error cancelando evento:", error);
+      alert("No se pudo cancelar el evento");
+    }
+  };
 
   // Render del encabezado o detalles
   const renderTopCard = () => {
@@ -407,8 +563,8 @@ const CardEventos: React.FC = () => {
         <ModalEditarEvento
           open={isEditOpen}
           onClose={handleCloseEdit}
-          initialData={editInitial}
-          onSave={handleSaveEdit}
+          event={selectedEventFull}
+          onUpdated={loadEventos}
         />
 
         {/* Modal de confirmación de eliminación */}
@@ -416,14 +572,26 @@ const CardEventos: React.FC = () => {
           open={!!eventoAEliminar}
           nombre={eventoAEliminar?.nombre || ""}
           onCancel={() => setEventoAEliminar(null)}
-          onConfirm={confirmarEliminacion}
+          onConfirm={handleConfirmDelete}
         />
       </section>
 
       {/* Configuración del evento */}
-      {eventoSeleccionado && <ConfiguracionEvento />}
+      {eventoSeleccionado && <ConfiguracionEvento evento={{
+        eventoId: eventoSeleccionado.id,
+        nombre: eventoSeleccionado.nombre,
+        descripcion: eventoSeleccionado.descripcion || "",
+        fecha: eventoSeleccionado.fecha,
+        hora: eventoSeleccionado.hora || "",
+        lugar: eventoSeleccionado.lugar || "",
+        departamento: eventoSeleccionado.departamento || "",
+        provincia: eventoSeleccionado.provincia || "",
+        distrito: eventoSeleccionado.distrito || "",
+        estado: eventoSeleccionado.estado
+      }} />}
     </>
   );
 };
 
 export default CardEventos;
+
