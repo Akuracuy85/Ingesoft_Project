@@ -4,13 +4,43 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados } from "@/services/EventoService";
+import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento } from "@/services/EventoService";
 import ArtistaService from "@/services/ArtistaService";
 // Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
 
 // Moved to utils for reuse
 import { formatFecha } from "@/utils/formatFecha";
 
+// Tipos locales auxiliares
+type EventoDetalladoOrganizador = {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+  fechaEvento: string;
+  departamento: string;
+  provincia: string;
+  distrito: string;
+  lugar: string;
+  imagenBannerBase64: string | null;
+};
+
+interface EditEventData {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+  fechaEvento?: string;
+  fecha?: string;
+  hora?: string;
+  lugar?: string;
+  estado?: string;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  imagenBanner?: string | null;
+  artistaId?: number;
+  artist?: { id: number };
+}
 
 // Tipos para la tabla
 interface EventoItem {
@@ -37,6 +67,8 @@ function getBadgeClass(estado: EstadoEventoUI): string {
       return "bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm";
     case "En revisión":
       return "border border-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm";
+    case "Cancelado":
+      return "bg-red-100 text-red-700 rounded-full px-3 py-1 text-sm";
     default:
       return "rounded-full px-3 py-1 text-sm";
   }
@@ -51,6 +83,8 @@ function mapEstadoToUI(estadoApi: string): EstadoEventoUI {
       return "Borrador";
     case "PENDIENTE_APROBACION":
       return "En revisión";
+    case "CANCELADO":
+      return "Cancelado";
     default:
       return "Borrador";
   }
@@ -67,8 +101,7 @@ const CardEventos: React.FC = () => {
 
   // Modal editar
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [selectedEventFull, setSelectedEventFull] = useState<any | null>(null);
+  const [selectedEventFull, setSelectedEventFull] = useState<EditEventData | null>(null);
 
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
@@ -87,30 +120,28 @@ const CardEventos: React.FC = () => {
     setError(null);
     try {
       const lista = await listarDetalladosOrganizador();
-      const items: EventoItem[] = lista.map((ev: any) => {
+      const items: EventoItem[] = (lista as EventoDetalladoOrganizador[]).map((ev) => {
         const fechaISO = ev.fechaEvento || "";
         let fecha = "";
         let hora = "";
-        try {
-          const d = new Date(fechaISO);
-          if (!isNaN(d.getTime())) {
-            fecha = d.toISOString().slice(0, 10);
-            hora = d.toISOString().slice(11, 16);
-          }
-        } catch {}
+        const d = new Date(fechaISO);
+        if (!isNaN(d.getTime())) {
+          fecha = d.toISOString().slice(0, 10);
+          hora = d.toISOString().slice(11, 16);
+        }
         return {
           id: ev.id,
           nombre: ev.nombre,
           fecha,
           estado: mapEstadoToUI(ev.estado),
           descripcion: ev.descripcion || "",
-            hora,
-            lugar: ev.lugar || "",
-            departamento: ev.departamento || "",
-            provincia: ev.provincia || "",
-            distrito: ev.distrito || "",
-            imagenPortadaBase64: ev.imagenBannerBase64 || null,
-            imagenNombre: ev.imagenBannerBase64 ? "portada" : null,
+          hora,
+          lugar: ev.lugar || "",
+          departamento: ev.departamento || "",
+          provincia: ev.provincia || "",
+          distrito: ev.distrito || "",
+          imagenPortadaBase64: ev.imagenBannerBase64 || null,
+          imagenNombre: ev.imagenBannerBase64 ? "portada" : null,
         };
       });
       setEventos(items);
@@ -216,7 +247,9 @@ const CardEventos: React.FC = () => {
 
       const resp = await createEvent(payload);
       if (!resp || !resp.success) {
-        throw new Error("Respuesta inválida del servidor");
+        console.error("Respuesta inválida del servidor al crear evento", resp);
+        alert("No se pudo crear el evento");
+        return;
       }
 
       // Actualizar UI localmente sin recargar
@@ -248,8 +281,7 @@ const CardEventos: React.FC = () => {
       if (!ev) return;
       setIsLoading(true);
       const detalle = await obtenerEventosDetallados(ev.id);
-      // detalle tiene formato Event público mapeado; adaptamos a shape usado por Modal (espera nombre/descripcion/fechaEvento)
-      const mapped = {
+      const mapped: EditEventData = {
         id: detalle.id,
         nombre: detalle.title,
         descripcion: detalle.description,
@@ -257,16 +289,15 @@ const CardEventos: React.FC = () => {
         fecha: detalle.date,
         hora: detalle.time,
         lugar: detalle.place,
-        estado: ev.estado === "Publicado" ? "PUBLICADO" : ev.estado === "En revisión" ? "PENDIENTE_APROBACION" : "BORRADOR",
+        estado: ev.estado === "Publicado" ? "PUBLICADO" : ev.estado === "En revisión" ? "PENDIENTE_APROBACION" : ev.estado === "Cancelado" ? "CANCELADO" : "BORRADOR",
         departamento: detalle.departamento,
         provincia: detalle.provincia,
         distrito: detalle.distrito,
         imagenBanner: detalle.image || null,
         artistaId: detalle.artist?.id,
-        artist: detalle.artist,
+        artist: detalle.artist ? { id: detalle.artist.id } : undefined,
       };
       setSelectedEventFull(mapped);
-      setEditingIndex(index);
       setIsEditOpen(true);
     } catch (e) {
       console.error("Error al obtener evento detallado:", e);
@@ -275,42 +306,67 @@ const CardEventos: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   const handleCloseEdit = () => {
-    setEditingIndex(null);
     setIsEditOpen(false);
     setSelectedEventFull(null);
   };
 
-  // Confirmar eliminación (solo UI)
-  const confirmarEliminacion = () => {
-    if (!eventoAEliminar) return;
-    setEventos((prev) => prev.filter((_, i) => i !== eventoAEliminar.index));
-    // Si el eliminado es el seleccionado, limpiar selección
-    if (selectedIndex === eventoAEliminar.index) {
-      setSelectedIndex(null);
-      setEventoSeleccionado(null);
-    } else if (selectedIndex !== null && eventoAEliminar.index < selectedIndex) {
-      // Ajustar índice si se elimina un elemento anterior a la selección
-      setSelectedIndex((prev) => (prev !== null ? prev - 1 : null));
-    }
-    setEventoAEliminar(null);
-  };
+  // Confirmar eliminación (cancelación lógica vía PUT)
+  const handleConfirmDelete = async () => {
+    try {
+      if (!eventoAEliminar) return;
+      const evListado = eventos[eventoAEliminar.index];
+      if (!evListado) return;
 
-  // Datos iniciales para el modal de edición en el shape de NuevoEventoForm
-  const editInitial: NuevoEventoForm | null = editingIndex !== null
-    ? {
-        nombre: eventos[editingIndex].nombre || "",
-        descripcion: eventos[editingIndex].descripcion || "",
-        fecha: eventos[editingIndex].fecha || "",
-        hora: eventos[editingIndex].hora || "",
-        lugar: eventos[editingIndex].lugar || "",
-        estado: eventos[editingIndex].estado,
-        imagen: null,
-        departamento: eventos[editingIndex].departamento || "",
-        provincia: eventos[editingIndex].provincia || "",
-        distrito: eventos[editingIndex].distrito || "",
+      // Obtener detalle actual para construir payload completo
+      const detalle = await obtenerEventosDetallados(evListado.id);
+
+      const artistaId = detalle.artist?.id || 0;
+      if (!artistaId) {
+        alert("No se pudo cancelar: el evento no tiene artista asignado.");
+        return;
+      }
+
+      const fecha = detalle.date;
+      const hora = detalle.time || "00:00";
+      const departamento = detalle.departamento || "";
+      const provincia = detalle.provincia || "";
+      const distrito = detalle.distrito || "";
+      const lugar = (detalle.place || "").trim();
+
+      if (!fecha || !hora || !departamento || !provincia || !distrito || !lugar) {
+        alert("No se pudo cancelar: faltan datos obligatorios del evento.");
+        return;
+      }
+
+      const payload = {
+        nombre: detalle.title || evListado.nombre,
+        descripcion: detalle.description || "",
+        fecha,
+        hora,
+        artistaId,
+        departamento,
+        provincia,
+        distrito,
+        lugar,
+        estado: "CANCELADO", // solo cambiamos estado
+      };
+
+      const resp = await actualizarEvento(evListado.id, payload);
+      if (resp && (resp as { success?: boolean }).success) {
+        alert("Evento cancelado correctamente");
+        setEventoAEliminar(null); // cerrar modal
+        await loadEventos(); // refrescar listado
+        return;
+      }
+
+      alert("No se pudo cancelar el evento");
+    } catch (error) {
+      console.error("Error cancelando evento:", error);
+      alert("No se pudo cancelar el evento");
     }
-    : null;
+  };
 
   // Render del encabezado o detalles
   const renderTopCard = () => {
@@ -516,7 +572,7 @@ const CardEventos: React.FC = () => {
           open={!!eventoAEliminar}
           nombre={eventoAEliminar?.nombre || ""}
           onCancel={() => setEventoAEliminar(null)}
-          onConfirm={confirmarEliminacion}
+          onConfirm={handleConfirmDelete}
         />
       </section>
 
@@ -527,3 +583,4 @@ const CardEventos: React.FC = () => {
 };
 
 export default CardEventos;
+

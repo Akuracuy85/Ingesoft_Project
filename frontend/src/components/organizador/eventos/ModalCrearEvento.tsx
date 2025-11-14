@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 
-export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión";
+export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
 
 export interface NuevoEventoForm {
   nombre: string;
