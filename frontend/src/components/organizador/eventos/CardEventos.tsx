@@ -577,7 +577,18 @@ const CardEventos: React.FC = () => {
       </section>
 
       {/* Configuración del evento */}
-      {eventoSeleccionado && <ConfiguracionEvento eventoId={eventoSeleccionado.id} />}
+      {eventoSeleccionado && <ConfiguracionEvento evento={{
+        eventoId: eventoSeleccionado.id,
+        nombre: eventoSeleccionado.nombre,
+        descripcion: eventoSeleccionado.descripcion || "",
+        fecha: eventoSeleccionado.fecha,
+        hora: eventoSeleccionado.hora || "",
+        lugar: eventoSeleccionado.lugar || "",
+        departamento: eventoSeleccionado.departamento || "",
+        provincia: eventoSeleccionado.provincia || "",
+        distrito: eventoSeleccionado.distrito || "",
+        estado: eventoSeleccionado.estado
+      }} />}
     </>
   );
 };

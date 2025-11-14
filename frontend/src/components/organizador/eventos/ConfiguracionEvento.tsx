@@ -3,12 +3,25 @@ import ZonasYTarifasCard, { type ZonasYTarifasCardProps } from "./ZonasYTarifasC
 import TerminosCard from "./TerminosCard";
 import DocumentosCard from "./DocumentosCard";
 
-export default function ConfiguracionEvento({ eventoId }: { eventoId: number }) {
+interface EventoSeleccionadoProps {
+  eventoId: number;
+  nombre: string;
+  descripcion?: string;
+  fecha: string;
+  hora?: string;
+  lugar?: string;
+  departamento?: string;
+  provincia?: string;
+  distrito?: string;
+  estado: string; // UI estado
+}
+
+export default function ConfiguracionEvento({ evento }: { evento: EventoSeleccionadoProps }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
       {/* Zonas y tarifas ocupa ambas columnas */}
       <div className="col-span-2">
-        <ZonasYTarifasCard eventoId={eventoId} />
+        <ZonasYTarifasCard eventoId={evento.eventoId} eventoEstadoUI={evento.estado} />
       </div>
       <TerminosCard />
       <DocumentosCard />

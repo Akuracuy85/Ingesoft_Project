@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { MapPin, ImageOff, Upload, Plus, Trash2, Save } from "lucide-react";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
-import EventoService from "@/services/EventoService";
+import { actualizarEvento, obtenerEventosDetallados, mapEstadoUIToBackend } from "@/services/EventoService";
 
-interface ZonasYTarifasCardProps { eventoId: number; }
+interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; }
 
-const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId }) => {
+const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoEstadoUI }) => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapa, setMapa] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!eventoId) return;
@@ -90,9 +91,74 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId }) => {
     if (e.target.files?.[0]) setMapa(e.target.files[0]);
   };
 
-  const handleGuardar = () => {
-    console.log("Zonas guardadas:", zones);
-    alert("Configuración de zonas guardada correctamente");
+  const handleGuardar = async () => {
+    if (!eventoId) return;
+    try {
+      setIsSaving(true);
+      // Obtener detalles completos (para artistaId y campos obligatorios)
+      const detalle = await obtenerEventosDetallados(eventoId);
+
+      // Construir zonas DTO (incluye existentes y nuevas)
+      const zonasDto = zones.map((z) => ({
+        id: z.id,
+        nombre: z.nombre.trim(),
+        capacidad: z.capacidad,
+        cantidadComprada: z.cantidadComprada ?? 0,
+        tarifaNormal: z.tarifaNormal ? {
+          id: z.tarifaNormal.id,
+            nombre: "tarifaNormal",
+            precio: z.tarifaNormal.precio,
+            fechaInicio: detalle.date, // se podría refinar con inputs
+            fechaFin: detalle.date, // misma fecha por ahora
+        } : null,
+        tarifaPreventa: z.tarifaPreventa ? {
+          id: z.tarifaPreventa.id,
+          nombre: "tarifaPreventa",
+          precio: z.tarifaPreventa.precio,
+          fechaInicio: detalle.date,
+          fechaFin: detalle.date,
+        } : null,
+      }));
+
+      // Payload actualizar evento (requeridos según backend)
+      const payload = {
+        nombre: detalle.title,
+        descripcion: detalle.description,
+        fecha: detalle.date,
+        hora: detalle.time || "00:00",
+        artistaId: detalle.artist?.id || 0,
+        departamento: detalle.departamento || "",
+        provincia: detalle.provincia || "",
+        distrito: detalle.distrito || "",
+        lugar: detalle.place || "",
+        estado: mapEstadoUIToBackend(eventoEstadoUI),
+        zonas: zonasDto,
+      };
+
+      const resp = await actualizarEvento(eventoId, payload);
+      if (!resp || !(resp as any).success) {
+        alert("No se pudo crear la zona");
+        return;
+      }
+      // Recargar zonas
+      const postData = await obtenerEventosDetallados(eventoId);
+      const nuevasZonasRaw = (postData as any).zonas || [];
+      const recargadas: Zone[] = nuevasZonasRaw.map((z: any) => ({
+        id: z.id,
+        nombre: z.nombre,
+        capacidad: z.capacidad,
+        cantidadComprada: z.cantidadComprada,
+        tarifaNormal: z.tarifaNormal as Tarifa,
+        tarifaPreventa: (z.tarifaPreventa as Tarifa) || null,
+      }));
+      setZones(recargadas);
+      alert("Zonas guardadas correctamente");
+    } catch (e) {
+      console.error("Error guardando zonas", e);
+      alert("No se pudo crear la zona");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -200,8 +266,8 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId }) => {
         <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600">
           <Plus className="h-4 w-4" /> Agregar zona
         </button>
-        <button onClick={handleGuardar} className="bg-gray-900 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
-          <Save className="h-4 w-4" /> Guardar configuración
+        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
+          <Save className="h-4 w-4" /> {isSaving ? "Guardando..." : "Guardar configuración"}
         </button>
       </div>
 
