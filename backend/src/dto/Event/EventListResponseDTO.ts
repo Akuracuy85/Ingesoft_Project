@@ -37,4 +37,5 @@ export interface EventListResponseDTO {
     zonas: ZonaDto[]; // Mapeado de 'evento.zonas'
     // ---
     //placeEspecific: string; // Mapeado desde 'lugar'
+    imagePlace?: string;
 }

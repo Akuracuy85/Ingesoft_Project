@@ -1,26 +1,25 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   Calendar,
   Users,
   FileText,
   Settings,
- // 1. Importamos el tipo para los íconos de 'lucide-react'
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-// --- 1. Definición de Tipos para los Datos ---
 
-// Definimos la estructura de un elemento del menú
 interface MenuItem {
   name: string;
-  icon: LucideIcon; // El icono es de tipo LucideIcon
+  icon: LucideIcon;
+  path: string;
 }
 
 // Menú principal (la constante ahora usa el tipo MenuItem[])
 const menuItems: MenuItem[] = [
-  { name: "Gestión de eventos", icon: Calendar },
-  { name: "Usuarios", icon: Users },
-  { name: "Reportes", icon: FileText },
-  { name: "Configuración", icon: Settings },
+  { name: "Gestión de eventos", icon: Calendar, path: "/admin/eventos" },
+  { name: "Usuarios", icon: Users, path: "/admin/usuarios" },
+  { name: "Reportes", icon: FileText, path: "/admin/usuarios" },
+  { name: "Configuración", icon: Settings, path: "/admin/usuarios" },
 ];
 
 // --- 2. Definición de Tipos para las Propiedades (Props) ---
@@ -59,12 +58,12 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
         </p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
-            // Ya no necesitas 'const Icon = item.icon;' porque TypeScript ya sabe el tipo.
             const Icon = item.icon;
             const isActive = item.name === activeItem;
             return (
               <li key={item.name}>
-                <button
+                <Link
+                  to={item.path}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -73,7 +72,7 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}
-                </button>
+                </Link>
               </li>
             );
           })}
