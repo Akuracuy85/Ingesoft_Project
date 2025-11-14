@@ -1,17 +1,9 @@
-// CAMBIO: [2025-10-26] - Creado OrdenCompraRepository
-// CAMBIO: [2025-10-26] - Refactor: Simplificada la transacción
-// Se elimina 'clienteActualizado' de la firma de 'guardarOrdenConTransaccion'
-// ya que los puntos no se actualizan en este paso.
-import { AppDataSource } from "@/database/data-source";
-import { DetalleOrden } from "@/models/DetalleOrden";
-import { OrdenCompra } from "@/models/OrdenCompra";
-import { Zona } from "@/models/Zona";
+import { AppDataSource } from "../database/data-source";
+import { DetalleOrden } from "../models/DetalleOrden";
+import { OrdenCompra } from "../models/OrdenCompra";
+import { Zona } from "../models/Zona";
 import { Repository } from "typeorm";
-// Importamos Cliente solo para la firma de la transacción (aunque ahora se elimina)
-// Para evitar errores si se usa en otro lado, lo dejamos importado.
-import { Cliente } from "@/models/Cliente";
-import { Usuario } from "@/models/Usuario";
-
+import { Usuario } from "../models/Usuario";
 import { EstadoOrden } from "../enums/EstadoOrden";
 
 export class OrdenCompraRepository {

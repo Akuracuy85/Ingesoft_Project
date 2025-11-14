@@ -1,8 +1,11 @@
-import { AppDataSource } from "@/database/data-source";
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { Documento } from "@/models/Documento";
-import { Evento } from "@/models/Evento";
-import { Zona } from "@/models/Zona";
+import { AppDataSource } from "../database/data-source";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { Documento } from "../models/Documento";
+import { Evento } from "../models/Evento";
+import { Zona } from "../models/Zona";
+import { Acción } from "../models/Acción";
+import { CustomError } from "../types/CustomError";
+import { StatusCodes } from "http-status-codes";
 import { Brackets, Repository } from "typeorm";
 
 export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
@@ -42,7 +45,7 @@ export class EventoRepository {
     }
     return EventoRepository.instance;
   }
-  
+
   async obtenerDatosBasicosPorOrganizador(
     organizadorId: number
   ): Promise<EventoBasico[]> {
@@ -148,12 +151,12 @@ export class EventoRepository {
     // qb.leftJoin("evento.zonas", "zona");
     // qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
     // qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
-    
-    
+
+
     qb.leftJoinAndSelect("evento.zonas", "zona");
     qb.leftJoinAndSelect("zona.tarifaNormal", "tarifaNormal");
     qb.leftJoinAndSelect("zona.tarifaPreventa", "tarifaPreventa");
-    
+
 
     if (filtros.departamento) {
       qb.andWhere("evento.departamento = :depto", {
@@ -172,16 +175,16 @@ export class EventoRepository {
         artistaId: Number(filtros.artistaId),
       });
     }*/
-   
 
-     if (filtros.artistaIds && filtros.artistaIds.length > 0) {
-      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
-    }
+
+    if (filtros.artistaIds && filtros.artistaIds.length > 0) {
+      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
+    }
 
     // 🛑 LÓGICA DE IDs (MÁS SIMPLE)
-    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
-      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
-    }
+    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
+      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
+    }
 
     if (filtros.fechaInicio) {
       qb.andWhere("evento.fechaEvento >= :fechaInicio", {
@@ -195,9 +198,9 @@ export class EventoRepository {
     }
 
     const precioMin = filtros.precioMin;
-    const precioMax = filtros.precioMax;
-    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
-    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
+    const precioMax = filtros.precioMax;
+    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
+    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
 
     if (aplicarMin || aplicarMax) {
       qb.andWhere(
@@ -205,17 +208,17 @@ export class EventoRepository {
           if (aplicarMin && aplicarMax) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio BETWEEN :precioMin AND :precioMax) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
             );
           } else if (aplicarMin) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio >= :precioMin) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
             );
           } else if (aplicarMax) {
             precioQb.where(
               "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio <= :precioMax) OR " +
-                "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
+              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
             );
           }
         })
@@ -244,14 +247,55 @@ export class EventoRepository {
         },
         artista: true,
         calificaciones: true,
+        cola: true,
       },
     });
   }
 
-/**
-   * @description Busca un evento por ID cargando las relaciones mínimas necesarias
-   * para el proceso de mapeo DTO de la vista de compra (Zonas y Artista).
+  /**
+   * Cambia el estado de un evento y crea una acción asociada en la misma transacción.
+   * Esto garantiza que ambos cambios se apliquen de forma atómica.
    */
+  async cambiarEstadoEventoConAccion(
+    eventoId: number,
+    nuevoEstado: EstadoEvento,
+    accionData: Partial<Acción>
+  ): Promise<Evento> {
+    try {
+      return await AppDataSource.manager.transaction(async (manager) => {
+        const eventoRepo = manager.getRepository(Evento);
+        const accionRepo = manager.getRepository(Acción);
+
+        const evento = await eventoRepo.findOne({ where: { id: eventoId } });
+        if (!evento) {
+          throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+        }
+
+        evento.estado = nuevoEstado;
+        if (nuevoEstado === EstadoEvento.PUBLICADO) {
+          evento.fechaPublicacion = new Date();
+        }
+
+        const eventoGuardado = await eventoRepo.save(evento);
+
+        const nuevaAccion = accionRepo.create(accionData);
+        await accionRepo.save(nuevaAccion);
+
+        return eventoGuardado;
+      });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al actualizar el estado del evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+     * @description Busca un evento por ID cargando las relaciones mínimas necesarias
+     * para el proceso de mapeo DTO de la vista de compra (Zonas y Artista).
+     */
   async buscarPorIdParaCompra(id: number): Promise<Evento | null> {
     return await this.repository.findOne({
       where: { id },
@@ -261,7 +305,7 @@ export class EventoRepository {
           tarifaPreventa: true
         }, // Necesario para 'zonasDisponibles'
         artista: true, // Necesario para mapear 'artistName'
-
+        cola: true,
       },
     });
   }
@@ -281,7 +325,20 @@ export class EventoRepository {
     // .getRawMany() devuelve objetos planos
     return await qb.getRawMany<IUbicacionFiltro>();
   }
-  
+
+  async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
+    const qb = this.repository.createQueryBuilder("evento");
+    qb.leftJoin("evento.entradas", "entrada")
+      .leftJoin("entrada.ordenCompra", "ordenCompra")
+      .leftJoin("ordenCompra.cliente", "cliente")
+      .select("cliente.email", "email")
+      .where("evento.id = :eventoId", { eventoId })
+      .andWhere("ordenCompra.estado = :estado", { estado: "COMPLETADA" })
+      .distinct(true);
+    const resultados = await qb.getRawMany<{ email: string }>();
+    return resultados.map((r) => r.email);
+  }
+
 }
 
 export const eventoRepository = EventoRepository.getInstance();

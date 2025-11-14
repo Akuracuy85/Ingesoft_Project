@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { UsuarioService } from "@/services/UsuarioService";
-import { HandleResponseError } from "@/utils/Errors";
+import { UsuarioService } from "../services/UsuarioService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
 
 export class UsuarioController {
@@ -97,6 +97,20 @@ export class UsuarioController {
       HandleResponseError(res, error);
     }
   }
+
+  obtenerTodos = async (req: Request, res: Response) => {
+    try {
+      const usuarios = await this.usuarioService.getAllUser();
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        usuarios: usuarios,
+        message: "Lista de usuarios obtenida correctamente."
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  }
 
 }
 

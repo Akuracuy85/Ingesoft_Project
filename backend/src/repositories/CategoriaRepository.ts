@@ -1,6 +1,6 @@
 // src/repositories/CategoriaRepository.ts
-import { AppDataSource } from "@/database/data-source";
-import { Categoria } from "@/models/Categoria";
+import { AppDataSource } from "../database/data-source";
+import { Categoria } from "../models/Categoria";
 import { Repository } from "typeorm";
 
 export class CategoriaRepository {

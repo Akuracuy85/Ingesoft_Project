@@ -1,28 +1,32 @@
-import { AppDataSource } from "@/database/data-source";
+import { AppDataSource } from "../database/data-source";
 import {
   EventoRepository,
   IFiltrosEvento,
-} from "@/repositories/EventoRepository";
-import { Evento } from "@/models/Evento";
-import { CustomError } from "@/types/CustomError";
+} from "../repositories/EventoRepository";
+import { Evento } from "../models/Evento";
+import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { EventoBasicoDto } from "@/dto/evento/EventoBasicoDto";
-import { CrearEventoDto } from "@/dto/evento/CrearEventoDto";
-import { EstadoEvento } from "@/enums/EstadoEvento";
-import { Rol } from "@/enums/Rol";
-import { UsuarioRepository } from "@/repositories/UsuarioRepository";
-import { Organizador } from "@/models/Organizador";
+import { EventoBasicoDto } from "../dto/evento/EventoBasicoDto";
+import { CrearEventoDto } from "../dto/evento/CrearEventoDto";
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { Rol } from "../enums/Rol";
+import { UsuarioRepository } from "../repositories/UsuarioRepository";
+import { Organizador } from "../models/Organizador";
+import { Usuario } from "../models/Usuario";
 import { randomBytes } from "crypto";
-import { ActualizarEventoDto } from "@/dto/evento/ActualizarEventoDto";
-import { Documento } from "@/models/Documento";
-import { DocumentoDto } from "@/dto/evento/DocumentoDto";
-import { ZonaDto } from "@/dto/evento/ZonaDto";
-import { Zona } from "@/models/Zona";
-import { EventoDetalleDto } from "@/dto/evento/EventoDetalleDto";
-import { Artista } from "@/models/Artista";
+import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
+import { Documento } from "../models/Documento";
+import { DocumentoDto } from "../dto/evento/DocumentoDto";
+import { ZonaDto } from "../dto/evento/ZonaDto";
+import { Zona } from "../models/Zona";
+import { EventoDetalleDto } from "../dto/evento/EventoDetalleDto";
+import { Artista } from "../models/Artista";
 import { Repository } from "typeorm";
-import { TarifaDto } from "@/dto/evento/TarifaDto";
-import { Tarifa } from "@/models/Tarifa";
+import { TarifaDto } from "../dto/evento/TarifaDto";
+import { Tarifa } from "../models/Tarifa";
+import { S3Service } from "../services/S3Service";
+import { AccionRepository } from "../repositories/AccionRepository";
+import { TipoAccion } from "../enums/TipoAccion";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -87,6 +91,7 @@ export class EventoService {
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
+        lugar: evento.lugar,
         fechaPublicacion: evento.fechaPublicacion.toISOString(),
         aforoTotal: evento.aforoTotal,
         entradasVendidas: evento.entradasVendidas,
@@ -178,6 +183,7 @@ export class EventoService {
         departamento: data.departamento.trim(),
         provincia: data.provincia.trim(),
         distrito: data.distrito.trim(),
+        lugar: data.lugar.trim(),
         estado,
         fechaPublicacion: new Date(),
         aforoTotal: 0,
@@ -244,6 +250,7 @@ export class EventoService {
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
     evento.distrito = data.distrito.trim();
+    evento.lugar = data.lugar.trim();
     evento.artista = artista;
 
     if (data.imagenPortada !== undefined) {
@@ -322,6 +329,7 @@ export class EventoService {
     if (!terminosDto) {
       // Null explícito significa eliminar los términos actuales.
       if (evento.terminosUso?.id) {
+        await this.eliminarDocumentoEnAlmacenamiento(evento.terminosUso.url);
         await this.eventoRepository.eliminarDocumentoPorId(
           evento.terminosUso.id
         );
@@ -330,20 +338,25 @@ export class EventoService {
       return;
     }
 
+    const carpetaS3 = `eventos/${evento.id}/terminos`;
+
     if (evento.terminosUso) {
-      evento.terminosUso.nombreArchivo = terminosDto.nombreArchivo.trim();
-      evento.terminosUso.tipo = terminosDto.tipo.trim();
-      evento.terminosUso.tamano = terminosDto.tamano;
-      evento.terminosUso.url = terminosDto.url.trim();
+      await this.prepararDocumentoParaGuardar(
+        evento.terminosUso,
+        terminosDto,
+        carpetaS3,
+        evento.terminosUso.url
+      );
       await this.eventoRepository.guardarDocumento(evento.terminosUso);
       return;
     }
 
     const documento = new Documento();
-    documento.nombreArchivo = terminosDto.nombreArchivo.trim();
-    documento.tipo = terminosDto.tipo.trim();
-    documento.tamano = terminosDto.tamano;
-    documento.url = terminosDto.url.trim();
+    await this.prepararDocumentoParaGuardar(
+      documento,
+      terminosDto,
+      carpetaS3
+    );
     const documentoGuardado = await this.eventoRepository.guardarDocumento(
       documento
     );
@@ -365,28 +378,38 @@ export class EventoService {
     for (const docDto of documentosDto) {
       if (docDto.id && documentosPorId.has(docDto.id)) {
         const documento = documentosPorId.get(docDto.id)!;
-        documento.nombreArchivo = docDto.nombreArchivo.trim();
-        documento.tipo = docDto.tipo.trim();
-        documento.tamano = docDto.tamano;
-        documento.url = docDto.url.trim();
+        await this.prepararDocumentoParaGuardar(
+          documento,
+          docDto,
+          `eventos/${evento.id}/documentos`,
+          documento.url
+        );
         documento.evento = evento;
         idsRecibidos.add(docDto.id);
       } else {
         const documento = new Documento();
-        documento.nombreArchivo = docDto.nombreArchivo.trim();
-        documento.tipo = docDto.tipo.trim();
-        documento.tamano = docDto.tamano;
-        documento.url = docDto.url.trim();
+        await this.prepararDocumentoParaGuardar(
+          documento,
+          docDto,
+          `eventos/${evento.id}/documentos`
+        );
         documento.evento = evento;
         nuevos.push(documento);
       }
     }
 
-    const idsAEliminar = actuales
-      .filter((doc) => doc.id && !idsRecibidos.has(doc.id))
-      .map((doc) => doc.id as number);
+    const documentosAEliminar = actuales.filter(
+      (doc) => doc.id && !idsRecibidos.has(doc.id)
+    );
+
+    const idsAEliminar = documentosAEliminar.map((doc) => doc.id as number);
 
     if (idsAEliminar.length) {
+      await Promise.all(
+        documentosAEliminar.map((doc) =>
+          this.eliminarDocumentoEnAlmacenamiento(doc.url)
+        )
+      );
       await this.eventoRepository.eliminarDocumentosPorIds(idsAEliminar);
     }
 
@@ -406,6 +429,97 @@ export class EventoService {
     }
 
     evento.documentosRespaldo = resultado;
+  }
+
+  private async prepararDocumentoParaGuardar(
+    documento: Documento,
+    dto: DocumentoDto,
+    carpetaS3: string,
+    urlAnterior?: string | null
+  ) {
+    documento.nombreArchivo = dto.nombreArchivo.trim();
+
+    let tamano = Number(dto.tamano);
+    if (!Number.isFinite(tamano) || tamano <= 0) {
+      tamano = undefined;
+    }
+
+    let url = dto.url?.trim();
+    let tipoDesdeCarga: string | undefined;
+
+    if (dto.contenidoBase64) {
+      const s3 = S3Service.getInstance();
+      const resultado = await s3.subirBase64({
+        base64: dto.contenidoBase64,
+        fileName: documento.nombreArchivo,
+        contentType: dto.tipo,
+        prefix: carpetaS3,
+      });
+      url = resultado.url;
+      tamano = resultado.size;
+      tipoDesdeCarga = resultado.contentType;
+
+      if (urlAnterior && urlAnterior !== url) {
+        await s3.eliminarPorUrl(urlAnterior);
+      }
+    } else if (!url) {
+      throw new CustomError(
+        "El documento debe incluir una URL válida o su contenido en base64",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const tamanoFinal = tamano ?? documento.tamano;
+    if (tamanoFinal === undefined || tamanoFinal === null) {
+      throw new CustomError(
+        "El tamaño del documento es obligatorio",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    documento.tamano = tamanoFinal;
+    documento.tipo = this.normalizarTipoDocumento(
+      dto.tipo,
+      tipoDesdeCarga,
+      documento.tipo
+    );
+    documento.url = url!;
+  }
+
+  private normalizarTipoDocumento(
+    ...tipos: Array<string | undefined | null>
+  ): string {
+    for (const tipo of tipos) {
+      if (!tipo) continue;
+      const limpio = tipo.trim();
+      if (!limpio) continue;
+      if (limpio.includes("/")) {
+        return limpio;
+      }
+    }
+
+    for (const tipo of tipos) {
+      if (!tipo) continue;
+      const limpio = tipo.trim();
+      if (limpio) {
+        return limpio;
+      }
+    }
+
+    return "application/octet-stream";
+  }
+
+  private async eliminarDocumentoEnAlmacenamiento(
+    url?: string | null
+  ): Promise<void> {
+    if (!url) return;
+    try {
+      const s3 = S3Service.getInstance();
+      await s3.eliminarPorUrl(url);
+    } catch (error) {
+      // Se ignora cualquier error para no afectar la operación principal.
+      console.warn("No se pudo eliminar el archivo en S3:", error);
+    }
   }
 
   private async sincronizarZonas(evento: Evento, zonasDto: ZonaDto[]) {
@@ -576,6 +690,7 @@ export class EventoService {
       "departamento",
       "provincia",
       "distrito",
+      "lugar",
       "estado",
     ];
     for (const campo of campos) {
@@ -686,6 +801,81 @@ export class EventoService {
       );
     }
   }
+  /**
+   * Aprueba un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async aprobarEvento(eventoId: number, autor: Usuario): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden aprobar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.PUBLICADO;
+    evento.fechaPublicacion = new Date();
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      // Registrar la acción
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} aprobado`,
+        tipo: TipoAccion.AprobarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al aprobar el evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * Rechaza o cancela un evento. Solo un administrador puede ejecutar esta acción.
+   */
+  async rechazarEvento(eventoId: number, autor: Usuario, motivo?: string): Promise<Evento> {
+    // El middleware de autorización debe garantizar que 'autor' tenga rol ADMINISTRADOR
+    const evento = await this.eventoRepository.buscarPorId(eventoId);
+    if (!evento) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+
+    if (evento.estado !== EstadoEvento.PENDIENTE_APROBACION) {
+      throw new CustomError(
+        "Solo se pueden rechazar eventos en estado PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    evento.estado = EstadoEvento.CANCELADO;
+
+    try {
+      const guardado = await this.eventoRepository.guardarEvento(evento);
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Evento ${evento.nombre} rechazado${motivo ? `: ${motivo}` : ''}`,
+        tipo: TipoAccion.CancelarEvento,
+        autor,
+      });
+      return guardado;
+    } catch (error) {
+      throw new CustomError(
+        "Error al rechazar el evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
   async obtenerFiltrosUbicacion(): Promise<FiltrosUbicacion> {
     try {
       const ubicacionesPlanas = await this.eventoRepository.obtenerUbicaciones();
@@ -721,6 +911,20 @@ export class EventoService {
       );
     }
   }
+
+  async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
+    try {
+      const emails = await this.eventoRepository.obtenerEmailDeAsistentesAlEvento(eventoId);
+      return emails;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener los emails de los asistentes al evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
 
 export const eventoService = EventoService.getInstance();
+

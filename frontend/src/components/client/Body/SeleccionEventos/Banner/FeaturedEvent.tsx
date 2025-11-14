@@ -49,10 +49,12 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         <p className="text-lg md:text-xl mb-1">
           📅 {events[currentIndex].date}
         </p>     
-        <p className="text-lg md:text-xl mb-4">
+        <p className="text-lg md:text-xl mb-1">
           📍 {events[currentIndex].place}
         </p>
-
+        <p className="text-lg md:text-xl mb-4">
+          📍 {events[currentIndex].placeEspecific}
+        </p>
         {/* ✅ Botón con estado 'focus' */}
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}

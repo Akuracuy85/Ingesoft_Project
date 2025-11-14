@@ -14,7 +14,6 @@ export default function GestionEventos(): React.ReactElement {
             Administra tus eventos, tarifas, términos y documentación
           </p>
         </div>
-
         <CardEventos />
       </div>
     </OrganizadorLayout>

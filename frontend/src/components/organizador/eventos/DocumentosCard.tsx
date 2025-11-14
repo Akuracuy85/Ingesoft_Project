@@ -21,7 +21,11 @@ export default function DocumentosCard() {
     }
   };
 
-  const handleEliminar = (id: number) => {
+  const handleEliminar = (id: number | undefined) => {
+    if(id === undefined) {
+      console.log("ID del documento no existe");
+      return;
+    }
     setDocumentos((prev) => prev.filter((doc) => doc.id !== id));
   };
 

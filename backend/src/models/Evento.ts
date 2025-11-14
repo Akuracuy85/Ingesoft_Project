@@ -2,7 +2,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -37,17 +36,25 @@ export class Evento {
 
   @Column({type: "text"})
   distrito: string;
+
+  @Column({ type: "text", nullable: true })
+  lugar: string | null;
+
   @Column({ type: "enum", enum: EstadoEvento })
   estado: EstadoEvento;
+
   @Column({ type: "datetime" })
   fechaPublicacion: Date;
+
   @Column({ type: "int" })
   aforoTotal: number;
+
   @Column({ type: "int" })
   entradasVendidas: number;
+
   @Column()
   codigoPrivado: string;
-  // Documento único de términos que se elimina junto con el evento y soporta ediciones.
+
   @OneToOne(() => Documento, {
     nullable: true,
     onDelete: "CASCADE",
@@ -55,28 +62,39 @@ export class Evento {
   })
   @JoinColumn()
   terminosUso?: Documento | null;
+
   @Column({ type: "longblob", nullable: true })
   imagenBanner: Buffer;
+
   @Column({ type: "longblob", nullable: true })
   imagenLugar: Buffer;
+
   @Column({ type: "int" })
   gananciaTotal: number;
+
   @OneToMany(() => Zona, zona => zona.evento, { onDelete: "CASCADE" })
   zonas: Zona[];
+
   @OneToMany(() => Entrada, entrada => entrada.evento, { onDelete: "CASCADE" })
   entradas: Entrada[];
+
   @ManyToOne(() => Artista)
   artista: Artista;
+
   @OneToOne(() => Cola, cola => cola.evento)
   cola: Cola;
+
   @OneToMany(() => Calificacion, (calificacion) => calificacion.evento)
   calificaciones: Calificacion[];
+
   @ManyToOne(() => Organizador, (organizador) => organizador.eventos, {
     nullable: false,
     onDelete: "CASCADE",
   })
+
   @JoinColumn({ name: "organizadorId" })
   organizador: Organizador;
+
   // Colección de documentos adicionales ligados al evento (auto guarda/actualiza).
   @OneToMany(() => Documento, (documento) => documento.evento, {
     cascade: ["insert", "update"],

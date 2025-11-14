@@ -1,18 +1,22 @@
 import { Request, Response } from "express";
-import { EventoService } from "@/services/EventoService";
-import { HandleResponseError } from "@/utils/Errors";
+import { EventoService } from "../services/EventoService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { IFiltrosEvento } from "@/repositories/EventoRepository";
-import { Evento } from "@/models/Evento";
+import { IFiltrosEvento } from "../repositories/EventoRepository";
+import { Evento } from "../models/Evento";
 
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
+import { EstadoEvento } from "../enums/EstadoEvento";
+import { EmailService } from "../services/EmailService";
 
 export class EventoController {
   private static instance: EventoController;
   private eventoService: EventoService;
+  private emailService: EmailService;
 
   private constructor() {
     this.eventoService = EventoService.getInstance();
+    this.emailService = EmailService.getInstance();
   }
 
   public static getInstance(): EventoController {
@@ -169,6 +173,73 @@ export class EventoController {
         req.body,
         organizadorId
       );
+
+      if(evento.estado === EstadoEvento.CANCELADO) {
+        await this.emailService.SendEventCancelledEmail(evento.id);
+      }
+      else {
+        await this.emailService.SendUpdateEventEmail(evento.id);
+      }
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventoId: evento.id,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  aprobarEvento = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+
+  };
+
+  rechazarEvento = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    const { motivo } = req.body as { motivo?: string };
+
+    try {
+      const evento = await this.eventoService.rechazarEvento(
+        eventoId,
+        autor,
+        motivo
+      );
+
+
+
       res.status(StatusCodes.OK).json({
         success: true,
         eventoId: evento.id,
@@ -209,11 +280,11 @@ export class EventoController {
       // 1. Obtener la entidad usando el nuevo método del servicio que carga Zonas y Artista
       const eventoEntidad = await this.eventoService.obtenerDatosParaCompra(eventoId);
       
-      // 2. 🎯 APLICAR EL MAPEO A DTO 🎯
+      // 2.  APLICAR EL MAPEO A DTO
       // Esto transforma la entidad a la estructura del frontend (title, image:base64, artistName, etc.)
       const eventoDto = EventMapper.toPurchaseDTO(eventoEntidad as any); 
 
-      // 3. 🚨 RESPONDER DIRECTAMENTE CON EL DTO 🚨
+      // 3.  RESPONDER DIRECTAMENTE CON EL DTO 
       // Esto elimina la envoltura { success: true, evento: ... }
       return res.status(StatusCodes.OK).json(eventoDto); 
 

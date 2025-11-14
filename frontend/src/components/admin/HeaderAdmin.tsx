@@ -1,31 +1,29 @@
-import React from "react";
-import userIcon from "../../assets/Header_UserIcon.svg";
-import logo from "../../assets/Logo_Unite.svg";
+import React from "react"
+import logo from "../../assets/Logo_Unite.svg"
+import { useAuth } from "@/hooks/useAuth"
+import Loading from "@/components/common/Loading"
 
-// 1. Definimos el tipo para el componente. 
-// 'React.FC' (Functional Component) se usa para componentes que no tienen props o que tienen props bien definidas.
 const HeaderAdmin: React.FC = () => {
+  const { user, isLoading } = useAuth()
+  const userName = user?.nombre || "Administrador"
+
+  if (isLoading) {
+    return <Loading height="h-16" />
+  }
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-8">
-      {/* Logo y nombre */}
+      {/* Logo */}
       <div className="flex items-center gap-2">
         <img src={logo} alt="Unite logo" className="w-25 h-25" />
-        <span className="font-semibold text-foreground"></span>
       </div>
 
       {/* Usuario actual */}
       <div className="flex items-center gap-3">
-        <span className="text-sm text-foreground font-medium">Admin</span>
-        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-          <img
-            src={userIcon}
-            alt="Admin avatar"
-            className="object-cover h-full w-full"
-          />
-        </div>
+        <span className="text-sm text-foreground font-medium">Hola, {userName}</span>
       </div>
     </header>
-  );
+  )
 }
 
-export default HeaderAdmin;
+export default HeaderAdmin

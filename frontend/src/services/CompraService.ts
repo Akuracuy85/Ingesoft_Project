@@ -1,45 +1,73 @@
 // src/services/CompraService.ts
+import HttpClient from "./Client";
+import { type CrearOrdenDto } from "../types/CrearOrdenDTO";
 
-// Importaciones necesarias (ajusta las rutas según tu estructura de carpetas)
-import HttpClient from './Client'; 
-import { type CrearOrdenDto } from '../types/CrearOrdenDTO';
-
-// --- Definición del Tipo de Respuesta del Backend ---
 export type CrearOrdenResponse = {
-    // ID de la orden creada en el backend
-    ordenId: number; 
-    // URL de la pasarela de pago a la que el frontend debe redirigir al usuario
-    paymentUrl: string; 
+  success: boolean;
+  ordenId: number;
+  paymentUrl: string;
 };
 
-// --- Clase del Servicio ---
-class CompraService extends HttpClient {
-    
-    constructor() {
-        // Inicializa HttpClient con la ruta base de la entidad '/orden'
-        // (Esto establece la baseURL del cliente Axios a algo como /api/orden)
-        super('/orden'); 
-    }
-
-    /**
-     * @description Envía el DTO de la orden de compra al backend.
-     */
-    async crearOrden(payload: CrearOrdenDto): Promise<CrearOrdenResponse> {
-        
-        // 🛑 CORRECCIÓN CLAVE: Pasamos una ruta vacía ('' o sin argumento).
-        // Esto asegura que la URL final sea exactamente http://localhost:3000/api/orden,
-        // eliminando el slash sobrante que causaba el 404.
-        const respuesta = await super.post('', payload); 
-
-        // Asumiendo que el backend devuelve un objeto con la estructura que tiene los campos
-        return {
-            ordenId: respuesta.ordenId,
-            paymentUrl: respuesta.paymentUrl,
-        };
-    }
-    
-    // Aquí puedes añadir otros métodos como obtenerDetalleOrden, etc.
+interface ApiResponseData<T> {
+  success: boolean;
+  data: T;
 }
 
-// Exporta una instancia única (Singleton) del servicio
+interface EntradasCountResponse {
+  cantidad: number;
+}
+
+class CompraService extends HttpClient {
+  constructor() {
+    super("/orden");
+  }
+
+  /**
+   * 🧾 Crea una nueva orden de compra y devuelve el ID y la URL de pago.
+   */
+  async crearOrden(payload: CrearOrdenDto): Promise<CrearOrdenResponse> {
+    const respuesta = await super.post("", payload);
+    return {
+      success: respuesta.success,
+      ordenId: respuesta.ordenId,
+      paymentUrl: respuesta.paymentUrl,
+    };
+  }
+
+  /**
+   * 📊 Obtiene la cantidad de entradas del usuario para un evento.
+   */
+  async getCantidadEntradasPorEvento(eventoId: number): Promise<number | null> {
+    try {
+      const respuesta = await super.get<ApiResponseData<EntradasCountResponse>>(
+        `/mis-entradas/evento/${eventoId}/count`
+      );
+
+      if (respuesta.success && typeof respuesta.data.cantidad === "number") {
+        return respuesta.data.cantidad;
+      }
+
+      console.warn("Respuesta inesperada al contar entradas:", respuesta);
+      return null;
+    } catch (error) {
+      console.error("Error al obtener cantidad de entradas:", error);
+      return null;
+    }
+  }
+
+  /**
+   * ✅ Confirma una orden estándar (normal), asignando puntos.
+   */
+  async confirmarStandar(ordenId: number): Promise<any> {
+    return super.patch(`/${ordenId}/confirmar-standar`, {});
+  }
+
+  /**
+   * 💎 Confirma una orden de preventa (preferencial), restando puntos.
+   */
+  async confirmarPreventa(ordenId: number): Promise<any> {
+    return super.patch(`/${ordenId}/confirmar-preventa`, {});
+  }
+}
+
 export default new CompraService();

@@ -7,7 +7,7 @@ import React, {
   useEffect 
 } from "react";
 // Usamos los tipos que ya tienes
-import { type User } from "@/models/User"; 
+import { type Rol, type User } from "@/models/User"; 
 // Asumimos que AuthService está en la ruta correcta
 import AuthService from "@/services/AuthService"; 
 
@@ -16,7 +16,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   isLoading: boolean; // Para saber si está verificando la sesión
-  login: (email: string, pass: string) => Promise<{ success: boolean }>;
+  login: (email: string, pass: string) => Promise<{ success: boolean, rol?: Rol }>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
 }

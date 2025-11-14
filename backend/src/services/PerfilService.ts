@@ -1,8 +1,8 @@
-import { Usuario } from "@/models/Usuario";
-import { PerfilRepository } from "@/repositories/PerfilRepository";
-import { TarjetaRepository } from "@/repositories/TarjetaRepository";
-import { CustomError } from "@/types/CustomError";
-import { PasswordHasher } from "@/types/PasswordHasher";
+import { Usuario } from "../models/Usuario";
+import { PerfilRepository } from "../repositories/PerfilRepository";
+import { TarjetaRepository } from "../repositories/TarjetaRepository";
+import { CustomError } from "../types/CustomError";
+import { PasswordHasher } from "../types/PasswordHasher";
 import { StatusCodes } from "http-status-codes";
 
 export class PerfilService {

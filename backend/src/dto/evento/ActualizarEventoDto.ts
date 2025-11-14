@@ -1,4 +1,4 @@
-import { EstadoEvento } from "@/enums/EstadoEvento";
+import { EstadoEvento } from "../../enums/EstadoEvento";
 import { DocumentoDto } from "./DocumentoDto";
 import { ZonaDto } from "./ZonaDto";
 
@@ -12,6 +12,7 @@ export interface ActualizarEventoDto {
   departamento: string;
   provincia: string;
   distrito: string;
+  lugar: string;
   estado: EstadoEvento;
   imagenPortada?: string | null; // base64 opcional, null para eliminar
   terminosUso?: DocumentoDto | null;

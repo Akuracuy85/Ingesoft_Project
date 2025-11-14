@@ -1,15 +1,14 @@
 import { Router } from "express";
-import { eventoController } from "@/controllers/EventoController";
-import { sessionMiddleware } from "@/middlewares/SessionMiddleware";
+import { eventoController } from "../controllers/EventoController";
+import { sessionMiddleware } from "../middlewares/SessionMiddleware";
+import { autorMiddleware } from "../middlewares/AutorMiddleware";
 
 const router = Router();
 
 // Público: listado de eventos publicados.
 router.get("/publicados", eventoController.listarPublicados);
 
-// === NUEVO ENDPOINT PÚBLICO: Obtener datos de compra por ID ===
-// Endpoint: /api/evento/compra/:id
-router.get("/compra/:id", eventoController.obtenerDatosCompraPorId); // ✅ CORRECCIÓN: USAR EL MÉTODO DTO
+router.get("/compra/:id", eventoController.obtenerDatosCompraPorId);
 
 // Privado (organizador): gestión de sus propios eventos.
 router.get(
@@ -17,28 +16,45 @@ router.get(
   sessionMiddleware.VerificarToken,
   eventoController.obtenerDatosBasicos
 );
-// ... [otras rutas privadas]
+
 router.get(
   "/",
   sessionMiddleware.VerificarToken,
   eventoController.obtenerEventosDetallados
 );
+
 router.get("/:id", eventoController.obtenerPorId);
+
 router.post(
   "/",
   sessionMiddleware.VerificarToken,
   eventoController.crearEvento
 );
+
 router.put(
   "/:id",
   sessionMiddleware.VerificarToken,
   eventoController.actualizarEvento
 );
-// GET /api/evento/filtros/ubicaciones
+
+// ADMIN: aprobar un evento (ruta protegida)
+router.patch(
+  "/estado/:id/aprobar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.aprobarEvento
+);
+
+// ADMIN: rechazar/cancelar un evento (acepta { motivo?: string } en el body)
+router.patch(
+  "/estado/:id/rechazar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.rechazarEvento
+);
+
 router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
 
-
-// Público: listado de eventos publicados.
 router.get("/publicados", eventoController.listarPublicados);
 
 export default router;

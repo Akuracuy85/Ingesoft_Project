@@ -1,7 +1,7 @@
 // src/controllers/CategoriaController.ts
 import { Request, Response } from "express";
-import { CategoriaService } from "@/services/CategoriaService";
-import { HandleResponseError } from "@/utils/Errors";
+import { CategoriaService } from "../services/CategoriaService";
+import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
 
 export class CategoriaController {
