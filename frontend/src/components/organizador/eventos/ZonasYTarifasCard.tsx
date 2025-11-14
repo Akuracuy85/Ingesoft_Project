@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MapPin, ImageOff, Upload, Plus, Trash2, Save } from "lucide-react";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { actualizarEvento, obtenerEventosDetallados, mapEstadoUIToBackend } from "@/services/EventoService";
 import EventoService from "@/services/EventoService"; // instancia por defecto para usar obtenerPorId
 
-interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; }
+interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; eventoNombre: string; }
 
-const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoEstadoUI }) => {
+const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoEstadoUI, eventoNombre }) => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapa, setMapa] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const buildTarifaNombre = useCallback((actual?: string, tipo?: 'Normal' | 'Preventa') => {
+    if (!tipo) return actual || '';
+    // Si ya tiene un nombre personalizado que no es el genérico, lo conservamos
+    if (actual && !/^tarifa\s*(normal|preventa)$/i.test(actual.trim())) return actual.trim();
+    return `${eventoNombre} - ${tipo}`;
+  }, [eventoNombre]);
 
   useEffect(() => {
     if (!eventoId) return;
@@ -23,14 +30,18 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         setError(null);
         const data = await EventoService.obtenerPorId(eventoId);
         const zonasRaw = (data as { zonas?: ZonaBackendRaw[] }).zonas || [];
-        const mapped: Zone[] = zonasRaw.map((z) => ({
-          id: z.id,
-          nombre: z.nombre,
-          capacidad: z.capacidad,
-          cantidadComprada: z.cantidadComprada,
-          tarifaNormal: (z.tarifaNormal as Tarifa) ?? { nombre: "tarifaNormal", precio: 0, fechaInicio: "", fechaFin: "", descuento: 0 },
-          tarifaPreventa: z.tarifaPreventa ?? null,
-        }));
+        const mapped: Zone[] = zonasRaw.map((z) => {
+          const normalNombre = buildTarifaNombre(z.tarifaNormal?.nombre, 'Normal');
+          const preventaNombre = buildTarifaNombre(z.tarifaPreventa?.nombre, 'Preventa');
+          return {
+            id: z.id,
+            nombre: z.nombre,
+            capacidad: z.capacidad,
+            cantidadComprada: z.cantidadComprada,
+            tarifaNormal: z.tarifaNormal ? { ...z.tarifaNormal, nombre: normalNombre } : { nombre: normalNombre, precio: 0, fechaInicio: '', fechaFin: '', descuento: 0 },
+            tarifaPreventa: z.tarifaPreventa ? { ...z.tarifaPreventa, nombre: preventaNombre } : null,
+          };
+        });
         if (!abort) setZones(mapped);
       } catch (e) {
         console.error("Error cargando zonas del evento", e);
@@ -41,7 +52,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
     };
     fetchZonas();
     return () => { abort = true; };
-  }, [eventoId]);
+  }, [eventoId, buildTarifaNombre]);
 
   // Handlers de UI (edición local)
   const handleAddZone = () => {
@@ -49,8 +60,8 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
       nombre: `Zona ${zones.length + 1}`,
       capacidad: 0,
       cantidadComprada: 0,
-      tarifaNormal: { nombre: "tarifaNormal", fechaInicio: "", fechaFin: "", precio: 0, descuento: 0 },
-      tarifaPreventa: { nombre: "tarifaPreventa", fechaInicio: "", fechaFin: "", precio: 0, descuento: 0 },
+      tarifaNormal: { nombre: buildTarifaNombre(undefined, 'Normal'), fechaInicio: '', fechaFin: '', precio: 0, descuento: 0 },
+      tarifaPreventa: { nombre: buildTarifaNombre(undefined, 'Preventa'), fechaInicio: '', fechaFin: '', precio: 0, descuento: 0 },
     };
     setZones((prev) => [...prev, nuevaZona]);
   };
@@ -107,14 +118,14 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         cantidadComprada: z.cantidadComprada ?? 0,
         tarifaNormal: z.tarifaNormal ? {
           id: z.tarifaNormal.id,
-            nombre: "tarifaNormal",
-            precio: z.tarifaNormal.precio,
-            fechaInicio: detalle.date, // se podría refinar con inputs
-            fechaFin: detalle.date, // misma fecha por ahora
+          nombre: buildTarifaNombre(z.tarifaNormal.nombre, 'Normal'),
+          precio: z.tarifaNormal.precio,
+          fechaInicio: detalle.date,
+          fechaFin: detalle.date,
         } : null,
         tarifaPreventa: z.tarifaPreventa ? {
           id: z.tarifaPreventa.id,
-          nombre: "tarifaPreventa",
+          nombre: buildTarifaNombre(z.tarifaPreventa.nombre, 'Preventa'),
           precio: z.tarifaPreventa.precio,
           fechaInicio: detalle.date,
           fechaFin: detalle.date,
@@ -136,15 +147,15 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         zonas: zonasDto,
       };
 
-      const resp = await actualizarEvento(eventoId, payload);
-      if (!resp || !(resp as any).success) {
+      const resp = await actualizarEvento(eventoId, payload) as ActualizarEventoResponse;
+      if (!resp || !resp.success) {
         alert("No se pudo crear la zona");
         return;
       }
       // Recargar zonas
-      const postData = await obtenerEventosDetallados(eventoId);
-      const nuevasZonasRaw = (postData as any).zonas || [];
-      const recargadas: Zone[] = nuevasZonasRaw.map((z: any) => ({
+      const postData = await obtenerEventosDetallados(eventoId) as EventoDetalleZonasRaw;
+      const nuevasZonasRaw = postData.zonas || [];
+      const recargadas: Zone[] = nuevasZonasRaw.map((z) => ({
         id: z.id,
         nombre: z.nombre,
         capacidad: z.capacidad,
@@ -297,3 +308,5 @@ interface ZonaBackendRaw {
   tarifaNormal?: Tarifa;
   tarifaPreventa?: Tarifa | null;
 }
+interface ActualizarEventoResponse { success?: boolean; eventoId?: number; }
+interface EventoDetalleZonasRaw { zonas?: ZonaBackendRaw[] }

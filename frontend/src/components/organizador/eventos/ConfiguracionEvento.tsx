@@ -21,7 +21,7 @@ export default function ConfiguracionEvento({ evento }: { evento: EventoSeleccio
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
       {/* Zonas y tarifas ocupa ambas columnas */}
       <div className="col-span-2">
-        <ZonasYTarifasCard eventoId={evento.eventoId} eventoEstadoUI={evento.estado} />
+        <ZonasYTarifasCard eventoId={evento.eventoId} eventoEstadoUI={evento.estado} eventoNombre={evento.nombre} />
       </div>
       <TerminosCard />
       <DocumentosCard />
