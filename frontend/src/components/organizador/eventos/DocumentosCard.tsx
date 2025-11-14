@@ -1,32 +1,101 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Upload, FileText, X } from "lucide-react";
-import type { Documento } from "@/models/Documento";
+import type { DocumentoRespaldo } from "@/models/DocumentoRespaldo";
+import { getDocumentosRespaldo, updateDocumentosRespaldo } from "@/services/EventoService";
 
-export default function DocumentosCard() {
-  const [documentos, setDocumentos] = useState<Documento[]>([
-    { id: 1, nombre: "contrato-venue.pdf", tipo: "PDF", estado: "Aprobado" },
-    { id: 2, nombre: "seguro-evento.pdf", tipo: "PDF", estado: "Pendiente" },
-  ]);
+interface DocumentosCardProps { eventoId: number; }
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const nuevosDocs: Documento[] = Array.from(files).map((file, index) => ({
-        id: Date.now() + index,
-        nombre: file.name,
-        tipo: file.name.split(".").pop()?.toUpperCase() || "DOC",
-        estado: "Pendiente",
+// Adaptar DTO para enviar al backend (DocumentoDto)
+interface DocumentoDtoPayload {
+  id?: number;
+  nombreArchivo: string;
+  tipo: string;
+  tamano: number;
+  url?: string;
+  contenidoBase64?: string;
+}
+
+export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
+  const [documentos, setDocumentos] = useState<DocumentoRespaldo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const cargar = async () => {
+    setLoading(true); setError(null);
+    try {
+      const docs = await getDocumentosRespaldo(eventoId);
+      // Mapear a DocumentoRespaldo UI agregando estado ficticio
+      const mapped: DocumentoRespaldo[] = docs.map(d => ({
+        id: d.id,
+        nombreArchivo: d.nombreArchivo,
+        tipo: d.tipo,
+        tamano: d.tamano,
+        url: d.url,
+        estado: 'Pendiente',
       }));
-      setDocumentos((prev) => [...prev, ...nuevosDocs]);
+      setDocumentos(mapped);
+    } catch (e) {
+      setError('No se pudieron cargar los documentos');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEliminar = (id: number | undefined) => {
-    if(id === undefined) {
-      console.log("ID del documento no existe");
-      return;
+  useEffect(() => { cargar(); }, [eventoId]);
+
+  const filesToDto = async (files: FileList): Promise<DocumentoDtoPayload[]> => {
+    const list: DocumentoDtoPayload[] = [];
+    for (const file of Array.from(files)) {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => {
+          const result = fr.result as string;
+          const commaIdx = result.indexOf(',');
+          resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+        };
+        fr.onerror = reject;
+        fr.readAsDataURL(file);
+      });
+      list.push({ nombreArchivo: file.name, tipo: file.type, tamano: file.size, contenidoBase64: base64 });
     }
-    setDocumentos((prev) => prev.filter((doc) => doc.id !== id));
+    return list;
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      setLoading(true);
+      const nuevos = await filesToDto(files);
+      // Construir payload documentosRespaldo: existentes + nuevos
+      const existentes: DocumentoDtoPayload[] = documentos.map(d => ({ id: d.id, nombreArchivo: d.nombreArchivo, tipo: d.tipo, tamano: d.tamano, url: d.url }));
+      const payloadDocs = [...existentes, ...nuevos];
+      await updateDocumentosRespaldo(eventoId, payloadDocs as any);
+      await cargar();
+    } catch (err) {
+      console.error('Error subiendo documentos', err);
+      setError('Error al subir documentos');
+    } finally {
+      setLoading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleEliminar = async (id?: number) => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      // Mantener sólo otros documentos
+      const restantes = documentos.filter(d => d.id !== id);
+      const payloadDocs: DocumentoDtoPayload[] = restantes.map(d => ({ id: d.id, nombreArchivo: d.nombreArchivo, tipo: d.tipo, tamano: d.tamano, url: d.url }));
+      await updateDocumentosRespaldo(eventoId, payloadDocs as any);
+      await cargar();
+    } catch (err) {
+      console.error('Error eliminando documento', err);
+      setError('No se pudo eliminar');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +110,9 @@ export default function DocumentosCard() {
           <p className="text-sm text-gray-500">Sube contratos, permisos y certificados.</p>
         </div>
       </div>
+
+      {loading && <p className="text-sm text-gray-500 mb-2">Cargando...</p>}
+      {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
 
       {/* Área de carga */}
       <label
@@ -64,14 +136,14 @@ export default function DocumentosCard() {
       <div className="space-y-3">
         {documentos.map((doc) => (
           <div
-            key={doc.id}
+            key={doc.id || doc.nombreArchivo}
             className="flex justify-between items-center border border-gray-200 rounded-md px-4 py-2 text-sm bg-white"
           >
             <div className="flex items-center gap-3">
               <FileText className="h-4 w-4 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">{doc.nombre}</p>
-                <p className="text-xs text-gray-500">{doc.tipo}</p>
+                <p className="font-medium text-gray-900">{doc.nombreArchivo}</p>
+                <p className="text-xs text-gray-500">{doc.tipo.includes('/') ? doc.tipo.split('/').pop()?.toUpperCase() : (doc.nombreArchivo.includes('.') ? doc.nombreArchivo.split('.').pop()?.toUpperCase() : doc.tipo)}</p>
               </div>
             </div>
 
@@ -86,13 +158,16 @@ export default function DocumentosCard() {
               <button
                 onClick={() => handleEliminar(doc.id)}
                 className="text-gray-400 hover:text-red-500 transition"
-                aria-label={`Eliminar ${doc.nombre}`}
+                aria-label={`Eliminar ${doc.nombreArchivo}`}
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </div>
         ))}
+        {!loading && documentos.length === 0 && !error && (
+          <p className="text-sm text-gray-500">No hay documentos subidos aún.</p>
+        )}
       </div>
     </div>
   );

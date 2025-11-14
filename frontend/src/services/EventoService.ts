@@ -73,11 +73,15 @@ interface BackendEventoEntity {
   distrito?: string;
   lugar?: string;
   estado: string;
-  imagenBanner?: string | null | Buffer;
+  imagenBanner?: string | null; // Simplificado: representamos solo base64 string o null
   artista?: { id: number; nombre: string; categoria?: { nombre: string } };
-  zonas?: any[]; // se podría tipar más
-  cola?: any;
+  zonas?: unknown[]; // se podría tipar más adelante
+  cola?: unknown;
+  documentosRespaldo?: BackendDocumentoDto[];
+  terminosUso?: BackendDocumentoDto | null;
+  artistaId?: number | null;
 }
+interface BackendDocumentoDto { id?: number; nombreArchivo: string; tipo: string; tamano: number; url: string; }
 interface EventoDetalladoOrganizador {
   id: number;
   nombre: string;
@@ -89,6 +93,9 @@ interface EventoDetalladoOrganizador {
   distrito: string;
   lugar: string;
   imagenBannerBase64: string | null;
+  documentosRespaldo: BackendDocumentoDto[];
+  terminosUso?: BackendDocumentoDto | null;
+  artistaId?: number | null;
 }
 
 function extractYMD(value: string | Date): string {
@@ -188,6 +195,9 @@ class EventoService extends HttpClient {
       distrito: ev.distrito || "",
       lugar: ev.lugar || "",
       imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
+      documentosRespaldo: ev.documentosRespaldo || [],
+      terminosUso: ev.terminosUso || null,
+      artistaId: ev.artistaId ?? ev.artista?.id ?? null,
     }));
   }
 
@@ -218,6 +228,46 @@ class EventoService extends HttpClient {
     // El backend espera los campos exactos del CrearEventoDto
     return await super.post<{ success: boolean; eventoId: number }>("/", data);
   }
+
+  async getDocumentosRespaldo(eventoId: number): Promise<BackendDocumentoDto[]> {
+    const eventos = await this.listarDetalladosOrganizador();
+    const evento = eventos.find(e => e.id === eventoId);
+    return evento?.documentosRespaldo || [];
+  }
+
+  async getEventoDetalladoOrganizadorById(eventoId: number): Promise<EventoDetalladoOrganizador | undefined> {
+    const eventos = await this.listarDetalladosOrganizador();
+    return eventos.find(e => e.id === eventoId);
+  }
+
+  async updateDocumentosRespaldo(eventoId: number, documentos: BackendDocumentoDto[] | { contenidoBase64: string; nombreArchivo: string; tipo: string; tamano: number }[]) {
+    const evento = await this.getEventoDetalladoOrganizadorById(eventoId);
+    if (!evento) throw new Error("Evento no encontrado para actualizar documentos.");
+    if (!evento.artistaId || evento.artistaId <= 0) {
+      throw new Error("Debes asignar un artista al evento antes de gestionar documentos de respaldo.");
+    }
+    // Separar fecha y hora
+    let fecha = ""; let hora = "";
+    try {
+      const d = new Date(evento.fechaEvento);
+      fecha = d.toISOString().slice(0,10);
+      hora = d.toISOString().slice(11,16);
+    } catch { /* noop */ }
+    const payload: ActualizarEventoPayload = {
+      nombre: evento.nombre,
+      descripcion: evento.descripcion,
+      fecha,
+      hora,
+      artistaId: evento.artistaId,
+      departamento: evento.departamento,
+      provincia: evento.provincia,
+      distrito: evento.distrito,
+      lugar: evento.lugar,
+      estado: evento.estado,
+      documentosRespaldo: documentos as any,
+    };
+    await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}`, payload);
+  }
 }
 
 const eventoServiceInstance = new EventoService();
@@ -227,6 +277,8 @@ export const listarBasicosOrganizador = () =>
   eventoServiceInstance.listarBasicosOrganizador();
 export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
 export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
+export const getDocumentosRespaldo = (eventoId: number) => eventoServiceInstance.getDocumentosRespaldo(eventoId);
+export const updateDocumentosRespaldo = (eventoId: number, documentos: BackendDocumentoDto[] | { contenidoBase64: string; nombreArchivo: string; tipo: string; tamano: number }[]) => eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos);
 // Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
 export const obtenerEventoDetalladoOrganizador = (id: number) => eventoServiceInstance.obtenerPorId(id);
 export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
@@ -263,6 +315,8 @@ export interface ActualizarEventoPayload {
   lugar: string;
   estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION
   imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
+  documentosRespaldo?: any; // opcional para actualizaciones de documentos
+  terminosUso?: any;
 }
 
 export function mapEstadoUIToBackend(estado: string): string {
