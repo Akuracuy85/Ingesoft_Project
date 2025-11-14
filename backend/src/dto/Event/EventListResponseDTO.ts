@@ -36,5 +36,5 @@ export interface EventListResponseDTO {
     category?: string; // Mapeado de 'artista.categoria.nombre'
     zonas: ZonaDto[]; // Mapeado de 'evento.zonas'
     // ---
-    placeEspecific: string; // Mapeado desde 'lugar'
+    //placeEspecific: string; // Mapeado desde 'lugar'
 }

@@ -17,7 +17,7 @@ export interface Event {
   provincia: string;
   distrito: string;
   place: string;
-  placeEspecific: string;
+  //placeEspecific: string;
 
   image: string;
 
