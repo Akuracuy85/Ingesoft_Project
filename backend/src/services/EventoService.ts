@@ -183,7 +183,6 @@ export class EventoService {
         departamento: data.departamento.trim(),
         provincia: data.provincia.trim(),
         distrito: data.distrito.trim(),
-        lugar: data.lugar.trim(),
         estado,
         fechaPublicacion: new Date(),
         aforoTotal: 0,
