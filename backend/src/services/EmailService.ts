@@ -179,13 +179,8 @@ export class EmailService {
     }
     const source = fs.readFileSync(filePath, "utf-8");
     const template = Handlebars.compile(source);
-    const evento = await this.eventoService.obtenerDetalleEvento(eventId);
-    if (!evento) {
-      throw new CustomError(
-        "Evento no encontrado para enviar correos de actualización",
-        StatusCodes.NOT_FOUND
-      );
-    }
+    // Usar método sin restricción de estado
+    const evento = await this.eventoService.obtenerEventoPorId(eventId);
     const html = template({
       evento: evento,
       fechaFormateada: FormatearFecha(evento.fechaEvento),
@@ -221,13 +216,8 @@ export class EmailService {
     const source = fs.readFileSync(filePath, "utf-8");
     const template = Handlebars.compile(source);
 
-    const evento = await this.eventoService.obtenerDetalleEvento(eventId);
-    if (!evento) {
-      throw new CustomError(
-        "Evento no encontrado para enviar correos de cancelación",
-        StatusCodes.NOT_FOUND
-      );
-    }
+    // Usar método sin restricción de estado
+    const evento = await this.eventoService.obtenerEventoPorId(eventId);
 
     const html = template({
       evento: evento,
