@@ -577,7 +577,7 @@ const CardEventos: React.FC = () => {
       </section>
 
       {/* Configuración del evento */}
-      {eventoSeleccionado && <ConfiguracionEvento />}
+      {eventoSeleccionado && <ConfiguracionEvento eventoId={eventoSeleccionado.id} />}
     </>
   );
 };
