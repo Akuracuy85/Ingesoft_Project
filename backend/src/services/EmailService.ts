@@ -191,6 +191,8 @@ export class EmailService {
       fechaFormateada: FormatearFecha(evento.fechaEvento),
     });
     const emailsParaEnviar = await this.eventoService.obtenerEmailDeAsistentesAlEvento(eventId);
+    console.log("Emails para enviar actualización de evento:", emailsParaEnviar);
+
     try {
       await this.SendEmailInBulk(
         emailsParaEnviar,

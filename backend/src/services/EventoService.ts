@@ -918,7 +918,7 @@ export class EventoService {
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
-        "Error al obtener los emails de los asistentes al evento",
+        "Error al obtener los emails de los asistentes al evento: " + error.message,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
