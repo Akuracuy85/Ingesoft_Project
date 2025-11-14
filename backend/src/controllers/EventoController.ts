@@ -209,6 +209,21 @@ export class EventoController {
     }
 
 
+    try {
+      const evento = await this.eventoService.aprobarEvento(
+        eventoId,
+        autor
+      );
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventoId: evento.id,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+
+
   };
 
   rechazarEvento = async (req: Request, res: Response) => {
