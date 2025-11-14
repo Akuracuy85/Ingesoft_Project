@@ -36,19 +36,46 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [provincia, setProvincia] = useState("");
   const [distrito, setDistrito] = useState("");
   const [artistaId, setArtistaId] = useState<number | null>(null);
+  // Portada actual (base64) para previsualización dentro del modal
+  const [portadaBase64, setPortadaBase64] = useState<string | null>(null);
+  const [subiendoPortada, setSubiendoPortada] = useState<boolean>(false);
 
+  // Nuevo: estados faltantes
   const [touchedSubmit, setTouchedSubmit] = useState(false);
-
-  // Select options
   const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
   const [artistas, setArtistas] = useState<Artista[]>([]);
 
+  // Helper reutilizable: convertir File a base64 (sin prefijo data:...)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIdx = result.indexOf(",");
+        resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Helper para construir src válido para img
+  const buildImageSrc = (value?: string | null): string | null => {
+    if (!value) return null;
+    const v = String(value).trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:")) return v;
+    return `data:image/*;base64,${v}`;
+  };
+
   // Prefill cuando cambia event
   useEffect(() => {
     if (!event) return;
     setTouchedSubmit(false);
+    // Reinicia previsualización local (no contamos con portada original aquí)
+    setPortadaBase64(null);
 
     setNombre(event.nombre || event.title || "");
     setDescripcion(event.descripcion || event.description || "");
@@ -179,6 +206,55 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     } catch (error) {
       console.error("Error actualizando evento:", error);
       alert("No se pudo actualizar el evento.");
+    }
+  };
+
+  // Manejar selección de portada: convertir y subir inmediatamente usando el mismo flujo que creación
+  const handleSeleccionarPortada: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      const file = e.target.files?.[0] || null;
+      // Limpia el input para permitir volver a seleccionar el mismo archivo
+      e.target.value = "";
+      setImagen(file);
+      if (!file) return;
+
+      if (!event) return;
+      // Validar mínimos requeridos (igual que creación)
+      if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !artistaId) {
+        alert("Completa los datos obligatorios (incluido artista) antes de actualizar la portada.");
+        return;
+      }
+
+      setSubiendoPortada(true);
+
+      // Reutilizar conversión base64
+      const imagenPortada = await fileToBase64(file);
+
+      const estadoBackend = mapEstadoUIToBackend(estado);
+      const payload = {
+        nombre: nombre.trim(),
+        descripcion: descripcion.trim(),
+        fecha,
+        hora,
+        artistaId: artistaId,
+        departamento: departamento.trim(),
+        provincia: provincia.trim(),
+        distrito: distrito.trim(),
+        lugar: lugar.trim(),
+        estado: estadoBackend,
+        imagenPortada,
+      };
+
+      await actualizarEvento(event.id, payload);
+
+      // Previsualizar inmediatamente en el modal y refrescar listado externo
+      setPortadaBase64(imagenPortada);
+      onUpdated();
+    } catch (err) {
+      console.error("Error al actualizar portada:", err);
+      alert("No se pudo actualizar la portada. Intenta nuevamente.");
+    } finally {
+      setSubiendoPortada(false);
     }
   };
 
@@ -400,11 +476,17 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           {/* Imagen */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada del evento</label>
+            {buildImageSrc(portadaBase64) && (
+              <div className="mb-2 h-32 rounded border overflow-hidden">
+                <img src={buildImageSrc(portadaBase64)!} alt="Portada actual" className="w-full h-full object-cover" />
+              </div>
+            )}
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setImagen(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              onChange={handleSeleccionarPortada}
+              disabled={subiendoPortada}
+              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 disabled:opacity-60"
             />
             <p className="mt-1 text-xs text-gray-500">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
             {imagen && <p className="mt-1 text-xs text-gray-600">Archivo seleccionado: {imagen.name}</p>}
