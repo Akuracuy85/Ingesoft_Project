@@ -266,6 +266,53 @@ export class OrdenCompraService {
       throw new CustomError("Error al contar las entradas.", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
+
+  /**
+   * Devuelve órdenes (compras) aplicando filtros opcionales.
+   * Los parámetros de fecha pueden pasarse como string (ISO) o Date.
+   */
+  async listarCompras(filtros: {
+    clienteId?: number;
+    eventoId?: number;
+    estado?: EstadoOrden;
+    fechaInicio?: string | Date;
+    fechaFin?: string | Date;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<OrdenCompra[]> {
+    try {
+      const parsed: {
+        clienteId?: number;
+        eventoId?: number;
+        estado?: EstadoOrden;
+        fechaInicio?: Date;
+        fechaFin?: Date;
+        limit?: number;
+        offset?: number;
+      } = {};
+
+      if (filtros.clienteId) parsed.clienteId = filtros.clienteId;
+      if (filtros.eventoId) parsed.eventoId = filtros.eventoId;
+      if (filtros.estado) parsed.estado = filtros.estado;
+      if (filtros.limit !== undefined) parsed.limit = filtros.limit;
+      if (filtros.offset !== undefined) parsed.offset = filtros.offset;
+
+      if (filtros.fechaInicio) {
+        parsed.fechaInicio = filtros.fechaInicio instanceof Date ? filtros.fechaInicio : new Date(filtros.fechaInicio);
+      }
+      if (filtros.fechaFin) {
+        parsed.fechaFin = filtros.fechaFin instanceof Date ? filtros.fechaFin : new Date(filtros.fechaFin);
+      }
+
+      return await this.ordenCompraRepo.listarCompras(parsed);
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al listar las compras: " + (error as Error).message,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
   /**
    * Confirma una orden pendiente, la marca como 'COMPLETADA' y
    * asigna los puntos de la compra al cliente.

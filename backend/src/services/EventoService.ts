@@ -34,11 +34,13 @@ export class EventoService {
   private static instance: EventoService;
   private eventoRepository: EventoRepository;
   private usuarioRepository: UsuarioRepository;
+  private colaService: ColaService;
   private artistaRepository: Repository<Artista>;
 
   private constructor() {
     this.eventoRepository = EventoRepository.getInstance();
     this.usuarioRepository = UsuarioRepository.getInstance();
+    this.colaService = ColaService.getInstance();
     this.artistaRepository = AppDataSource.getRepository(Artista);
   }
 
@@ -833,8 +835,7 @@ export class EventoService {
       });
 
       try {
-        const colaService = ColaService.getInstance();
-        await colaService.crearCola(guardado.id);
+        await this.colaService.crearCola(guardado.id);
       } catch (colaErr) {
         console.warn("No se pudo crear la cola para el evento aprobado:", colaErr);
       }
