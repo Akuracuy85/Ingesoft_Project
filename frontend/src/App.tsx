@@ -13,6 +13,7 @@ import CompraDeEntradas from "./pages/client/CompraDeEntradas";
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal";
 import AdminUsuarios from "./pages/admin/Usuarios/AdminUsuarios";
 import AdminEventos from "./pages/admin/Eventos/AdminEventos";
+import AdminReportes from "./pages/admin/Reportes/AdminReportes";
 import DetalleEvento from "./pages/client/DetalleEvento";
 import GestionEventos from "./pages/organizador/eventos/GestionEventos";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/cola" element={<ColaVirtual />} />
             <Route path="/admin/usuarios" element={<AdminUsuarios />} />
             <Route path="/admin/eventos" element={<AdminEventos />} />
+            <Route path="/admin/reportes" element={<AdminReportes />} />
             <Route path="/organizador/eventos" element={<GestionEventos />} />
             <Route path="/info" element={<InformacionPersonal />} />
           </Route>
