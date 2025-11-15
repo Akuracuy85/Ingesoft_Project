@@ -19,7 +19,7 @@ const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar, path: "/admin/eventos" },
   { name: "Usuarios", icon: Users, path: "/admin/usuarios" },
   { name: "Reportes", icon: FileText, path: "/admin/Reportes" },
-  { name: "Configuración", icon: Settings, path: "/login" },
+  { name: "Salir", icon: Settings, path: "/login" },
 ];
 
 // --- 2. Definición de Tipos para las Propiedades (Props) ---
