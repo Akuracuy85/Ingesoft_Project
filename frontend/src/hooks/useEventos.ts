@@ -35,7 +35,7 @@ export const useEventos = () => {
     // 4. Función de carga de eventos destacados
     const fetchFeaturedEvents = useCallback(async () => {
         try {
-            const fetchedFeatured = await EventoService.listarDestacados();
+            const fetchedFeatured = await EventoService.listar();
             setFeaturedEvents(fetchedFeatured);
         } catch (err) {
             console.warn("No se pudieron cargar eventos destacados.", err);
