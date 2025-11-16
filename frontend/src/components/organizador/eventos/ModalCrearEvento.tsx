@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
 
 export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
 
@@ -124,7 +125,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
       !form.lugar.trim() ||
       !form.artistaId
     ) {
-      alert("Por favor completa todos los campos obligatorios.");
+      NotificationService.warning("Por favor completa todos los campos obligatorios");
       return;
     }
 

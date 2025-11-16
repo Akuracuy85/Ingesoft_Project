@@ -9,6 +9,7 @@ import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtener
 
 // Moved to utils for reuse
 import { formatFecha } from "@/utils/formatFecha";
+import NotificationService from "@/services/NotificationService";
 
 // Tipos locales auxiliares
 type EventoDetalladoOrganizador = {
@@ -209,17 +210,17 @@ const CardEventos: React.FC = () => {
 
       // Validaciones mínimas
       if (!data.nombre.trim() || !data.descripcion.trim() || !data.fecha || !data.hora) {
-        alert("Por favor completa nombre, descripción, fecha y hora.");
+        NotificationService.warning("Por favor completa nombre, descripción, fecha y hora");
         return;
       }
       if (!data.artistaId || data.artistaId <= 0) {
-        alert("Debes seleccionar un artista para el evento.");
+        NotificationService.warning("Debes seleccionar un artista para el evento");
         return;
       }
 
       // Validaciones de ubicación y lugar (requeridos)
       if (!data.departamento || !data.provincia || !data.distrito || !data.lugar.trim()) {
-        alert("Por favor completa la ubicación (departamento, provincia, distrito) y el lugar.");
+        NotificationService.warning("Por favor completa la ubicación (departamento, provincia, distrito) y el lugar");
         return;
       }
 
@@ -253,7 +254,7 @@ const CardEventos: React.FC = () => {
       const resp = await createEvent(payload);
       if (!resp || !resp.success) {
         console.error("Respuesta inválida del servidor al crear evento", resp);
-        alert("No se pudo crear el evento");
+        NotificationService.error("No se pudo crear el evento");
         return;
       }
 
@@ -269,11 +270,11 @@ const CardEventos: React.FC = () => {
         imagenNombre: data.imagen?.name || null,
       };
       setEventos((prev) => [nuevo, ...prev]);
-      alert("Evento creado con éxito");
+      NotificationService.success("Evento creado con éxito");
       handleCloseCreate();
     } catch (e) {
       console.error("Error al crear el evento:", e);
-      alert("No se pudo crear el evento");
+      NotificationService.error("No se pudo crear el evento");
     } finally {
       setIsLoading(false);
     }
@@ -306,7 +307,7 @@ const CardEventos: React.FC = () => {
       setIsEditOpen(true);
     } catch (e) {
       console.error("Error al obtener evento detallado:", e);
-      alert("No se pudo cargar la información completa del evento.");
+      NotificationService.error("No se pudo cargar la información completa del evento");
     } finally {
       setIsLoading(false);
     }
@@ -329,7 +330,7 @@ const CardEventos: React.FC = () => {
 
       const artistaId = detalle.artist?.id || 0;
       if (!artistaId) {
-        alert("No se pudo cancelar: el evento no tiene artista asignado.");
+        NotificationService.error("No se pudo cancelar: el evento no tiene artista asignado");
         return;
       }
 
@@ -341,7 +342,7 @@ const CardEventos: React.FC = () => {
       const lugar = (detalle.place || "").trim();
 
       if (!fecha || !hora || !departamento || !provincia || !distrito || !lugar) {
-        alert("No se pudo cancelar: faltan datos obligatorios del evento.");
+        NotificationService.error("No se pudo cancelar: faltan datos obligatorios del evento");
         return;
       }
 
@@ -360,16 +361,15 @@ const CardEventos: React.FC = () => {
 
       const resp = await actualizarEvento(evListado.id, payload);
       if (resp && (resp as { success?: boolean }).success) {
-        alert("Evento cancelado correctamente");
+        NotificationService.success("Evento cancelado correctamente");
         setEventoAEliminar(null); // cerrar modal
         await loadEventos(); // refrescar listado
         return;
       }
-
-      alert("No se pudo cancelar el evento");
+      NotificationService.error("No se pudo cancelar el evento");
     } catch (error) {
       console.error("Error cancelando evento:", error);
-      alert("No se pudo cancelar el evento");
+      NotificationService.error("No se pudo cancelar el evento");
     }
   };
 
@@ -399,7 +399,7 @@ const CardEventos: React.FC = () => {
       if (!file) return;
 
       if (!eventoSeleccionado) {
-        alert("Selecciona un evento antes de subir la portada.");
+        NotificationService.warning("Selecciona un evento antes de subir la portada");
         return;
       }
 
@@ -414,7 +414,7 @@ const CardEventos: React.FC = () => {
 
       const artistaId = detalle.artist?.id || 0;
       if (!artistaId) {
-        alert("No se puede actualizar la portada: el evento no tiene artista asignado.");
+        NotificationService.error("No se puede actualizar la portada: el evento no tiene artista asignado");
         return;
       }
 
@@ -426,7 +426,7 @@ const CardEventos: React.FC = () => {
       const lugar = (detalle.place || "").trim();
 
       if (!fecha || !hora || !departamento || !provincia || !distrito || !lugar) {
-        alert("No se puede actualizar la portada: faltan datos obligatorios del evento.");
+        NotificationService.error("No se puede actualizar la portada: faltan datos obligatorios del evento");
         return;
       }
 
@@ -449,7 +449,7 @@ const CardEventos: React.FC = () => {
 
       const resp = await actualizarEvento(eventoSeleccionado.id, payload);
       if (!resp || !(resp as { success?: boolean }).success) {
-        alert("No se pudo actualizar la portada del evento.");
+        NotificationService.error("No se pudo actualizar la portada del evento");
         return;
       }
 
@@ -460,10 +460,10 @@ const CardEventos: React.FC = () => {
         setSelectedIndex(idx);
         setEventoSeleccionado(items[idx]);
       }
-      alert("Portada actualizada correctamente.");
+      NotificationService.success("Portada actualizada correctamente");
     } catch (err) {
       console.error("Error al subir la portada:", err);
-      alert("No se pudo actualizar la portada del evento.");
+      NotificationService.error("No se pudo actualizar la portada del evento");
     } finally {
       setIsLoading(false);
     }

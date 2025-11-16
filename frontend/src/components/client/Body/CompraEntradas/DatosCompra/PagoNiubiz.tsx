@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import LogoUnite from "@/assets/Logo_Unite.svg";
 import { CreditCard, Calendar, Lock, User, Mail } from "lucide-react";
+import NotificationService from "@/services/NotificationService";
 
 interface PagoNiubizProps {
   total: number;
@@ -26,7 +27,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
   const handlePay = async () => {
     const { tarjeta, fecha, cvv, nombre, apellido, email } = form;
     if (!tarjeta || !fecha || !cvv || !nombre || !apellido || !email) {
-      alert("Por favor, completa todos los campos del pago.");
+      NotificationService.warning("Por favor, completa todos los campos del pago.");
       return;
     }
 

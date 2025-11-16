@@ -14,8 +14,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imagenBanner: string | null;   // ← YA EXISTENTE
-  imagenLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
+  imageBanner: string | null;   // ← YA EXISTENTE
+  imageLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
   date: string;
   departamento: string;
   provincia: string;
@@ -109,13 +109,15 @@ export const BodyDetalleEvento: React.FC = () => {
     });
   };
 
+  console.log("Evento detalle:", evento);
+
   return (
     <main className="w-full overflow-x-hidden">
       {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
       <section
         className="relative bg-cover bg-center bg-no-repeat text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 py-32 min-h-[85vh]"
         style={{
-          backgroundImage: `url(${evento.imagenBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
+          backgroundImage: `url(${evento.imageBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
@@ -158,7 +160,7 @@ export const BodyDetalleEvento: React.FC = () => {
           {/* Imagen del lugar */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={evento.imagenLugar || mapaAsientos}
+              src={/*evento.imageLugar ||*/ mapaAsientos}
               alt="Lugar del Evento"
               className="w-full max-w-md object-contain mix-blend-multiply rounded-lg"
             />
@@ -269,7 +271,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   key={tipo}
                   onClick={() => !disabled && handleColaClick(tipo)}
                   disabled={disabled}
-                  className={`px-10 py-4 rounded-md text-lg font-semibold transition-colors ${
+                  className={`px-10 py-4 rounded-md text-lg font-semibold transition-colors cursor-pointer ${
                     disabled
                       ? "bg-gray-400 cursor-not-allowed text-white"
                       : "bg-black text-white hover:bg-gray-800"

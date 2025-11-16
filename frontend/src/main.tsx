@@ -6,6 +6,7 @@ import './index.css';
 import App from './App.tsx';
 import { AuthProvider } from '@/hooks/useAuth.tsx';
 import { FilterProvider } from './context/FilterContext';
+import { Bounce, ToastContainer } from 'react-toastify';
 // import { MetadataProvider } from './context/MetadataContext'; // Si lo usas, descomenta
 
 createRoot(document.getElementById('root')!).render(
@@ -15,6 +16,17 @@ createRoot(document.getElementById('root')!).render(
         <FilterProvider>
           {/* <MetadataProvider> Si lo usas, ponlo aquí </MetadataProvider> */}
           <App />
+          <ToastContainer position="top-right"
+            autoClose={5000}
+            hideProgressBar
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="colored"
+            transition={Bounce} />
         </FilterProvider>
       </AuthProvider>
     </BrowserRouter>

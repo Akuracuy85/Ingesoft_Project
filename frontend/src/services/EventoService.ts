@@ -6,6 +6,7 @@ import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
 import type { PriceRangeType } from "../types/PriceRangeType";
 import { extractFecha, extractHora } from "../utils/date-utils";
+import { bufferToBase64 } from "@/utils/imagenUtils";
 
 export type EventDetailsForPurchase = Event & {
   zonasDisponibles: ZonePurchaseDetail[];
@@ -71,7 +72,8 @@ interface BackendEventoEntity {
   distrito?: string;
   lugar?: string;
   estado: string;
-  imagenBanner?: string | null; // Simplificado: representamos solo base64 string o null
+  imagenBanner?: any; // Simplificado: representamos solo base64 string o null
+  imagenLugar?: any;
   artista?: { id: number; nombre: string; categoria?: { nombre: string } };
   zonas?: unknown[]; // se podría tipar más adelante
   cola?: unknown;
@@ -155,10 +157,12 @@ class EventoService extends HttpClient {
       place: ev.lugar || "",
       // Simplificado: si viene null -> ""
       image: ev.imagenBanner ?? "",
+      imageBanner: await bufferToBase64(ev.imagenBanner?.data) || null,
+      imageLugar: await bufferToBase64(ev.imagenLugar?.data) || null,
       artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
-      Cola: ev.cola || undefined,
+      cola: ev.cola || undefined,
     } as Event;
   }
 

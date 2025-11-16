@@ -7,8 +7,9 @@ import CompraService from "../../../../../services/CompraService";
 import { type CrearOrdenDto } from "../../../../../types/CrearOrdenDTO";
 import { FormularioDatosCompra } from "./FormularioDatosCompra";
 import { useLocation, useNavigate } from "react-router-dom";
-import PagoNiubiz from "./PagoNiubiz";
 import ColaService from "@/services/ColaService";
+import NotificationService from "@/services/NotificationService";
+import SelectorPago from "./SelectorPagos";
 
 interface DatosCompraProps {
   eventoId: number;
@@ -43,7 +44,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [showPagoModal, setShowPagoModal] = useState(false);
+  const [showElegirTipoPagoModal, setShowElegirTipoPagoModal] = useState<boolean>(false);
   const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
     e.preventDefault();
 
     if (!termsAccepted) {
-      alert("Debes aceptar los términos y condiciones.");
+      NotificationService.warning("Debes aceptar los términos y condiciones");
       return;
     }
 
@@ -135,7 +136,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
 
     setDniErrors(newErrors);
     if (!formValid) {
-      alert("Por favor, corrige los errores en los campos de DNI.");
+      NotificationService.warning("Por favor, corrige los errores en los campos de DNI");
       return;
     }
 
@@ -168,9 +169,8 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
       const response = await CompraService.crearOrden(payload);
 
       if (response.success) {
-        // Guardamos la orden pendiente y mostramos el modal de pago
         setPendingOrderId(response.ordenId);
-        setShowPagoModal(true);
+        setShowElegirTipoPagoModal(true);
       }
     } catch (error: any) {
       const errorMessage =
@@ -178,7 +178,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
         error.response?.data?.message ||
         "Error desconocido al crear la orden.";
       console.error("Error al procesar la compra:", error);
-      alert(`Error en la compra: ${errorMessage}`);
+      NotificationService.error(`Error en la compra: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -238,33 +238,32 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
           />
         </div>
       </div>
-
-      {/* Modal de pago Niubiz */}
-      {showPagoModal && pendingOrderId && (
-        <PagoNiubiz
-          total={summaryItems.reduce((sum, i) => sum + i.subtotal, 0)}
-          onClose={() => setShowPagoModal(false)}
+      {
+        showElegirTipoPagoModal && pendingOrderId &&
+        <SelectorPago
+          monto={summaryItems.reduce((sum, i) => sum + i.subtotal, 0)}
+          pendingOrderId={pendingOrderId}
+          onClose={() => setShowElegirTipoPagoModal(false)}
           onConfirm={async () => {
             try {
               if (purchaseType === "normal") {
                 await CompraService.confirmarStandar(pendingOrderId);
-                ColaService.eliminarTurno(location.state.evento.cola.id);
-                alert(" Pago completado. Se asignaron puntos por la compra.");
-
+                NotificationService.success("Pago completado. Se asignaron puntos por la compra");
               } else if (purchaseType === "preferencial") {
                 await CompraService.confirmarPreventa(pendingOrderId);
-                alert(" Pago completado. Se descontaron puntos por la preventa.");
+                NotificationService.success("Pago completado. Se descontaron puntos por la preventaa");
               }
-
-              setShowPagoModal(false);
-              navigate("/eventos");
+              ColaService.eliminarTurno(location.state.evento.cola.id);
+              navigate("/compra-exitosa");
             } catch (err) {
               console.error("Error al confirmar el pago:", err);
-              alert("Error al procesar el pago simulado.");
+              NotificationService.error("Error al procesar el pago simulado");
+            } finally {
+              setShowElegirTipoPagoModal(false);
             }
           }}
-        />
-      )}
+          />
+      }
     </div>
   );
 };
