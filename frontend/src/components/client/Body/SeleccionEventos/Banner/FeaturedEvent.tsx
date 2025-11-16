@@ -9,9 +9,12 @@ interface FeaturedEventProps {
 export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const total = events.length;
+  const [fade, setFade] = useState(false);
 
    const navigate = useNavigate(); 
 
+
+   
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
   };
@@ -28,17 +31,23 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
   // Puedes usar 'events[currentIndex]' directamente abajo.
 
   return (
-    <section className="relative w-full h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-lg shadow-md">
+    <section className="group relative w-full h-[280px] md:h-[400px] lg:h-[420px] overflow-hidden rounded-lg shadow-md">
       {/* Imagen de fondo */}
-      <img
-        src={events[currentIndex].image}
-        alt={events[currentIndex].title}
-        // ✅ Añadimos 'key' para forzar a React a 
-        // recargar la imagen con la transición
-        key={events[currentIndex].id} 
-        className="absolute inset-0 w-full h-full object-cover 
-                   transition-opacity duration-700"
-      />
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <div
+          className="flex w-full h-full transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {events.map((ev) => (
+            <img
+              key={ev.id}
+              src={ev.image}
+              alt={ev.title}
+              className="w-full h-full object-cover flex-shrink-0"
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Capa oscura para contraste */}
       <div className="absolute inset-0 bg-black/50" />
@@ -60,9 +69,19 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         {/* ✅ Botón con estado 'focus' */}
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}
-          className="px-5 py-2 bg-indigo-600 rounded-md hover:bg-indigo-700 transition cursor-pointer"
+            className="
+              px-6 py-2 
+              bg-transparent 
+              border border-white 
+              rounded-md 
+              text-white 
+              text-center
+              hover:bg-white/20 
+              transition
+              cursor-pointer
+            "
         >
-          Ver detalles
+          VER MÁS
         </button>
       </div>
 
@@ -75,10 +94,12 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         // 3. hover:bg-black/40: Se oscurece al pasar el mouse
         // 4. focus: ...: Para accesibilidad con teclado
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 
-                   bg-black/20 rounded-full
-                   transition-all duration-200
-                   hover:scale-105 hover:bg-black/40
-                   focus:outline-none focus:ring-2 focus:ring-white/50"
+                  bg-black/20 rounded-full
+                  opacity-0 group-hover:opacity-100
+                  transition-all duration-300
+                  hover:scale-105 hover:bg-black/40
+                  focus:outline-none"
+
       >
         <img
           className="w-[85px]"
@@ -92,10 +113,12 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         onClick={handleNext}
         // ✅ Mismas clases añadidas que en la flecha izquierda
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 
-                   bg-black/20 rounded-full
-                   transition-all duration-200
-                   hover:scale-105 hover:bg-black/40
-                   focus:outline-none focus:ring-2 focus:ring-white/50"
+                  bg-black/20 rounded-full
+                  opacity-0 group-hover:opacity-100
+                  transition-all duration-300
+                  hover:scale-105 hover:bg-black/40
+                  focus:outline-none"
+
       >
         <img
           className="w-[85px]"

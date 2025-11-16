@@ -28,7 +28,10 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   return (
     <div className="flex flex-col gap-8">
       
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 justify-center"
+        style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}>
+
+          
         {paginatedEvents.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}

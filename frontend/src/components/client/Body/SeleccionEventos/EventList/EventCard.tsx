@@ -21,21 +21,31 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         3. hover:scale-[1.03]: Agranda ligeramente la tarjeta.
            (Puedes usar scale-105 si prefieres un efecto más notorio)
       */}
-      <div 
-        className="flex flex-col w-[253px] h-[256px] bg-neutral-100 rounded overflow-hidden shadow-md 
-                   transition-all duration-300 ease-in-out 
-                   hover:shadow-xl hover:scale-[1.03]"
+      <div
+        className="
+          flex flex-col
+          w-[130px] min-h-[220px]       
+          md:w-[230px] md:min-h-[240px] 
+          lg:w-[260px] lg:min-h-[300px] 
+          bg-neutral-100 rounded overflow-hidden shadow-md 
+          transition-all duration-300 ease-in-out 
+          hover:shadow-xl hover:scale-[1.03]"
       >
         <img
           src={image}
           alt={title}
-          className="w-full h-[150px] object-cover"
+          className="
+            w-full h-[110px]
+            md:h-[130px]     
+            lg:h-[160px]        
+            object-cover"
         />
+
         <div className="p-2.5 flex flex-col gap-1 text-black bg-neutral-100">
-          <p className="font-semibold text-sm">{title}</p>
-          <p className="text-sm">{date}</p>
-          <p className="text-sm">{provinciaDistrito}</p>
-          <p className="text-sm">{place}</p>
+          <p className="font-semibold text-sm line-clamp-2">{title}</p>
+          <p className="text-sm line-clamp-1">{date}</p>
+          <p className="text-sm line-clamp-1">{provinciaDistrito}</p>
+          <p className="text-sm line-clamp-1">{place}</p>
         </div>
       </div>
     </Link>
