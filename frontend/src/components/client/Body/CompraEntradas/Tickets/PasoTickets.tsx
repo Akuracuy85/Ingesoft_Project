@@ -7,6 +7,7 @@ import type { SummaryItem } from "./SelectionSummaryTable";
 import type { Zone } from "../../../../../models/Zone";
 import type { ZonePurchaseDetail } from "../../../../../types/ZonePurchaseDetail";
 import { calcularPuntos } from "../../../../../utils/points";
+import NotificationService from "@/services/NotificationService";
 
 interface PasoTicketsProps {
   eventDetails: EventDetailsForPurchase;
@@ -106,7 +107,7 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
 
   const handleAcceptSelection = () => {
     if (!isSynced) {
-      alert("Debes presionar 'Actualizar selección' antes de continuar.");
+      NotificationService.warning("Debes presionar 'Actualizar selección' antes de continuar");
       return;
     }
     onStepComplete(selectionSummary);

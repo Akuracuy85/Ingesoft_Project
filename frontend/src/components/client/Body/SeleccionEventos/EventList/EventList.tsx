@@ -40,7 +40,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
           >
             Anterior
           </button>
@@ -49,7 +49,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
             <button
               key={page}
               onClick={() => handlePageChange(page)}
-              className={`px-3 py-1 border rounded ${
+              className={`px-3 py-1 border rounded cursor-pointer ${
                 currentPage === page
                   ? "bg-indigo-600 text-white"
                   : "bg-white text-indigo-600 hover:bg-indigo-100"
@@ -62,7 +62,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
           >
             Siguiente
           </button>

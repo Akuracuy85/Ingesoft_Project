@@ -6,6 +6,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationService from "@/services/NotificationService";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,14 +20,14 @@ export const Login = () => {
     e.preventDefault();
 
     if (!captchaValido) {
-      alert("Por favor, verifica el captcha antes de continuar.");
+      NotificationService.warning("Por favor, verifica el captcha antes de continuar.");
       return;
     }
 
     try {
       const res = await login(email, password);
       if (res.success) {
-        alert("Inicio de sesión correcto.");
+        NotificationService.success("Inicio de sesión correcto")
         if (res.rol === "ORGANIZADOR") {
           navigate("/organizador/eventos");
         }
@@ -37,11 +38,11 @@ export const Login = () => {
           navigate("/eventos");
         }
       } else {
-        alert("Credenciales inválidas");
+        NotificationService.error("Credenciales inválidas")
       }
     } catch (err) {
       console.error(err);
-      alert("Error: Usuario o contraseña incorrectos.");
+      NotificationService.error("Error: Usuario o contraseña incorrectos")
     }
   };
 
@@ -125,7 +126,7 @@ export const Login = () => {
             disabled={!captchaValido}
             className={`w-full py-3 rounded-full font-semibold text-lg transition-all duration-200 ${
               captchaValido
-                ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white"
+                ? "bg-[#e58c00] hover:bg-[#cc7b00] text-white cursor-pointer"
                 : "bg-gray-400 text-white cursor-not-allowed"
             }`}
           >

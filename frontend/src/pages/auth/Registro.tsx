@@ -5,6 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 import UsuarioService from "@/services/UsuarioService";
+import NotificationService from "@/services/NotificationService";
 
 export const Registro = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +67,7 @@ export const Registro = () => {
 
   const handleSubmit = async () => {
     if (!puedeRegistrar) {
-      alert("Por favor, completa todos los campos correctamente.");
+      NotificationService.warning("Por favor, completa todos los campos correctamente.");
       return;
     }
 
@@ -89,11 +90,11 @@ export const Registro = () => {
       if (response.success) {
         setShowPopup(true);
       } else {
-        alert(response.message || "Hubo un problema al registrar el usuario");
+        NotificationService.error(response.message || "Hubo un problema al registrar el usuario");
       }
     } catch (error: any) {
       console.error("Error al registrar usuario:", error);
-      alert("Error al conectarse con el servidor");
+      NotificationService.error("Error al conectarse con el servidor");
     } finally {
       setLoading(false);
     }

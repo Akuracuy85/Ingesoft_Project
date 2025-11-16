@@ -4,6 +4,7 @@ import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { actualizarEvento, obtenerEventosDetallados, mapEstadoUIToBackend } from "@/services/EventoService";
 import EventoService from "@/services/EventoService"; // instancia por defecto para usar obtenerPorId
+import NotificationService from "@/services/NotificationService";
 
 interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; eventoNombre: string; }
 
@@ -149,7 +150,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       const resp = await actualizarEvento(eventoId, payload) as ActualizarEventoResponse;
       if (!resp || !resp.success) {
-        alert("No se pudo crear la zona");
+        NotificationService.error("No se pudo crear la zona");
         return;
       }
       // Recargar zonas
@@ -164,10 +165,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         tarifaPreventa: (z.tarifaPreventa as Tarifa) || null,
       }));
       setZones(recargadas);
-      alert("Zonas guardadas correctamente");
+      NotificationService.success("Zonas guardadas correctamente");
     } catch (e) {
       console.error("Error guardando zonas", e);
-      alert("No se pudo crear la zona");
+      NotificationService.error("No se pudo crear la zona");
     } finally {
       setIsSaving(false);
     }

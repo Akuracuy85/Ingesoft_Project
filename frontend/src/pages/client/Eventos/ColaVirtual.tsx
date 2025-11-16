@@ -22,7 +22,7 @@ export default function ColaVirtual() {
   useEffect(() => {
     const fetchTurno = async () => {
       try {
-        const turno = await ColaService.obtenerPosicion(evento.Cola.id);
+        const turno = await ColaService.obtenerPosicion(evento.cola.id);
         setTurno(turno);
         setProgress(Math.max(5, 100 - (turno / 500) * 100));
       } catch (error) {
@@ -32,7 +32,7 @@ export default function ColaVirtual() {
 
     const ingresarACola = async () => {
       try{
-        await ColaService.ingresarUsuarioACola(evento.Cola.id);
+        await ColaService.ingresarUsuarioACola(evento.cola.id);
       } catch (error) {
         console.error("Error al ingresar a la cola:", error)
       }
@@ -54,7 +54,7 @@ export default function ColaVirtual() {
 
     const interval = setInterval(async () => {
       try {
-        const turno = await ColaService.obtenerPosicion(evento.Cola.id);
+        const turno = await ColaService.obtenerPosicion(evento.cola.id);
 
         setTurno(turno);
         setProgress(Math.max(5, 100 - (turno / 500) * 100));
@@ -67,7 +67,7 @@ export default function ColaVirtual() {
           }, 2000);
         }
 
-        await ColaService.enviarHeartbeat(evento.Cola.id);
+        await ColaService.enviarHeartbeat(evento.cola.id);
 
       } catch (error) {
         console.error("Error en polling posición:", error);

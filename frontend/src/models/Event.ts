@@ -27,12 +27,14 @@ export interface Event {
   placeEspecific: string;
   lugar?: string | null;
   image: string;
+  imageBanner?: string | null;
+  imageLugar?: string | null;
 
   artist: Artist;
 
   category?: string;
   zonas: Zone[];
-  Cola?: Cola;
+  cola?: Cola;
   estado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO";
   organizador: Organizador;
   documento: string;

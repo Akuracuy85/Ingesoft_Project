@@ -4,6 +4,7 @@ import UbicacionService, { type LocationOption } from "@/services/UbicacionServi
 import { normalizeFecha } from "@/utils/normalizeFecha";
 import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
 import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
 
 interface EventoEditable {
   id: number;
@@ -160,7 +161,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     setTouchedSubmit(true);
     if (!event) return;
     if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado || !artistaId) {
-      alert("Por favor completa todos los campos obligatorios antes de guardar.");
+      NotificationService.warning("Por favor, completa todos los campos obligatorios antes de guardar");
       return;
     }
 
@@ -205,7 +206,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       onUpdated();
     } catch (error) {
       console.error("Error actualizando evento:", error);
-      alert("No se pudo actualizar el evento.");
+      NotificationService.error("No se pudo actualizar el evento");
     }
   };
 
@@ -221,7 +222,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       if (!event) return;
       // Validar mínimos requeridos (igual que creación)
       if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !artistaId) {
-        alert("Completa los datos obligatorios (incluido artista) antes de actualizar la portada.");
+        NotificationService.warning("Completa los datos obligatorios (incluido artista) antes de actualizar la portada");
         return;
       }
 
@@ -252,7 +253,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       onUpdated();
     } catch (err) {
       console.error("Error al actualizar portada:", err);
-      alert("No se pudo actualizar la portada. Intenta nuevamente.");
+      NotificationService.error("No se pudo actualizar la portada. Intenta nuevamente");
     } finally {
       setSubiendoPortada(false);
     }
