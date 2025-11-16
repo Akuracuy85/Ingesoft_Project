@@ -9,8 +9,6 @@ interface FeaturedEventProps {
 export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const total = events.length;
-  const [fade, setFade] = useState(false);
-
    const navigate = useNavigate(); 
 
 
