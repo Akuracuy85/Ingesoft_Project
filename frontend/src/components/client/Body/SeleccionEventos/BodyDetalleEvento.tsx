@@ -6,6 +6,8 @@ import mapaAsientos from "@/assets/EstadioImagen2.png";
 import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
+import { useAuth } from "@/hooks/useAuth";
+import NotificationService from "@/services/NotificationService";
 
 interface ArtistaDetalle {
   id: number;
@@ -49,6 +51,7 @@ const isZonaAgotada = (zona: Zone) =>
 export const BodyDetalleEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
+  const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
   const { evento, isLoading, error } = useEventoDetalle(eventoId) as {
@@ -56,6 +59,8 @@ export const BodyDetalleEvento: React.FC = () => {
     isLoading: boolean;
     error: string | null;
   };
+
+
 
   if (isLoading) {
     return (
@@ -96,6 +101,31 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const handleColaClick = (tipo: string) => {
     console.log(evento)
+    console.log(tipo);
+
+    if (!isLoggedIn) {
+      NotificationService.warning("Debes iniciar sesión para comprar entradas");
+      navigate("/login");
+      return;
+    }
+
+    let tienePuntosParaEntrada = false;
+    if(tipo === "Preventa") {
+      let minPuntosRequeridos = 99999;
+      zonas.forEach((z) => {
+        const puntosRequeridos = Math.ceil((z.tarifaPreventa?.precio ?? 99999) * 0.3) ;
+        minPuntosRequeridos = Math.min(minPuntosRequeridos, puntosRequeridos);
+      })
+
+      if (minPuntosRequeridos <= (user?.puntos ?? 0)) {
+        tienePuntosParaEntrada = true;
+      }
+
+      if (!tienePuntosParaEntrada) {
+        NotificationService.warning("Necesitas al menos " + minPuntosRequeridos + " puntos para comprar una entrada en Preventa");
+        return;
+      }
+    }
     navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });
   };
 

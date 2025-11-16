@@ -111,6 +111,18 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
       // Obtener detalles completos (para artistaId y campos obligatorios)
       const detalle = await obtenerEventosDetallados(eventoId);
 
+      let hayConadis = false;
+      zones.forEach((z) => {
+        if (z.nombre.toLocaleLowerCase() == "Conadis"){
+          hayConadis = true;
+        }
+      });
+
+      if(!hayConadis){
+        NotificationService.error("Debe haber una zona llamada 'Conadis' para personas con discapacidad");
+        return;
+      }
+
       // Construir zonas DTO (incluye existentes y nuevas)
       const zonasDto = zones.map((z) => ({
         id: z.id,
@@ -132,6 +144,8 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
           fechaFin: detalle.date,
         } : null,
       }));
+
+      
 
       // Payload actualizar evento (requeridos según backend)
       const payload = {
@@ -313,10 +327,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       {/* Botones de acción (siempre visibles) */}
       <div className="flex justify-between mt-4">
-        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600">
+        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600 cursor-pointer">
           <Plus className="h-4 w-4" /> Agregar zona
         </button>
-        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
+        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
           <Save className="h-4 w-4" /> {isSaving ? "Guardando..." : "Guardar configuración"}
         </button>
       </div>

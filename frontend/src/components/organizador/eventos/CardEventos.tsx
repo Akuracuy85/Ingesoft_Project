@@ -123,6 +123,7 @@ const CardEventos: React.FC = () => {
     try {
       const lista = await listarDetalladosOrganizador();
       const items: EventoItem[] = (lista as EventoDetalladoOrganizador[]).map((ev) => {
+        console.log("Evento: ", ev);
         const fechaISO = ev.fechaEvento || "";
         let fecha = "";
         let hora = "";

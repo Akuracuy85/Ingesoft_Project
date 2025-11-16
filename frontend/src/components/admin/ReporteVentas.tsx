@@ -50,7 +50,7 @@ export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showExportNotification, setShowExportNotification] = useState(false)
 
-  const handleExport = (format: string) => {
+  const handleExport = (/*format: string*/) => {
     setShowExportNotification(true)
 
     setTimeout(() => setShowExportNotification(false), 3000)
@@ -92,11 +92,11 @@ export function ReporteVentas() {
 
           {/* Exportaciones */}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => handleExport("CSV")} className="gap-2">
+            <Button variant="outline" onClick={() => handleExport(/*"CSV"*/)} className="gap-2">
               <Download className="h-4 w-4" />
               Exportar CSV
             </Button>
-            <Button variant="outline" onClick={() => handleExport("PDF")} className="gap-2">
+            <Button variant="outline" onClick={() => handleExport(/*"PDF"*/)} className="gap-2">
               <Download className="h-4 w-4" />
               Exportar PDF
             </Button>
