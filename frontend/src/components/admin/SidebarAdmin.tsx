@@ -1,12 +1,13 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Calendar,
   Users,
   FileText,
-  Settings,
+  LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import AuthService from "@/services/AuthService";
 
 interface MenuItem {
   name: string;
@@ -19,7 +20,7 @@ const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar, path: "/admin/eventos" },
   { name: "Usuarios", icon: Users, path: "/admin/usuarios" },
   { name: "Reportes", icon: FileText, path: "/admin/Reportes" },
-  { name: "Salir", icon: Settings, path: "/login" },
+  { name: "Salir", icon: LogOut, path: "/login" },
 ];
 
 // --- 2. Definición de Tipos para las Propiedades (Props) ---
@@ -40,6 +41,19 @@ interface SidebarAdminProps {
 
 // Asignamos las props tipadas (SidebarAdminProps) al componente
 const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
+
+  const navigate = useNavigate();
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try{
+      await AuthService.logout();
+    }
+    catch(e) {}
+    finally {
+      navigate("/login")
+    }
+  }
+
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Logo */}
@@ -69,6 +83,7 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ activeItem }) => {
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
+                  onClick={ item.name == "Salir" ? handleLogout : undefined }
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}
