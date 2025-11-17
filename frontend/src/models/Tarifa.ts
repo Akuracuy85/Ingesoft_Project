@@ -1,5 +1,3 @@
-// src/models/Tarifa.ts
-
 /**
  * @description Estructura de Tarifa tal como es enviada por el backend.
  * Nota: Los campos de fecha se reciben como strings ISO.

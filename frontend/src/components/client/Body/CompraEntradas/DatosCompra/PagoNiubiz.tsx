@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import LogoUnite from "@/assets/Logo_Unite.svg";
 import { CreditCard, Calendar, Lock, User, Mail } from "lucide-react";
 import NotificationService from "@/services/NotificationService";
+import { TipoDeTarjeta } from "@/utils/TarjetaUtils";
+import PerfilService from "@/services/PerfilService";
 
 interface PagoNiubizProps {
   total: number;
@@ -20,6 +22,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
     email: "",
   });
   const [isPaying, setIsPaying] = useState(false);
+  const [rememberCard, setRememberCard] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,11 +34,27 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
       return;
     }
 
+    if(TipoDeTarjeta(tarjeta) === "Desconocida") {
+      NotificationService.warning("El número de tarjeta ingresado no es válido. Recuerda que debe ser Visa o Mastercard");
+      return;
+    }
+
     setIsPaying(true);
-    setTimeout(async () => {
-      await onConfirm(); // aquí se confirmará la compra y se enviará el correo
-      setIsPaying(false);
-    }, 2000);
+    await onConfirm();
+    setIsPaying(false);
+    try {
+      if (rememberCard) {
+        await PerfilService.guardarTarjeta({
+          numeroTarjeta: tarjeta,
+          mesExp: parseInt(fecha.split("/")[0]),
+          anExp: parseInt(fecha.split("/")[1]),
+          cvv: cvv,
+        })
+        NotificationService.success("Tarjeta guardada correctamente en tu perfil");
+      }
+    } catch (e) {
+      NotificationService.warning("No se pudo guardar la tarjeta en tu perfil. Pero tu compra se procesó correctamente");
+    }
   };
 
   return createPortal(
@@ -135,6 +154,20 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
               />
             </div>
+          </div>
+
+          {/* Remember card check */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="rememberCard"
+              checked={rememberCard}
+              onChange={() => setRememberCard(!rememberCard)}
+              className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-2 focus:ring-amber-600"
+            />
+            <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700">
+              Recordar tarjeta 
+            </label>
           </div>
 
           {/* Email */}
