@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Calendar, MoreVertical, Plus, Edit3, Trash2, X, ImageOff, Upload } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
@@ -96,6 +96,18 @@ const CardEventos: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // NUEVO: paginación
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10); // opciones: 5 o 10
+  const totalPages = useMemo(() => {
+    if (eventos.length === 0) return 0;
+    return Math.ceil(eventos.length / pageSize);
+  }, [eventos.length, pageSize]);
+  const paginatedEventos = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return eventos.slice(start, start + pageSize);
+  }, [eventos, currentPage, pageSize]);
+
   // Modal crear
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -184,6 +196,16 @@ const CardEventos: React.FC = () => {
       setEventoSeleccionado(eventos[selectedIndex]);
     }
   }, [eventos, selectedIndex]);
+
+  // Aseguramos que la página actual no exceda el total tras cambios (e.g. eliminación)
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   // Abrir crear
   const handleOpenCreate = () => setIsCreateOpen(true);
@@ -584,7 +606,25 @@ const CardEventos: React.FC = () => {
         <div className="mt-6">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-medium text-gray-700">Lista de eventos</h3>
-            <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
+              {/* Selector de tamaño de página */}
+              <div className="flex items-center gap-2">
+                <label htmlFor="pageSize" className="text-xs text-gray-600">Por página:</label>
+                <select
+                  id="pageSize"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1); // reinicia a primera página
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:outline-none"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -598,15 +638,16 @@ const CardEventos: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {eventos.map((ev, index) => {
-                  console.log(`🧾 [DEBUG] Renderizando evento ${ev.nombre} → Fecha mostrada: ${ev.fecha}`);
+                {paginatedEventos.map((ev, localIndex) => {
+                  const globalIndex = (currentPage - 1) * pageSize + localIndex;
+                  // ...existing code...
                   return (
                   <tr
-                    key={`${ev.nombre}-${ev.fecha}-${index}`}
-                    className={`${selectedIndex === index ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
+                    key={ev.id}
+                    className={`${selectedIndex === globalIndex ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
                     onClick={() => {
                       setEventoSeleccionado(ev);
-                      setSelectedIndex(index);
+                      setSelectedIndex(globalIndex);
                     }}
                   >
                     <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
@@ -617,23 +658,23 @@ const CardEventos: React.FC = () => {
                     <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <div
                         className="relative inline-block text-left"
-                        ref={menuAbierto === index ? menuRef : null}
+                        ref={menuAbierto === globalIndex ? menuRef : null}
                       >
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setMenuAbierto(menuAbierto === index ? null : index);
+                            setMenuAbierto(menuAbierto === globalIndex ? null : globalIndex);
                           }}
                           className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
                           aria-haspopup="menu"
-                          aria-expanded={menuAbierto === index}
+                          aria-expanded={menuAbierto === globalIndex}
                           aria-label={`Acciones para ${ev.nombre}`}
                         >
                           <MoreVertical className="h-5 w-5" />
                         </button>
 
-                        {menuAbierto === index && (
+                        {menuAbierto === globalIndex && (
                           <div
                             className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                             onClick={(e) => e.stopPropagation()}
@@ -644,7 +685,7 @@ const CardEventos: React.FC = () => {
                               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                               onClick={() => {
                                 setMenuAbierto(null);
-                                handleOpenEdit(index);
+                                handleOpenEdit(globalIndex);
                               }}
                               role="menuitem"
                             >
@@ -655,7 +696,7 @@ const CardEventos: React.FC = () => {
                               type="button"
                               className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
                               onClick={() => {
-                                setEventoAEliminar({ index, nombre: ev.nombre });
+                                setEventoAEliminar({ index: globalIndex, nombre: ev.nombre });
                                 setMenuAbierto(null);
                               }}
                               role="menuitem"
@@ -675,6 +716,47 @@ const CardEventos: React.FC = () => {
               <div className="text-sm text-gray-500 p-4">No hay eventos en este momento.</div>
             )}
           </div>
+
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="text-xs text-gray-600">
+                Página {currentPage} de {totalPages} — Mostrando {paginatedEventos.length} de {eventos.length} eventos
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"}`}
+                >
+                  ← Anterior
+                </button>
+                {/* Números de página */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 text-xs rounded border flex items-center justify-center ${page === currentPage ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                      aria-label={`Ir a página ${page}`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"}`}
+                >
+                  Siguiente →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modales */}
