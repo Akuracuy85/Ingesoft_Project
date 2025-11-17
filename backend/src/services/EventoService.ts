@@ -261,6 +261,13 @@ export class EventoService {
         : null;
     }
 
+    // NUEVO: permitir actualizar la imagen del lugar/estadio
+    if (data.imagenLugar !== undefined) {
+      evento.imagenLugar = data.imagenLugar
+        ? this.convertirImagen(data.imagenLugar)
+        : null;
+    }
+
     await this.actualizarTerminosUso(evento, data.terminosUso);
 
     if (data.documentosRespaldo) {
