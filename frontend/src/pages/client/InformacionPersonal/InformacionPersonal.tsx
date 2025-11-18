@@ -193,7 +193,7 @@ export default function InformacionPersonal() {
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-400 rounded flex items-center justify-center">
+                        <div className= {`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${TipoDeTarjeta(card.numeroTarjeta) === 'Visa' ? 'from-blue-500 to-blue-700' : 'from-red-600 to-orange-400'}`}>
                           <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>

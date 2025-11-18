@@ -29,9 +29,10 @@ export class PerfilService {
       if (!numeroTarjeta || numeroTarjeta.length < 4) {
           throw new Error("Número de tarjeta inválido.");
       }
+      const primeros4 = numeroTarjeta.slice(0, 4);
       const ultimos4 = numeroTarjeta.slice(-4);
-      const asteriscos = numeroTarjeta.slice(0, -4).replace(/\d/g, "*");
-      return `${asteriscos}${ultimos4}`;
+      const asteriscos = numeroTarjeta.slice(0, -8).replace(/\d/g, "*");
+      return `${primeros4}${asteriscos}${ultimos4}`;
   }
 
     /**

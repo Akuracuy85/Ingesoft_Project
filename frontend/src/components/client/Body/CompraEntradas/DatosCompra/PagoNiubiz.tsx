@@ -157,15 +157,15 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           </div>
 
           {/* Remember card check */}
-          <div className="flex items-center">
+          <div className="flex items-center border rounded-md h-8 items-center px-1">
             <input
               type="checkbox"
               id="rememberCard"
               checked={rememberCard}
               onChange={() => setRememberCard(!rememberCard)}
-              className="h-4 w-4 text-amber-600 border-gray-300 rounded focus:ring-2 focus:ring-amber-600"
+              className="h-4 w-4 border border-gray-300 pl-9 py-2 text-sm"
             />
-            <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700">
+            <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700 ">
               Recordar tarjeta 
             </label>
           </div>
