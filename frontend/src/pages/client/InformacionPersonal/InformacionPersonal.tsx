@@ -16,6 +16,8 @@ import {
 } from "../../../components/ui/alert-dialog";
 import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-react";
 import PerfilService from "../../../services/PerfilService";
+import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
+import type { Tarjeta } from "@/models/Tarjeta";
 
 export default function InformacionPersonal() {
   const [userInfo, setUserInfo] = useState({
@@ -25,7 +27,7 @@ export default function InformacionPersonal() {
     phone: "",
   });
 
-  const [savedCard, setSavedCard] = useState<{ id?: number; type: string; lastFourDigits: string } | null>(null);
+  const [savedCards, setSavedCards] = useState<Tarjeta[] | null>(null);
   const [points, setPoints] = useState<number>(0);
 
   const [showSuccess, setShowSuccess] = useState(false);
@@ -33,59 +35,24 @@ export default function InformacionPersonal() {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const USE_MOCK = false;
+  // Estado para almacenar el ID de la tarjeta seleccionada
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (USE_MOCK) {
-          const mockProfile = {
-            name: "María González",
-            email: "maria.gonzalez@email.com",
-            dni: "12345678",
-            phone: "+51 912 345 678",
-          };
-          const mockCard = {
-            id: 101,
-            type: "VISA",
-            lastFourDigits: "4582",
-          };
-          const mockPoints = { totalPoints: 1250 };
+        const profile = await PerfilService.getProfile();
+        const pointsData = await PerfilService.getPuntos();
 
-          setUserInfo({
-            fullName: mockProfile.name,
-            email: mockProfile.email,
-            dni: mockProfile.dni,
-            phone: mockProfile.phone,
-          });
-          setSavedCard(mockCard);
-          setPoints(mockPoints.totalPoints);
-        } else {
-          const profile = await PerfilService.getProfile();
-          const pointsData = await PerfilService.getPuntos();
+        setUserInfo({
+          fullName: profile.nombre,
+          email: profile.email,
+          dni: profile.dni,
+          phone: profile.celular,
+        });
 
-          setUserInfo({
-            fullName: profile.nombre,
-            email: profile.email,
-            dni: profile.dni,
-            phone: profile.celular,
-          });
-
-          const firstCard = profile?.tarjetas?.[0];
-          if (firstCard) {
-            const last4 = String(firstCard.lastFourDigits ?? firstCard.numeroCuenta ?? "").slice(-4);
-            console.log("La tarjeta es: ", firstCard);
-            setSavedCard({
-              id: firstCard.id,
-              type: "TARJETA",
-              lastFourDigits: last4,
-            });
-          } else {
-            setSavedCard(null);
-          }
-
-          setPoints(pointsData.totalPoints || 0);
-        }
+        setSavedCards(profile.tarjetas || null);
+        setPoints(pointsData.totalPoints || 0);
       } catch (err) {
         console.error("Error al obtener información personal:", err);
       } finally {
@@ -98,14 +65,12 @@ export default function InformacionPersonal() {
 
   const handleSaveChanges = async () => {
     try {
-      if (!USE_MOCK) {
-        await PerfilService.updateProfile({
-          nombre: userInfo.fullName,
-          email: userInfo.email,
-          dni: userInfo.dni,
-          celular: userInfo.phone,
-        });
-      }
+      await PerfilService.updateProfile({
+        nombre: userInfo.fullName,
+        email: userInfo.email,
+        dni: userInfo.dni,
+        celular: userInfo.phone,
+      });
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
@@ -115,11 +80,12 @@ export default function InformacionPersonal() {
 
   const handleDeleteCard = async () => {
     try {
-      if (!USE_MOCK && savedCard?.id) {
-        await PerfilService.deletePaymentMethod(savedCard.id);
+      if (selectedCardId) {
+        await PerfilService.deletePaymentMethod(selectedCardId);
       }
-      setSavedCard(null);
+      setSavedCards((prevCards) => prevCards?.filter((card) => card.id !== selectedCardId) || null);
       setShowDeleteAlert(false);
+      setSelectedCardId(null); // Limpiar el estado después de eliminar
     } catch (err) {
       console.error("Error al eliminar tarjeta:", err);
     }
@@ -134,10 +100,6 @@ export default function InformacionPersonal() {
       </ClientLayout>
     );
   }
-  /*
-  function setShowCardModal(arg0: boolean): void {
-    throw new Error("Function not implemented.");
-  }*/
 
   return (
     <ClientLayout showFilterButton={false}>
@@ -223,31 +185,43 @@ export default function InformacionPersonal() {
                 <CardTitle className="text-xl">Tarjetas guardadas</CardTitle>
                 <CardDescription>Cuentas con estas tarjetas para futuras compras.</CardDescription>
               </CardHeader>
-              <CardContent>
-                {savedCard ? (
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-400 rounded flex items-center justify-center">
-                        <CreditCard className="w-6 h-6 text-white" />
+              <CardContent className="space-y-4 max-h-64 overflow-y-auto">
+                {savedCards && savedCards.length > 0 ? (
+                  savedCards.map((card) => (
+                    <div
+                      key={card.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className= {`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${TipoDeTarjeta(card.numeroTarjeta) === 'Visa' ? 'from-blue-500 to-blue-700' : 'from-red-600 to-orange-400'}`}>
+                          <CreditCard className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {TipoDeTarjeta(card.numeroTarjeta)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {FormatearTarjeta(card.numeroTarjeta)}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">{savedCard.type}</p>
-                        <p className="text-sm text-gray-600">•••• {savedCard.lastFourDigits}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCardId(card.id!);
+                            setShowDeleteAlert(true);
+                          }}
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowDeleteAlert(true)}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  ))
                 ) : (
-                  <p className="text-gray-500">No cuenta con tarjetas</p>
+                  <p className="text-gray-500">No cuentas con tarjetas guardadas</p>
                 )}
               </CardContent>
             </Card>
