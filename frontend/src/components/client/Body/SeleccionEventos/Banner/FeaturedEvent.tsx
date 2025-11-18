@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import type { Event } from "../../../../../models/Event";
 import { useNavigate } from "react-router-dom";
 
@@ -7,78 +7,90 @@ interface FeaturedEventProps {
 }
 
 export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const total = events.length;
-
-   const navigate = useNavigate(); 
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
-  };
+  const displayEvents = [events[total - 1], ...events, events[0]];
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
+    if (!isTransitioning) {
+      setCurrentIndex(prev => prev + 1);
+      setIsTransitioning(true);
+    }
   };
 
-  const event = events[currentIndex];
+  const handlePrev = () => {
+    if (!isTransitioning) {
+      setCurrentIndex(prev => prev - 1);
+      setIsTransitioning(true);
+    }
+  };
 
+  const handleTransitionEnd = () => {
+    if (currentIndex === 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(total);
+    } else if (currentIndex === total + 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+    } else {
+      setIsTransitioning(false);
+    }
+  };
+
+  const visibleEventIndex =
+    currentIndex === 0
+      ? total - 1
+      : currentIndex === total + 1
+      ? 0
+      : currentIndex - 1;
+
+  const event = events[visibleEventIndex];
   const distritoProvincia = `${event.provincia}, ${event.distrito}`;
 
-  // Pequeña optimización: no es necesario 'event = events[currentIndex]'
-  // Puedes usar 'events[currentIndex]' directamente abajo.
-
   return (
-    <section className="relative w-full h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-lg shadow-md">
-      {/* Imagen de fondo */}
-      <img
-        src={events[currentIndex].image}
-        alt={events[currentIndex].title}
-        // ✅ Añadimos 'key' para forzar a React a 
-        // recargar la imagen con la transición
-        key={events[currentIndex].id} 
-        className="absolute inset-0 w-full h-full object-cover 
-                   transition-opacity duration-700"
-      />
+    <section className="group relative w-full h-[280px] md:h-[400px] lg:h-[420px] overflow-hidden rounded-lg shadow-md">
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <div
+          ref={containerRef}
+          className={`flex w-full h-full ${
+            isTransitioning ? "transition-transform duration-500 ease-in-out" : ""
+          }`}
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {displayEvents.map((ev, idx) => (
+            <img
+              key={idx}
+              src={ev.image}
+              alt={ev.title}
+              className="w-full h-full object-cover flex-shrink-0"
+            />
+          ))}
+        </div>
+      </div>
 
-      {/* Capa oscura para contraste */}
       <div className="absolute inset-0 bg-black/50" />
 
-      {/* Contenido superpuesto */}
       <div className="relative z-10 flex flex-col items-start justify-center h-full max-w-6xl mx-auto px-6 text-white">
-        <h2 className="text-3xl md:text-4xl font-bold mb-3">
-          {events[currentIndex].title}
-        </h2>
-        <p className="text-lg md:text-xl mb-1">
-          📅 {events[currentIndex].date}
-        </p>     
-        <p className="text-lg md:text-xl mb-1">
-          📍 {distritoProvincia}
-        </p>
-        <p className="text-lg md:text-xl mb-4">
-          📍 {events[currentIndex].place}
-        </p>
-        {/* ✅ Botón con estado 'focus' */}
+        <h2 className="text-3xl md:text-4xl font-bold mb-3">{event.title}</h2>
+        <p className="text-lg md:text-xl mb-1">📅 {event.date}</p>
+        <p className="text-lg md:text-xl mb-1">📍 {distritoProvincia}</p>
+        <p className="text-lg md:text-xl mb-4">📍 {event.place}</p>
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}
-          className="px-5 py-2 bg-indigo-600 rounded-md hover:bg-indigo-700 transition cursor-pointer"
+          className="px-6 py-2 bg-transparent border border-white rounded-md text-white text-center hover:bg-white/20 transition cursor-pointer"
         >
-          Ver detalles
+          VER MÁS
         </button>
       </div>
 
-      {/* 🔹 Flecha izquierda */}
       <button
         onClick={handlePrev}
-        // ✅ Clases añadidas:
-        // 1. bg-black/20: Fondo semitransparente
-        // 2. rounded-full: Para hacerlo circular
-        // 3. hover:bg-black/40: Se oscurece al pasar el mouse
-        // 4. focus: ...: Para accesibilidad con teclado
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 
-                   bg-black/20 rounded-full
-                   transition-all duration-200
-                   hover:scale-105 hover:bg-black/40
-                   focus:outline-none focus:ring-2 focus:ring-white/50"
+        disabled={isTransitioning}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-black/40 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <img
           className="w-[85px]"
@@ -87,15 +99,10 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         />
       </button>
 
-      {/* 🔹 Flecha derecha */}
       <button
         onClick={handleNext}
-        // ✅ Mismas clases añadidas que en la flecha izquierda
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 
-                   bg-black/20 rounded-full
-                   transition-all duration-200
-                   hover:scale-105 hover:bg-black/40
-                   focus:outline-none focus:ring-2 focus:ring-white/50"
+        disabled={isTransitioning}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 hover:bg-black/40 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <img
           className="w-[85px]"

@@ -21,14 +21,17 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" }); // opcional
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   return (
     <div className="flex flex-col gap-8">
       
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 justify-center"
+        style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}>
+
+          
         {paginatedEvents.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}
