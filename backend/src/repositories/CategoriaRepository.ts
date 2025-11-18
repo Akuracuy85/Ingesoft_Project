@@ -23,6 +23,12 @@ export class CategoriaRepository {
       order: { nombre: "ASC" } // Ordenar alfabéticamente
     });
   }
+
+  // Nuevo: buscar por id
+  async buscarPorId(id: number): Promise<Categoria | null> {
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return await this.repository.findOne({ where: { id } });
+  }
 }
 
 export const categoriaRepository = CategoriaRepository.getInstance();

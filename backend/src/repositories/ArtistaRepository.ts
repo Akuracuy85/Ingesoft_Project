@@ -36,6 +36,12 @@ export class ArtistaRepository {
       order: { nombre: "ASC" }
     });
   }
+
+  // Nuevo: crear artista
+  async crear(data: Partial<Artista>): Promise<Artista> {
+    const entidad = this.repository.create(data);
+    return await this.repository.save(entidad);
+  }
 }
 
 export const artistaRepository = ArtistaRepository.getInstance();
