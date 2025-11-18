@@ -14,6 +14,7 @@ export interface ActualizarEventoDto {
   distrito: string;
   estado: EstadoEvento;
   imagenPortada?: string | null; // base64 opcional, null para eliminar
+  imagenLugar?: string | null; // base64 opcional, null para eliminar
   terminosUso?: DocumentoDto | null;
   documentosRespaldo?: DocumentoDto[];
   zonas?: ZonaDto[];
