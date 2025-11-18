@@ -4,7 +4,6 @@ export interface Artista {
   id: string | number;
   nombre: string;
   categoria?: { id: number | string; nombre: string };
-  duracionMin?: number;
   prioridad?: number;
 }
 
@@ -27,7 +26,7 @@ class ArtistaService {
   }
 
   // Nuevo: crear artista
-  async createArtista(data: { nombre: string; duracionMin: number; categoriaId: number; prioridad: number; }): Promise<Artista | null> {
+  async createArtista(data: { nombre: string; categoriaId: number; prioridad: number; }): Promise<Artista | null> {
     try {
       const resp = await this.client.post<ApiResponseData<Artista>>("/artista", data);
       return resp.data || null;

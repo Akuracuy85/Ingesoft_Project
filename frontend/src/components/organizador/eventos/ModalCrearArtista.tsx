@@ -13,7 +13,6 @@ interface ModalCrearArtistaProps {
 
 const defaultState = {
   nombre: "",
-  duracionMin: "",
   prioridad: "0",
   categoriaId: "",
 };
@@ -41,13 +40,12 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
   };
 
   const nombreError = touched && !form.nombre.trim();
-  const duracionError = touched && (!form.duracionMin || isNaN(Number(form.duracionMin)) || Number(form.duracionMin) <= 0);
   const prioridadError = touched && (form.prioridad === "" || isNaN(Number(form.prioridad)) || Number(form.prioridad) < 0);
   const categoriaError = touched && !form.categoriaId;
 
   const handleCrear = async () => {
     setTouched(true);
-    if (nombreError || duracionError || prioridadError || categoriaError) {
+    if (nombreError || prioridadError || categoriaError) {
       NotificationService.warning("Completa todos los campos obligatorios");
       return;
     }
@@ -55,7 +53,6 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
     try {
       const payload = {
         nombre: form.nombre.trim(),
-        duracionMin: Number(form.duracionMin),
         prioridad: Number(form.prioridad),
         categoriaId: Number(form.categoriaId),
       };
@@ -87,7 +84,7 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto px-1 pb-1">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nombre <span className="text-red-500">*</span></label>
               <input
@@ -99,31 +96,17 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
               />
               {nombreError && <p className="mt-1 text-xs text-red-600">Obligatorio.</p>}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duración (min) <span className="text-red-500">*</span></label>
-                <input
-                  type="number"
-                  name="duracionMin"
-                  value={form.duracionMin}
-                  onChange={onChange}
-                  min={1}
-                  className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${duracionError ? "border-red-500" : "border-gray-300"}`}
-                />
-                {duracionError && <p className="mt-1 text-xs text-red-600">Debe ser &gt; 0.</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad <span className="text-red-500">*</span></label>
-                <input
-                  type="number"
-                  name="prioridad"
-                  value={form.prioridad}
-                  onChange={onChange}
-                  min={0}
-                  className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${prioridadError ? "border-red-500" : "border-gray-300"}`}
-                />
-                {prioridadError && <p className="mt-1 text-xs text-red-600">Entero ≥ 0.</p>}
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad <span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                name="prioridad"
+                value={form.prioridad}
+                onChange={onChange}
+                min={0}
+                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${prioridadError ? "border-red-500" : "border-gray-300"}`}
+              />
+              {prioridadError && <p className="mt-1 text-xs text-red-600">Entero ≥ 0.</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>

@@ -33,13 +33,10 @@ export class ArtistaService {
   }
 
   // Nuevo: crear artista con validaciones básicas
-  async crearArtista(data: { nombre: string; duracionMin: number; categoriaId: number; prioridad: number; }): Promise<any> {
-    const { nombre, duracionMin, categoriaId, prioridad } = data;
+  async crearArtista(data: { nombre: string; categoriaId: number; prioridad: number; }): Promise<any> {
+    const { nombre, categoriaId, prioridad } = data;
     if (!nombre || !nombre.trim()) {
       throw new CustomError("El nombre es obligatorio", StatusCodes.BAD_REQUEST);
-    }
-    if (!Number.isInteger(duracionMin) || duracionMin <= 0) {
-      throw new CustomError("La duración (min) debe ser un entero positivo", StatusCodes.BAD_REQUEST);
     }
     if (!Number.isInteger(prioridad) || prioridad < 0) {
       throw new CustomError("La prioridad debe ser un entero >= 0", StatusCodes.BAD_REQUEST);
@@ -55,7 +52,6 @@ export class ArtistaService {
       }
       const nuevo = await this.artistaRepository.crear({
         nombre: nombre.trim(),
-        duracionMin,
         prioridad,
         categoria,
       });
