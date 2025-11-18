@@ -9,18 +9,12 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, distrito, provincia, image /*, image, time*/ } = event;
+  const { title, date, place, distrito, provincia, image /*time*/ } = event;
 
   const provinciaDistrito = `${provincia}, ${distrito}`;
 
   return (
     <Link to={`${event.id}/detalle`}>
-      {/* ✅ CAMBIOS AQUÍ:
-        1. transition-all, duration-300, ease-in-out: Para una animación suave.
-        2. hover:shadow-xl: Aumenta la sombra al pasar el mouse.
-        3. hover:scale-[1.03]: Agranda ligeramente la tarjeta.
-           (Puedes usar scale-105 si prefieres un efecto más notorio)
-      */}
       <div
         className="
           flex flex-col

@@ -21,7 +21,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" }); // opcional
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
