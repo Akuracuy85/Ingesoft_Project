@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import ArtistaService from "@/services/ArtistaService";
 import CategoriaService, { type Categoria } from "@/services/CategoriaService";
 import NotificationService from "@/services/NotificationService";
+import ModalCrearCategoria from "./ModalCrearCategoria";
 
 interface ModalCrearArtistaProps {
   open: boolean;
@@ -22,6 +23,7 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [openCrearCategoria, setOpenCrearCategoria] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -76,88 +78,103 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
-      <div className="mx-auto my-10 bg-white rounded-lg shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Crear artista</h3>
-          <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700" aria-label="Cerrar">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              name="nombre"
-              value={form.nombre}
-              onChange={onChange}
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${nombreError ? "border-red-500" : "border-gray-300"}`}
-            />
-            {nombreError && <p className="mt-1 text-xs text-red-600">Obligatorio.</p>}
+    <>
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
+        <div className="mx-auto my-10 bg-white rounded-lg shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-start justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Crear artista</h3>
+            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700" aria-label="Cerrar">
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Duración (min) <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre <span className="text-red-500">*</span></label>
               <input
-                type="number"
-                name="duracionMin"
-                value={form.duracionMin}
+                type="text"
+                name="nombre"
+                value={form.nombre}
                 onChange={onChange}
-                min={1}
-                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${duracionError ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${nombreError ? "border-red-500" : "border-gray-300"}`}
               />
-              {duracionError && <p className="mt-1 text-xs text-red-600">Debe ser &gt; 0.</p>}
+              {nombreError && <p className="mt-1 text-xs text-red-600">Obligatorio.</p>}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Duración (min) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  name="duracionMin"
+                  value={form.duracionMin}
+                  onChange={onChange}
+                  min={1}
+                  className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${duracionError ? "border-red-500" : "border-gray-300"}`}
+                />
+                {duracionError && <p className="mt-1 text-xs text-red-600">Debe ser &gt; 0.</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  name="prioridad"
+                  value={form.prioridad}
+                  onChange={onChange}
+                  min={0}
+                  className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${prioridadError ? "border-red-500" : "border-gray-300"}`}
+                />
+                {prioridadError && <p className="mt-1 text-xs text-red-600">Entero ≥ 0.</p>}
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad <span className="text-red-500">*</span></label>
-              <input
-                type="number"
-                name="prioridad"
-                value={form.prioridad}
-                onChange={onChange}
-                min={0}
-                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${prioridadError ? "border-red-500" : "border-gray-300"}`}
-              />
-              {prioridadError && <p className="mt-1 text-xs text-red-600">Entero ≥ 0.</p>}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>
+              <div className="flex items-center gap-2">
+                <select
+                  name="categoriaId"
+                  value={form.categoriaId}
+                  onChange={onChange}
+                  className={`flex-1 border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${categoriaError ? "border-red-500" : "border-gray-300"}`}
+                >
+                  <option value="">Selecciona categoría</option>
+                  {categorias.map((c) => (
+                    <option key={c.id} value={String(c.id)}>{c.nombre}</option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => setOpenCrearCategoria(true)} className="text-xs px-2 py-2 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear categoría">+ Nueva</button>
+              </div>
+              {categoriaError && <p className="mt-1 text-xs text-red-600">Obligatoria.</p>}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>
-            <select
-              name="categoriaId"
-              value={form.categoriaId}
-              onChange={onChange}
-              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${categoriaError ? "border-red-500" : "border-gray-300"}`}
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+              disabled={loading}
             >
-              <option value="">Selecciona categoría</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={String(c.id)}>{c.nombre}</option>
-              ))}
-            </select>
-            {categoriaError && <p className="mt-1 text-xs text-red-600">Obligatoria.</p>}
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleCrear}
+              disabled={loading}
+              className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
+            >
+              {loading ? "Guardando..." : "Crear"}
+            </button>
           </div>
-        </div>
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-            disabled={loading}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleCrear}
-            disabled={loading}
-            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
-          >
-            {loading ? "Guardando..." : "Crear"}
-          </button>
         </div>
       </div>
-    </div>
+
+      <ModalCrearCategoria
+        open={openCrearCategoria}
+        onClose={() => setOpenCrearCategoria(false)}
+        onCreated={async (categoriaId) => {
+          const lista = await CategoriaService.getCategorias();
+          setCategorias(lista);
+          setForm((prev) => ({ ...prev, categoriaId: String(categoriaId) }));
+        }}
+      />
+    </>
   );
 };
 
