@@ -185,7 +185,7 @@ export default function InformacionPersonal() {
                 <CardTitle className="text-xl">Tarjetas guardadas</CardTitle>
                 <CardDescription>Cuentas con estas tarjetas para futuras compras.</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4 max-h-64 overflow-y-auto">
                 {savedCards && savedCards.length > 0 ? (
                   savedCards.map((card) => (
                     <div
