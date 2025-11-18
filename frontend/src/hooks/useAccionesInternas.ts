@@ -21,7 +21,7 @@ export function useAccionesInternas() {
       setError(null);
 
       const response = await adminAccionesService.obtenerAcciones(filtros);
-
+      //console.log("Respuesta del backend (acciones):", response);  
       setAcciones(response.acciones ?? []);
     } catch (err: any) {
       console.error("Error cargando acciones internas:", err);
