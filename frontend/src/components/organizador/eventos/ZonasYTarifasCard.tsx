@@ -325,18 +325,19 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       {/* Fechas globales preventa */}
       <div className="mb-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">Fecha inicio de preventa (global)</label>
-          <input
-            type="date"
-            value={fechaInicioPreventa}
-            onChange={(e) => setFechaInicioPreventa(e.target.value)}
-            max={fechaFinPreventa || undefined}
-            className="border border-gray-300 rounded-md px-2 py-1 w-60"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">Fecha fin de preventa (global)</label>
+        <div className="flex flex-row flex-wrap gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Fecha inicio de preventa (global)</label>
+            <input
+              type="date"
+              value={fechaInicioPreventa}
+              onChange={(e) => setFechaInicioPreventa(e.target.value)}
+              max={fechaFinPreventa || undefined}
+              className="border border-gray-300 rounded-md px-2 py-1 w-60"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Fecha fin de preventa (global)</label>
             <input
               type="date"
               value={fechaFinPreventa}
@@ -344,6 +345,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
               min={fechaInicioPreventa || undefined}
               className="border border-gray-300 rounded-md px-2 py-1 w-60"
             />
+          </div>
         </div>
         <p className="text-xs text-gray-500">La venta normal inicia en la fecha fin de la preventa y termina en la fecha del evento.</p>
       </div>
