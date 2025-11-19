@@ -314,6 +314,12 @@ export class EventoService {
     data: ActualizarZonasDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "zonas")) {
+      throw new CustomError(
+        "Debes enviar el arreglo de zonas a actualizar",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { zonas: data.zonas },
