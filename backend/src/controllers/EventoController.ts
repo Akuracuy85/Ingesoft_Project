@@ -279,6 +279,7 @@ export class EventoController {
   aprobarEvento = async (req: Request, res: Response) => {
     const eventoId = Number(req.params.id);
 
+    // 1. Validación del ID
     if (!Number.isInteger(eventoId) || eventoId <= 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
@@ -286,6 +287,7 @@ export class EventoController {
       });
     }
 
+    // 2. Validación del Autor
     const autor = req.author;
     if (!autor) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -294,7 +296,21 @@ export class EventoController {
       });
     }
 
+    // 3. Llamada al Servicio (¡Esto es lo que faltaba!)
+    try {
+      const evento = await this.eventoService.aprobarEvento(
+        eventoId,
+        autor
+      );
 
+      res.status(StatusCodes.OK).json({
+        success: true,
+        eventoId: evento.id,
+        message: "Evento aprobado exitosamente."
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
   };
 
   rechazarEvento = async (req: Request, res: Response) => {

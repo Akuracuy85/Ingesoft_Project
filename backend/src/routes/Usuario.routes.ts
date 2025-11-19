@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { usuarioController } from "../controllers/UsuarioController";
 import { sessionMiddleware } from "../middlewares/SessionMiddleware";
+import { autorMiddleware} from "../middlewares/AutorMiddleware";
 
 const router = Router();
 
@@ -16,9 +17,9 @@ router.put("/:id", usuarioController.editarUsuario);
 
 router.delete("/:id", usuarioController.borrar);
 
-router.patch("/activar/:id", usuarioController.activar);
+router.patch("/activar/:id", sessionMiddleware.VerificarToken, autorMiddleware.VerificarEsAdmin, usuarioController.activar);
 
-router.patch("/desactivar/:id", usuarioController.desactivar);
+router.patch("/desactivar/:id", sessionMiddleware.VerificarToken, autorMiddleware.VerificarEsAdmin, usuarioController.desactivar);
 
 
 export default router;
