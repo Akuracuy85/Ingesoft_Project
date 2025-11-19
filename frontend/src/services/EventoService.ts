@@ -226,37 +226,10 @@ class EventoService extends HttpClient {
 
   async updateDocumentosRespaldo(
     eventoId: number,
-    _documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
+    documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
   ) {
-    // Evita warning de variable no usada sin cambiar comportamiento
-    void _documentos;
-    const evento = await this.getEventoDetalladoOrganizadorById(eventoId);
-    if (!evento) throw new Error("Evento no encontrado para actualizar documentos.");
-    if (!evento.artistaId || evento.artistaId <= 0) {
-      throw new Error("Debes asignar un artista al evento antes de gestionar documentos de respaldo.");
-    }
-    // Separar fecha y hora
-    let fecha = ""; let hora = "";
-    try {
-      const d = new Date(evento.fechaEvento);
-      fecha = d.toISOString().slice(0,10);
-      hora = d.toISOString().slice(11,16);
-    } catch { /* noop */ }
-    const payload: ActualizarEventoPayload = {
-      nombre: evento.nombre,
-      descripcion: evento.descripcion,
-      fecha,
-      hora,
-      artistaId: evento.artistaId,
-      departamento: evento.departamento,
-      provincia: evento.provincia,
-      distrito: evento.distrito,
-      lugar: evento.lugar,
-      estado: evento.estado,
-      imagenPortada: evento.imagenBannerBase64 || undefined,
-      terminosUso: undefined,
-    };
-    await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}`, payload);
+    const resp = await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}/documentos`, { documentosRespaldo: documentos });
+    return resp;
   }
 
   async getTerminosUso(eventoId: number): Promise<BackendDocumentoDto | null> {
