@@ -254,6 +254,12 @@ export class EventoService {
     data: ActualizarPortadaDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "imagenPortada")) {
+      throw new CustomError(
+        "Debes enviar la imagen de portada o null para eliminarla",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { imagenPortada: data.imagenPortada ?? null },
@@ -266,6 +272,12 @@ export class EventoService {
     data: ActualizarImagenLugarDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "imagenLugar")) {
+      throw new CustomError(
+        "Debes enviar la imagen del lugar o null para eliminarla",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { imagenLugar: data.imagenLugar ?? null },
@@ -941,6 +953,11 @@ export class EventoService {
 
   private generarCodigoPrivado(): string {
     return randomBytes(4).toString("hex").toUpperCase();
+  }
+
+  private tienePropiedad(obj: unknown, propiedad: string): boolean {
+    if (!obj || typeof obj !== "object") return false;
+    return Object.prototype.hasOwnProperty.call(obj, propiedad);
   }
 
   /**
