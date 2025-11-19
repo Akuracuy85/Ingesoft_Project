@@ -601,46 +601,43 @@ export class EventoService {
     if (terminosDto === undefined) {
       return;
     }
-
-    // Validación específica para términos de uso (PDF <=10MB)
     if (terminosDto) {
       this.validarTerminosPdf(terminosDto);
     }
-
     if (!terminosDto) {
-      // Null explícito significa eliminar los términos actuales.
       if (evento.terminosUso?.id) {
         await this.eliminarDocumentoEnAlmacenamiento(evento.terminosUso.url);
-        await this.eventoRepository.eliminarDocumentoPorId(
-          evento.terminosUso.id
-        );
+        await this.eventoRepository.eliminarDocumentoPorId(evento.terminosUso.id);
       }
       evento.terminosUso = null;
       return;
     }
-
     const carpetaS3 = `eventos/${evento.id}/terminos`;
-
     if (evento.terminosUso) {
+      // Mantener tipo lógico
+      evento.terminosUso.tipo = "terminos de uso";
       await this.prepararDocumentoParaGuardar(
         evento.terminosUso,
         terminosDto,
         carpetaS3,
-        evento.terminosUso.url
+        evento.terminosUso.url,
+        true
       );
+      evento.terminosUso.evento = evento;
       await this.eventoRepository.guardarDocumento(evento.terminosUso);
       return;
     }
-
     const documento = new Documento();
+    documento.tipo = "terminos de uso";
+    documento.evento = evento;
     await this.prepararDocumentoParaGuardar(
       documento,
       terminosDto,
-      carpetaS3
+      carpetaS3,
+      null,
+      true
     );
-    const documentoGuardado = await this.eventoRepository.guardarDocumento(
-      documento
-    );
+    const documentoGuardado = await this.eventoRepository.guardarDocumento(documento);
     evento.terminosUso = documentoGuardado;
   }
 
@@ -678,30 +675,33 @@ export class EventoService {
     documentosDto: DocumentoDto[]
   ) {
     const actuales = evento.documentosRespaldo ?? [];
-    // Se indexa por id para detectar qué documentos se actualizan, agregan o eliminan en esta edición.
     const documentosPorId = new Map<number, Documento>(
       actuales.filter((doc) => doc.id).map((doc) => [doc.id as number, doc])
     );
     const idsRecibidos = new Set<number>();
     const nuevos: Documento[] = [];
-
     for (const docDto of documentosDto) {
       if (docDto.id && documentosPorId.has(docDto.id)) {
         const documento = documentosPorId.get(docDto.id)!;
+        documento.tipo = "documento de respaldo";
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
           `eventos/${evento.id}/documentos`,
-          documento.url
+          documento.url,
+          false
         );
         documento.evento = evento;
         idsRecibidos.add(docDto.id);
       } else {
         const documento = new Documento();
+        documento.tipo = "documento de respaldo";
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
-          `eventos/${evento.id}/documentos`
+          `eventos/${evento.id}/documentos`,
+          null,
+          false
         );
         documento.evento = evento;
         nuevos.push(documento);
@@ -745,18 +745,16 @@ export class EventoService {
     documento: Documento,
     dto: DocumentoDto,
     carpetaS3: string,
-    urlAnterior?: string | null
+    urlAnterior?: string | null,
+    esTerminos?: boolean
   ) {
     documento.nombreArchivo = dto.nombreArchivo.trim();
-
     let tamano = Number(dto.tamano);
     if (!Number.isFinite(tamano) || tamano <= 0) {
       tamano = undefined;
     }
-
     let url = dto.url?.trim();
     let tipoDesdeCarga: string | undefined;
-
     if (dto.contenidoBase64) {
       const s3 = S3Service.getInstance();
       const resultado = await s3.subirBase64({
@@ -768,7 +766,6 @@ export class EventoService {
       url = resultado.url;
       tamano = resultado.size;
       tipoDesdeCarga = resultado.contentType;
-
       if (urlAnterior && urlAnterior !== url) {
         await s3.eliminarPorUrl(urlAnterior);
       }
@@ -778,7 +775,6 @@ export class EventoService {
         StatusCodes.BAD_REQUEST
       );
     }
-
     const tamanoFinal = tamano ?? documento.tamano;
     if (tamanoFinal === undefined || tamanoFinal === null) {
       throw new CustomError(
@@ -786,172 +782,18 @@ export class EventoService {
         StatusCodes.BAD_REQUEST
       );
     }
-
     documento.tamano = tamanoFinal;
-    documento.tipo = this.normalizarTipoDocumento(
-      dto.tipo,
-      tipoDesdeCarga,
-      documento.tipo
-    );
+    // Guardar MIME en contentType separado
+    const mime = this.normalizarTipoDocumento(dto.tipo, tipoDesdeCarga, documento.contentType);
+    documento.contentType = mime;
+    // No sobrescribir tipo lógico si ya está asignado
+    if (!documento.tipo || (!esTerminos && documento.tipo === "terminos de uso")) {
+      // Si viene de respaldo y no tiene tipo lógico
+      if (!esTerminos && documento.tipo !== "terminos de uso") {
+        documento.tipo = documento.tipo || "documento de respaldo";
+      }
+    }
     documento.url = url!;
-  }
-
-  private normalizarTipoDocumento(
-    ...tipos: Array<string | undefined | null>
-  ): string {
-    for (const tipo of tipos) {
-      if (!tipo) continue;
-      const limpio = tipo.trim();
-      if (!limpio) continue;
-      if (limpio.includes("/")) {
-        return limpio;
-      }
-    }
-
-    for (const tipo of tipos) {
-      if (!tipo) continue;
-      const limpio = tipo.trim();
-      if (limpio) {
-        return limpio;
-      }
-    }
-
-    return "application/octet-stream";
-  }
-
-  private async eliminarDocumentoEnAlmacenamiento(
-    url?: string | null
-  ): Promise<void> {
-    if (!url) return;
-    try {
-      const s3 = S3Service.getInstance();
-      await s3.eliminarPorUrl(url);
-    } catch (error) {
-      // Se ignora cualquier error para no afectar la operación principal.
-      console.warn("No se pudo eliminar el archivo en S3:", error);
-    }
-  }
-
-  private async sincronizarZonas(evento: Evento, zonasDto: ZonaDto[]) {
-    const actuales = evento.zonas ?? [];
-    // Igual que con documentos, se indexan las zonas existentes para mantener consistencia y recalcular el aforo.
-    const zonasPorId = new Map<number, Zona>(
-      actuales.filter((zona) => zona.id).map((zona) => [zona.id as number, zona])
-    );
-    const idsRecibidos = new Set<number>();
-    const nuevas: Zona[] = [];
-
-    for (const zonaDto of zonasDto) {
-      if (zonaDto.id && zonasPorId.has(zonaDto.id)) {
-        const zona = zonasPorId.get(zonaDto.id)!;
-        zona.nombre = zonaDto.nombre.trim();
-        zona.capacidad = zonaDto.capacidad;
-        if (zonaDto.cantidadComprada !== undefined) {
-          zona.cantidadComprada = zonaDto.cantidadComprada;
-        }
-        this.actualizarTarifaZona(zona, "tarifaNormal", zonaDto.tarifaNormal);
-        this.actualizarTarifaZona(zona, "tarifaPreventa", zonaDto.tarifaPreventa);
-        idsRecibidos.add(zonaDto.id);
-      } else {
-        const zona = new Zona();
-        zona.nombre = zonaDto.nombre.trim();
-        zona.capacidad = zonaDto.capacidad;
-        zona.cantidadComprada = zonaDto.cantidadComprada ?? 0;
-        zona.evento = evento;
-        this.actualizarTarifaZona(zona, "tarifaNormal", zonaDto.tarifaNormal);
-        this.actualizarTarifaZona(zona, "tarifaPreventa", zonaDto.tarifaPreventa);
-        nuevas.push(zona);
-      }
-    }
-
-    const idsAEliminar = actuales
-      .filter((zona) => zona.id && !idsRecibidos.has(zona.id))
-      .map((zona) => zona.id as number);
-
-    if (idsAEliminar.length) {
-      await this.eventoRepository.eliminarZonasPorIds(idsAEliminar);
-    }
-
-    const zonasActualizadas = actuales.filter(
-      (zona) => zona.id && idsRecibidos.has(zona.id)
-    );
-
-    if (zonasActualizadas.length) {
-      await this.eventoRepository.guardarZonas(zonasActualizadas);
-    }
-
-    let resultado = zonasActualizadas;
-
-    if (nuevas.length) {
-      const creadas = await this.eventoRepository.guardarZonas(nuevas);
-      resultado = [...resultado, ...creadas];
-    }
-
-    evento.zonas = resultado;
-    // Se recalcula el aforo con las zonas vigentes, evitando datos obsoletos.
-    evento.aforoTotal = resultado.reduce(
-      (total, zona) => total + (zona.capacidad ?? 0),
-      0
-    );
-  }
-
-  private actualizarTarifaZona(
-    zona: Zona,
-    propiedad: "tarifaNormal" | "tarifaPreventa",
-    tarifaDto?: TarifaDto | null
-  ) {
-    if (tarifaDto === undefined) {
-      return;
-    }
-
-    if (tarifaDto === null) {
-      zona[propiedad] = null;
-      return;
-    }
-
-    if (!tarifaDto.nombre || tarifaDto.nombre.trim() === "") {
-      throw new CustomError(
-        `El nombre de ${propiedad} es obligatorio`,
-        StatusCodes.BAD_REQUEST
-      );
-    }
-
-    if (typeof tarifaDto.precio !== "number" || tarifaDto.precio < 0) {
-      throw new CustomError(
-        `El precio de ${propiedad} es inválido`,
-        StatusCodes.BAD_REQUEST
-      );
-    }
-
-    const fechaInicio = this.convertirFechaTarifa(
-      tarifaDto.fechaInicio,
-      `${propiedad}.fechaInicio`
-    );
-    const fechaFin = this.convertirFechaTarifa(
-      tarifaDto.fechaFin,
-      `${propiedad}.fechaFin`
-    );
-
-    if (fechaFin.getTime() < fechaInicio.getTime()) {
-      throw new CustomError(
-        `La fecha fin de ${propiedad} no puede ser menor que la fecha de inicio`,
-        StatusCodes.BAD_REQUEST
-      );
-    }
-
-    const tarifaExistente = zona[propiedad] as Tarifa | null | undefined;
-    const tarifa = tarifaExistente ?? new Tarifa();
-
-    if (tarifaDto.id) {
-      tarifa.id = tarifaDto.id;
-    }
-
-    tarifa.nombre = tarifaDto.nombre.trim();
-    tarifa.precio = tarifaDto.precio;
-    tarifa.fechaInicio = fechaInicio;
-    tarifa.fechaFin = fechaFin;
-
-    zona[propiedad] = tarifa;
   }
 
   private mapearDocumentoDto(documento: Documento): DocumentoDto {
@@ -961,6 +803,7 @@ export class EventoService {
       tipo: documento.tipo,
       tamano: documento.tamano,
       url: documento.url,
+      eventoId: documento.evento?.id,
     };
   }
 
@@ -1246,6 +1089,27 @@ export class EventoService {
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private normalizarTipoDocumento(
+    ...tipos: Array<string | undefined | null>
+  ): string {
+    for (const tipo of tipos) {
+      if (!tipo) continue;
+      const limpio = tipo.trim();
+      if (!limpio) continue;
+      if (limpio.includes("/")) {
+        return limpio;
+      }
+    }
+    for (const tipo of tipos) {
+      if (!tipo) continue;
+      const limpio = tipo.trim();
+      if (limpio) {
+        return limpio;
+      }
+    }
+    return "application/octet-stream";
   }
 }
 
