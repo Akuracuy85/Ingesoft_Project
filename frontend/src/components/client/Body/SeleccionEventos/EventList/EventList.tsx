@@ -21,14 +21,17 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" }); // opcional
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   return (
     <div className="flex flex-col gap-8">
       
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 justify-center"
+        style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}>
+
+          
         {paginatedEvents.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}
@@ -40,7 +43,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
           >
             Anterior
           </button>
@@ -49,7 +52,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
             <button
               key={page}
               onClick={() => handlePageChange(page)}
-              className={`px-3 py-1 border rounded ${
+              className={`px-3 py-1 border rounded cursor-pointer ${
                 currentPage === page
                   ? "bg-indigo-600 text-white"
                   : "bg-white text-indigo-600 hover:bg-indigo-100"
@@ -62,7 +65,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
           >
             Siguiente
           </button>

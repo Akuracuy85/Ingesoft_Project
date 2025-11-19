@@ -3,6 +3,7 @@ import { BodyCompraEntradas } from "../../components/client/Body/CompraEntradas/
 import ColaService from "@/services/ColaService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/client/Footer/Footer";
+import { CompraHeader } from "@/components/client/Header/CompraHeader";
 
 export const CompraDeEntradas = () => {
   const location = useLocation();
@@ -73,23 +74,9 @@ export const CompraDeEntradas = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <header className="fixed w-full flex justify-center py-4 bg-white shadow">
-        <div
-          className={`
-            text-2xl font-semibold px-6 py-2 rounded-full transition-colors duration-300
-            ${minutos >= 3
-              ? "bg-green-100 text-green-700"
-              : minutos >= 1
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700"
-            }
-          `}
-        >
-          Tiempo restante: {String(minutos).padStart(2, "0")}:
-          {String(segundos).padStart(2, "0")}
-        </div>
-      </header>
-
+      <div className="mb-5">
+        <CompraHeader minutos={minutos} segundos={parseInt(segundos)} />
+      </div>
       <main>
         <BodyCompraEntradas />
       </main>

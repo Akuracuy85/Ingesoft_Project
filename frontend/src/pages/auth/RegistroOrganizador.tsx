@@ -5,6 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 import UsuarioService from "@/services/UsuarioService";
+import NotificationService from "@/services/NotificationService";
 
 export const RegistroOrganizador = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +79,7 @@ export const RegistroOrganizador = () => {
 
   const handleSubmit = async () => {
     if (!puedeRegistrar) {
-      alert("Por favor, completa todos los campos correctamente.");
+      NotificationService.warning("Por favor, completa todos los campos correctamente.");
       return;
     }
 
@@ -103,11 +104,11 @@ export const RegistroOrganizador = () => {
       if (response.success) {
         setShowPopup(true);
       } else {
-        alert(response.message || "Hubo un problema al registrar el organizador");
+        NotificationService.error(response.message || "Hubo un problema al registrar el organizador");
       }
     } catch (error) {
       console.error("Error al registrar organizador:", error);
-      alert("Error al conectarse con el servidor");
+      NotificationService.error("Error al conectarse con el servidor");
     } finally {
       setLoading(false);
     }

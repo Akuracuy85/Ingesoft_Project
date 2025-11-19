@@ -181,6 +181,7 @@ export class EventoController {
         await this.emailService.SendEventCancelledEmail(evento.id);
       }
       else {
+        console.log("Enviando email de actualización de evento...");
         await this.emailService.SendUpdateEventEmail(evento.id);
       }
 

@@ -1,9 +1,12 @@
+import { Rol } from "@/enums/Rol";
 import { Usuario } from "../models/Usuario";
 import { PerfilRepository } from "../repositories/PerfilRepository";
 import { TarjetaRepository } from "../repositories/TarjetaRepository";
 import { CustomError } from "../types/CustomError";
 import { PasswordHasher } from "../types/PasswordHasher";
 import { StatusCodes } from "http-status-codes";
+import { Cliente } from "../models/Cliente";
+import { Tarjeta } from "../models/Tarjeta";
 
 export class PerfilService {
     private static instance: PerfilService;
@@ -22,13 +25,32 @@ export class PerfilService {
         return PerfilService.instance;
     }
 
+    private formatearTarjeta(numeroTarjeta: string): string {
+      if (!numeroTarjeta || numeroTarjeta.length < 4) {
+          throw new Error("Número de tarjeta inválido.");
+      }
+      const primeros4 = numeroTarjeta.slice(0, 4);
+      const ultimos4 = numeroTarjeta.slice(-4);
+      const asteriscos = numeroTarjeta.slice(0, -8).replace(/\d/g, "*");
+      return `${primeros4}${asteriscos}${ultimos4}`;
+  }
+
     /**
      * Obtiene los datos del perfil del usuario, incluyendo sus tarjetas.
      * @param userId - ID del usuario autenticado.
      */
     public async obtenerPerfilUsuario(userId: number): Promise<Usuario> {
         // Usamos el nuevo método que trae las tarjetas
-        const usuario = await this.perfilRepository.buscarPorIdConTarjetas(userId);
+        let usuario = await this.perfilRepository.buscarPorIdConTarjetas(userId);
+        
+        if(usuario.rol == Rol.CLIENTE){
+            (usuario as Cliente).tarjetas = (usuario as Cliente).tarjetas?.map(tarjeta => {
+                return {
+                    ...tarjeta,
+                    numeroTarjeta: this.formatearTarjeta(tarjeta.numeroTarjeta)
+                };
+            });
+        }
 
         if (!usuario) {
             throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
@@ -92,6 +114,15 @@ export class PerfilService {
         // Si 'password' no se proporcionó, no afectará a la columna.
         // Si 'password' se proporcionó, aquí se guardará el nuevo hash.
         await this.perfilRepository.actualizarPerfil(userId, nuevosDatos);
+    }
+
+    public async agregarTarjetaUsuario(userId: number, tarjeta: Tarjeta): Promise<void> {
+      try {
+        tarjeta.cliente = { id: userId } as Cliente;
+        await this.tarjetaRepository.insertarTarjeta(tarjeta);
+      } catch (error) {
+        throw new CustomError("Error al agregar la tarjeta: " + error, StatusCodes.INTERNAL_SERVER_ERROR);
+      }
     }
 
     /**

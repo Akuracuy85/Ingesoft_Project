@@ -143,7 +143,10 @@ export class EventoRepository {
   async listarEventosFiltrados(filtros: IFiltrosEvento): Promise<Evento[]> {
     const qb = this.repository.createQueryBuilder("evento");
     qb.distinct(true);
-    qb.andWhere("evento.fechaEvento >= :fechaActual", { fechaActual: new Date() });
+    //TODO
+    // Comentado por ahora para tener todos los eventos
+    //qb.andWhere("evento.fechaEvento >= :fechaActual", { fechaActual: new Date() }); 
+    qb.andWhere("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
     qb.leftJoinAndSelect("evento.artista", "artista").leftJoinAndSelect(
       "artista.categoria",
       "categoria"
@@ -328,15 +331,16 @@ export class EventoRepository {
 
   async obtenerEmailDeAsistentesAlEvento(eventoId: number): Promise<string[]> {
     const qb = this.repository.createQueryBuilder("evento");
-    qb.leftJoin("evento.entradas", "entrada")
-      .leftJoin("entrada.ordenCompra", "ordenCompra")
+
+    qb.leftJoin("evento.ordenesCompra", "ordenCompra")
       .leftJoin("ordenCompra.cliente", "cliente")
       .select("cliente.email", "email")
       .where("evento.id = :eventoId", { eventoId })
       .andWhere("ordenCompra.estado = :estado", { estado: "COMPLETADA" })
       .distinct(true);
+
     const resultados = await qb.getRawMany<{ email: string }>();
-    return resultados.map((r) => r.email);
+    return resultados.map(r => r.email);
   }
 
   async obtenerTodosLosEventos(): Promise<Evento[]> {
@@ -344,7 +348,8 @@ export class EventoRepository {
       relations: {
         organizador: true, // Para saber quién es el organizador
         artista: true,  // Para ver el artista principal
-        zonas: true
+        zonas: true,
+        cola: true,
       },
       order: {
         fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero

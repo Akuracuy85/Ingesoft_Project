@@ -3,6 +3,8 @@ import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 import { normalizeFecha } from "@/utils/normalizeFecha";
 import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
+import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
 
 interface EventoEditable {
   id: number;
@@ -34,29 +36,59 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [departamento, setDepartamento] = useState("");
   const [provincia, setProvincia] = useState("");
   const [distrito, setDistrito] = useState("");
+  const [artistaId, setArtistaId] = useState<number | null>(null);
+  // Portada actual (base64) para previsualización dentro del modal
+  const [portadaBase64, setPortadaBase64] = useState<string | null>(null);
+  const [subiendoPortada, setSubiendoPortada] = useState<boolean>(false);
 
+  // Nuevo: estados faltantes
   const [touchedSubmit, setTouchedSubmit] = useState(false);
-
-  // Select options
   const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
+  const [artistas, setArtistas] = useState<Artista[]>([]);
+
+  // Helper reutilizable: convertir File a base64 (sin prefijo data:...)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIdx = result.indexOf(",");
+        resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Helper para construir src válido para img
+  const buildImageSrc = (value?: string | null): string | null => {
+    if (!value) return null;
+    const v = String(value).trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("data:")) return v;
+    return `data:image/*;base64,${v}`;
+  };
 
   // Prefill cuando cambia event
   useEffect(() => {
     if (!event) return;
     setTouchedSubmit(false);
+    // Reinicia previsualización local (no contamos con portada original aquí)
+    setPortadaBase64(null);
 
     setNombre(event.nombre || event.title || "");
     setDescripcion(event.descripcion || event.description || "");
 
     // Fecha
     if (event.fechaEvento || event.fecha || event.date) {
-      const raw = event.fechaEvento || event.fecha || event.date;
+      const raw = event.fechaEvento ?? event.fecha ?? event.date;
       try {
-        const isoDate = new Date(raw).toISOString().split("T")[0];
+        const d = new Date(raw as string);
+        const isoDate = d.toISOString().split("T")[0];
         setFecha(normalizeFecha(isoDate));
-        setHora(new Date(raw).toISOString().slice(11, 16));
+        setHora(d.toISOString().slice(11, 16));
       } catch {
         setFecha("");
         setHora("");
@@ -86,6 +118,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     setProvincia(event.provincia || "");
     setDistrito(event.distrito || "");
 
+    // Artista actual
+    setArtistaId(event.artistaId || event.artist?.id || null);
+
     // Imagen: no podemos reconstruir File desde base64 fácilmente; se deja null
     setImagen(null);
   }, [event]);
@@ -94,6 +129,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   useEffect(() => {
     if (!open) return;
     UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+    // Cargar artistas
+    ArtistaService.getArtistas().then(setArtistas).catch(() => setArtistas([]));
   }, [open]);
 
   useEffect(() => {
@@ -123,8 +160,8 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const handleGuardar = async () => {
     setTouchedSubmit(true);
     if (!event) return;
-    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado) {
-      alert("Por favor completa todos los campos obligatorios antes de guardar.");
+    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado || !artistaId) {
+      NotificationService.warning("Por favor, completa todos los campos obligatorios antes de guardar");
       return;
     }
 
@@ -132,7 +169,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     let imagenPortadaBase64: string | null | undefined = undefined;
     if (imagen) {
       try {
-        const base64Result = await new Promise<string>((resolve, reject) => {
+        imagenPortadaBase64 = await new Promise<string>((resolve, reject) => {
           const fr = new FileReader();
           fr.onload = () => {
             const result = fr.result as string;
@@ -142,7 +179,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           fr.onerror = reject;
           fr.readAsDataURL(imagen);
         });
-        imagenPortadaBase64 = base64Result;
       } catch {
         console.warn("No se pudo convertir la imagen, se enviará sin cambios.");
       }
@@ -155,7 +191,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       descripcion: descripcion.trim(),
       fecha,
       hora,
-      artistaId: event.artistaId || event.artist?.id || 0,
+      artistaId: artistaId,
       departamento: departamento.trim(),
       provincia: provincia.trim(),
       distrito: distrito.trim(),
@@ -170,7 +206,56 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       onUpdated();
     } catch (error) {
       console.error("Error actualizando evento:", error);
-      alert("No se pudo actualizar el evento.");
+      NotificationService.error("No se pudo actualizar el evento");
+    }
+  };
+
+  // Manejar selección de portada: convertir y subir inmediatamente usando el mismo flujo que creación
+  const handleSeleccionarPortada: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    try {
+      const file = e.target.files?.[0] || null;
+      // Limpia el input para permitir volver a seleccionar el mismo archivo
+      e.target.value = "";
+      setImagen(file);
+      if (!file) return;
+
+      if (!event) return;
+      // Validar mínimos requeridos (igual que creación)
+      if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !artistaId) {
+        NotificationService.warning("Completa los datos obligatorios (incluido artista) antes de actualizar la portada");
+        return;
+      }
+
+      setSubiendoPortada(true);
+
+      // Reutilizar conversión base64
+      const imagenPortada = await fileToBase64(file);
+
+      const estadoBackend = mapEstadoUIToBackend(estado);
+      const payload = {
+        nombre: nombre.trim(),
+        descripcion: descripcion.trim(),
+        fecha,
+        hora,
+        artistaId: artistaId,
+        departamento: departamento.trim(),
+        provincia: provincia.trim(),
+        distrito: distrito.trim(),
+        lugar: lugar.trim(),
+        estado: estadoBackend,
+        imagenPortada,
+      };
+
+      await actualizarEvento(event.id, payload);
+
+      // Previsualizar inmediatamente en el modal y refrescar listado externo
+      setPortadaBase64(imagenPortada);
+      onUpdated();
+    } catch (err) {
+      console.error("Error al actualizar portada:", err);
+      NotificationService.error("No se pudo actualizar la portada. Intenta nuevamente");
+    } finally {
+      setSubiendoPortada(false);
     }
   };
 
@@ -183,6 +268,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const distritoError = touchedSubmit && !distrito;
   const lugarError = touchedSubmit && !lugar.trim();
   const estadoError = touchedSubmit && !estado;
+  const artistaError = touchedSubmit && !artistaId;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
@@ -201,7 +287,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
         </div>
 
         {/* Form */}
-        <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[75vh] overflow-y-auto px-1">
           {/* Nombre */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -232,6 +318,32 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
+
+          {/* Artista */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Artista <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="artistaId"
+              value={artistaId ?? ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                const parsed = val ? Number(val) : NaN;
+                setArtistaId(!isNaN(parsed) && parsed > 0 ? parsed : null);
+              }}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                artistaError ? "border-red-500" : "border-gray-300"
+              }`}
+            >
+              <option value="">Selecciona artista</option>
+              {artistas.map((a) => (
+                <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+              ))}
+            </select>
+            {artistaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -365,11 +477,17 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           {/* Imagen */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada del evento</label>
+            {buildImageSrc(portadaBase64) && (
+              <div className="mb-2 h-32 rounded border overflow-hidden">
+                <img src={buildImageSrc(portadaBase64)!} alt="Portada actual" className="w-full h-full object-cover" />
+              </div>
+            )}
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setImagen(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              onChange={handleSeleccionarPortada}
+              disabled={subiendoPortada}
+              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 disabled:opacity-60"
             />
             <p className="mt-1 text-xs text-gray-500">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
             {imagen && <p className="mt-1 text-xs text-gray-600">Archivo seleccionado: {imagen.name}</p>}

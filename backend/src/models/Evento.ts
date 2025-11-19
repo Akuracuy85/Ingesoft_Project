@@ -15,6 +15,7 @@ import { Artista } from "./Artista";
 import { Cola } from "./Cola";
 import { Calificacion } from "./Calificacion";
 import { Organizador } from "./Organizador";
+import { OrdenCompra } from "./OrdenCompra";
 
 @Entity()
 export class Evento {
@@ -97,4 +98,7 @@ export class Evento {
     cascade: ["insert", "update"],
   })
   documentosRespaldo?: Documento[];
+
+  @OneToMany(() => OrdenCompra, orden => orden.evento)
+  ordenesCompra: OrdenCompra[];
 }
