@@ -6,6 +6,8 @@ import mapaAsientos from "@/assets/EstadioImagen2.png";
 import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
+import { useAuth } from "@/hooks/useAuth";
+import NotificationService from "@/services/NotificationService";
 
 interface ArtistaDetalle {
   id: number;
@@ -14,8 +16,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imagenBanner: string | null;   // ← YA EXISTENTE
-  imagenLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
+  imageBanner: string | null;   // ← YA EXISTENTE
+  imageLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
   date: string;
   departamento: string;
   provincia: string;
@@ -49,6 +51,7 @@ const isZonaAgotada = (zona: Zone) =>
 export const BodyDetalleEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
+  const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
   const { evento, isLoading, error } = useEventoDetalle(eventoId) as {
@@ -56,6 +59,8 @@ export const BodyDetalleEvento: React.FC = () => {
     isLoading: boolean;
     error: string | null;
   };
+
+
 
   if (isLoading) {
     return (
@@ -96,6 +101,31 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const handleColaClick = (tipo: string) => {
     console.log(evento)
+    console.log(tipo);
+
+    if (!isLoggedIn) {
+      NotificationService.warning("Debes iniciar sesión para comprar entradas");
+      navigate("/login");
+      return;
+    }
+
+    let tienePuntosParaEntrada = false;
+    if(tipo === "Preventa") {
+      let minPuntosRequeridos = 99999;
+      zonas.forEach((z) => {
+        const puntosRequeridos = Math.ceil((z.tarifaPreventa?.precio ?? 99999) * 0.3) ;
+        minPuntosRequeridos = Math.min(minPuntosRequeridos, puntosRequeridos);
+      })
+
+      if (minPuntosRequeridos <= (user?.puntos ?? 0)) {
+        tienePuntosParaEntrada = true;
+      }
+
+      if (!tienePuntosParaEntrada) {
+        NotificationService.warning("Necesitas al menos " + minPuntosRequeridos + " puntos para comprar una entrada en Preventa");
+        return;
+      }
+    }
     navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });
   };
 
@@ -109,13 +139,15 @@ export const BodyDetalleEvento: React.FC = () => {
     });
   };
 
+  console.log("Evento detalle:", evento);
+
   return (
     <main className="w-full overflow-x-hidden">
       {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
       <section
         className="relative bg-cover bg-center bg-no-repeat text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 py-32 min-h-[85vh]"
         style={{
-          backgroundImage: `url(${evento.imagenBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
+          backgroundImage: `url(${evento.imageBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
@@ -158,7 +190,7 @@ export const BodyDetalleEvento: React.FC = () => {
           {/* Imagen del lugar */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={evento.imagenLugar || mapaAsientos}
+              src={/*evento.imageLugar ||*/ mapaAsientos}
               alt="Lugar del Evento"
               className="w-full max-w-md object-contain mix-blend-multiply rounded-lg"
             />
@@ -269,7 +301,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   key={tipo}
                   onClick={() => !disabled && handleColaClick(tipo)}
                   disabled={disabled}
-                  className={`px-10 py-4 rounded-md text-lg font-semibold transition-colors ${
+                  className={`px-10 py-4 rounded-md text-lg font-semibold transition-colors cursor-pointer ${
                     disabled
                       ? "bg-gray-400 cursor-not-allowed text-white"
                       : "bg-black text-white hover:bg-gray-800"

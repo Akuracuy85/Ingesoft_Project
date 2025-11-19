@@ -5,7 +5,7 @@ import { FilterModal } from "./FilterModal";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { User, LogOut } from "lucide-react";
-import { useFilters } from '../../../context/FilterContext'; // 🛑 NECESARIO
+import { useFilters } from '../../../context/FilterContext';
 import { type FiltersType } from "../../../types/FiltersType";
 
 interface HeaderProps {
@@ -18,7 +18,6 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
 
   const { isLoggedIn, user, logout, isLoading } = useAuth();
 
-  // 🛑 OBTENEMOS la función resetFilters del Contexto
   const { setFilters, resetFilters } = useFilters();
 
   const toggleFilters = () => setShowFilters((prev) => !prev);

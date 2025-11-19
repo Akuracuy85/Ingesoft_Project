@@ -4,6 +4,7 @@ import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { actualizarEvento, obtenerEventosDetallados, mapEstadoUIToBackend } from "@/services/EventoService";
 import EventoService from "@/services/EventoService"; // instancia por defecto para usar obtenerPorId
+import NotificationService from "@/services/NotificationService";
 
 interface ZonasYTarifasCardProps { eventoId: number; eventoEstadoUI: string; eventoNombre: string; }
 
@@ -13,6 +14,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
   const [error, setError] = useState<string | null>(null);
   const [mapa, setMapa] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [imageLugarBase64, setImageLugarBase64] = useState<string | null>(null); // NUEVO vista previa
 
   const buildTarifaNombre = useCallback((actual?: string, tipo?: 'Normal' | 'Preventa') => {
     if (!tipo) return actual || '';
@@ -30,6 +32,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         setError(null);
         const data = await EventoService.obtenerPorId(eventoId);
         const zonasRaw = (data as { zonas?: ZonaBackendRaw[] }).zonas || [];
+        // NUEVO: tomar imagenLugar si viene en data
+        // @ts-expect-error acceso flexible
+        const imgLugar = data.imageLugar || data.imagenLugar || null;
+        setImageLugarBase64(imgLugar || null);
         const mapped: Zone[] = zonasRaw.map((z) => {
           const normalNombre = buildTarifaNombre(z.tarifaNormal?.nombre, 'Normal');
           const preventaNombre = buildTarifaNombre(z.tarifaPreventa?.nombre, 'Preventa');
@@ -53,6 +59,74 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
     fetchZonas();
     return () => { abort = true; };
   }, [eventoId, buildTarifaNombre]);
+
+  // NUEVO: convertir file a base64 (sin prefijo)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIdx = result.indexOf(',');
+        resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // NUEVO: subir imagenLugar inmediatamente
+  const handleUploadMapa = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    // Validar tipo
+    if (!/(image\/png|image\/jpeg)/.test(file.type)) {
+      NotificationService.warning('Solo se permiten imágenes PNG o JPG');
+      return;
+    }
+    if (!eventoId) return;
+    try {
+      setIsSaving(true);
+      setError(null);
+      const base64 = await fileToBase64(file);
+      // Obtener detalle para campos obligatorios
+      const detalle = await obtenerEventosDetallados(eventoId);
+      const artistaId = detalle.artist?.id || 0;
+      if (!artistaId) {
+        NotificationService.error('No se puede subir imagen: evento sin artista asignado');
+        return;
+      }
+      const payload = {
+        nombre: detalle.title,
+        descripcion: detalle.description,
+        fecha: detalle.date,
+        hora: detalle.time || '00:00',
+        artistaId,
+        departamento: detalle.departamento || '',
+        provincia: detalle.provincia || '',
+        distrito: detalle.distrito || '',
+        lugar: detalle.place || '',
+        estado: mapEstadoUIToBackend(eventoEstadoUI),
+        imagenLugar: base64, // NUEVO campo
+      };
+      const resp = await actualizarEvento(eventoId, payload) as ActualizarEventoResponse;
+      if (!resp || !resp.success) {
+        NotificationService.error('No se pudo guardar la imagen del lugar');
+        return;
+      }
+      // Refrescar evento
+      const actualizado = await EventoService.obtenerPorId(eventoId);
+      // @ts-expect-error acceso flexible
+      const nuevaImg = actualizado.imageLugar || actualizado.imagenLugar || base64;
+      setImageLugarBase64(nuevaImg);
+      NotificationService.success('Imagen del lugar actualizada');
+    } catch (err) {
+      console.error('Error subiendo imagenLugar', err);
+      NotificationService.error('Error al subir la imagen del lugar');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Handlers de UI (edición local)
   const handleAddZone = () => {
@@ -99,16 +173,24 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
   const handleEliminar = (index: number) => setZones((prev) => prev.filter((_, i) => i !== index));
 
-  const handleUploadMapa = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setMapa(e.target.files[0]);
-  };
-
   const handleGuardar = async () => {
     if (!eventoId) return;
     try {
       setIsSaving(true);
       // Obtener detalles completos (para artistaId y campos obligatorios)
       const detalle = await obtenerEventosDetallados(eventoId);
+
+      let hayConadis = false;
+      zones.forEach((z) => {
+        if (z.nombre.toLocaleLowerCase() == "Conadis"){
+          hayConadis = true;
+        }
+      });
+
+      if(!hayConadis){
+        NotificationService.error("Debe haber una zona llamada 'Conadis' para personas con discapacidad");
+        return;
+      }
 
       // Construir zonas DTO (incluye existentes y nuevas)
       const zonasDto = zones.map((z) => ({
@@ -132,6 +214,8 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         } : null,
       }));
 
+      
+
       // Payload actualizar evento (requeridos según backend)
       const payload = {
         nombre: detalle.title,
@@ -149,7 +233,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       const resp = await actualizarEvento(eventoId, payload) as ActualizarEventoResponse;
       if (!resp || !resp.success) {
-        alert("No se pudo crear la zona");
+        NotificationService.error("No se pudo crear la zona");
         return;
       }
       // Recargar zonas
@@ -164,10 +248,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         tarifaPreventa: (z.tarifaPreventa as Tarifa) || null,
       }));
       setZones(recargadas);
-      alert("Zonas guardadas correctamente");
+      NotificationService.success("Zonas guardadas correctamente");
     } catch (e) {
       console.error("Error guardando zonas", e);
-      alert("No se pudo crear la zona");
+      NotificationService.error("No se pudo crear la zona");
     } finally {
       setIsSaving(false);
     }
@@ -215,12 +299,25 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         </div>
       </div>
 
-      {/* Área de subida de mapa (siempre visible) */}
-      <label className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-40 mb-5 text-gray-500 hover:bg-gray-50 cursor-pointer">
-        <Upload className="h-6 w-6 mb-2" />
-        <p className="text-sm">Arrastra archivos aquí o haz clic para seleccionar</p>
-        <p className="text-xs text-gray-400">PDF, PNG, JPG. Tamaño recomendado: 1200×600 px</p>
-        <input type="file" accept="image/*" onChange={handleUploadMapa} className="hidden" />
+      {/* Área de subida de imagen del lugar */}
+      <label className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-48 mb-5 text-gray-500 hover:bg-gray-50 cursor-pointer relative overflow-hidden">
+        {imageLugarBase64 ? (
+          <img
+            src={imageLugarBase64.startsWith('data:') ? imageLugarBase64 : `data:image/*;base64,${imageLugarBase64}`}
+            alt="Mapa / Imagen del lugar"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <>
+            <Upload className="h-6 w-6 mb-2" />
+            <p className="text-sm">Haz clic para subir imagen del lugar (PNG/JPG)</p>
+            <p className="text-xs text-gray-400">Tamaño recomendado: 1200×600 px</p>
+          </>
+        )}
+        <input type="file" accept="image/png,image/jpeg" onChange={handleUploadMapa} className="hidden" />
+        {imageLugarBase64 && (
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">Reemplazar</div>
+        )}
       </label>
 
       {/* Estados de carga y error (no ocultan el resto del card) */}
@@ -312,10 +409,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       {/* Botones de acción (siempre visibles) */}
       <div className="flex justify-between mt-4">
-        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600">
+        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600 cursor-pointer">
           <Plus className="h-4 w-4" /> Agregar zona
         </button>
-        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
+        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
           <Save className="h-4 w-4" /> {isSaving ? "Guardando..." : "Guardar configuración"}
         </button>
       </div>

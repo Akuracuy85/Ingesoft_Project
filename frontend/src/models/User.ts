@@ -1,3 +1,5 @@
+import type { Tarjeta } from "./Tarjeta";
+
 export type Rol = "CLIENTE" | "ORGANIZADOR" | "ADMINISTRADOR";
 
 export interface User {
@@ -11,6 +13,7 @@ export interface User {
   rol: Rol;
   activo: boolean;
   puntos: number;
+  tarjetas: Tarjeta[];
 }
 
 // La interfaz UserFormData probablemente no necesita 'puntos'

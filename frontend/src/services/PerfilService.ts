@@ -2,6 +2,7 @@
 
 import HttpClient from "./Client";
 import { type User, type UserFormData } from "../models/User";
+import type { Tarjeta } from "@/models/Tarjeta";
 
 // --- INTERFACES ---
 export interface PaymentMethod {
@@ -9,39 +10,16 @@ export interface PaymentMethod {
   lastFourDigits: string;
 }
 
-export interface UserProfileResponse extends User {
-  tarjetas?: {
-    lastFourDigits: string | number;
-    id: number;
-    numeroCuenta: number | string;
-  }[];
-}
-
 export interface PointsInfo {
   totalPoints: number;
 }
 
-// --- HELPERS ---
-const getLastFourDigits = (cuenta: number | string | undefined): string => {
-  if (!cuenta) return "";
-  const str = String(cuenta);
-  return str.length > 4 ? str.slice(-4) : str;
-};
 
-const mapTarjetasToFrontend = (tarjetasBackend: any[] | undefined): PaymentMethod[] => {
-  if (!tarjetasBackend || tarjetasBackend.length === 0) return [];
-  return tarjetasBackend.map((t) => ({
-    id: t.id,
-    lastFourDigits: getLastFourDigits(t.numeroCuenta),
-  }));
-};
-
-// --- SERVICE CLASS ---
 class PerfilService {
   private client = new HttpClient("/perfil");
 
   /** Obtiene el perfil completo del usuario autenticado */
-  async getProfile(): Promise<UserProfileResponse> {
+  async getProfile(): Promise<User> {
     try {
       const response = await this.client.get<any>("/");
 
@@ -49,10 +27,7 @@ class PerfilService {
         throw new Error("Respuesta del servidor incompleta o sin datos de perfil.");
       }
 
-      const profileData = response.data as UserProfileResponse;
-      const mappedTarjetas = mapTarjetasToFrontend(profileData.tarjetas);
-      (profileData as any).tarjetas = mappedTarjetas;
-
+      const profileData = response.data as User;
       return profileData;
     } catch (error) {
       console.error("Error al obtener perfil:", error);
@@ -69,6 +44,10 @@ class PerfilService {
   /** Elimina un método de pago del usuario */
   async deletePaymentMethod(tarjetaId: number): Promise<void> {
     await this.client.delete(`/tarjeta/${tarjetaId}`);
+  }
+
+  async guardarTarjeta(tarjeta: Tarjeta): Promise<void> {
+    await this.client.post("/tarjeta", tarjeta);
   }
 
   /** Obtiene los puntos actuales del usuario */

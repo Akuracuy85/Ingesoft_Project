@@ -22,6 +22,17 @@ class CategoriaService {
       return [];
     }
   }
+
+  // Nuevo: crear categoría
+  async createCategoria(data: { nombre: string }): Promise<Categoria | null> {
+    try {
+      const resp = await this.client.post<ApiResponseData<Categoria>>("/categoria", data);
+      return resp.data || null;
+    } catch (error: unknown) {
+      console.error("Error al crear categoría:", error);
+      throw error;
+    }
+  }
 }
 
 export default new CategoriaService();

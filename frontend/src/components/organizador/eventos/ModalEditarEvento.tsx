@@ -4,6 +4,8 @@ import UbicacionService, { type LocationOption } from "@/services/UbicacionServi
 import { normalizeFecha } from "@/utils/normalizeFecha";
 import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
 import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
+import ModalCrearArtista from "./ModalCrearArtista";
 
 interface EventoEditable {
   id: number;
@@ -46,6 +48,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
   const [artistas, setArtistas] = useState<Artista[]>([]);
+  const [openCrearArtista, setOpenCrearArtista] = useState(false);
 
   // Helper reutilizable: convertir File a base64 (sin prefijo data:...)
   const fileToBase64 = (file: File): Promise<string> => {
@@ -160,7 +163,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     setTouchedSubmit(true);
     if (!event) return;
     if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado || !artistaId) {
-      alert("Por favor completa todos los campos obligatorios antes de guardar.");
+      NotificationService.warning("Por favor, completa todos los campos obligatorios antes de guardar");
       return;
     }
 
@@ -205,7 +208,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       onUpdated();
     } catch (error) {
       console.error("Error actualizando evento:", error);
-      alert("No se pudo actualizar el evento.");
+      NotificationService.error("No se pudo actualizar el evento");
     }
   };
 
@@ -221,7 +224,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       if (!event) return;
       // Validar mínimos requeridos (igual que creación)
       if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !artistaId) {
-        alert("Completa los datos obligatorios (incluido artista) antes de actualizar la portada.");
+        NotificationService.warning("Completa los datos obligatorios (incluido artista) antes de actualizar la portada");
         return;
       }
 
@@ -252,10 +255,16 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       onUpdated();
     } catch (err) {
       console.error("Error al actualizar portada:", err);
-      alert("No se pudo actualizar la portada. Intenta nuevamente.");
+      NotificationService.error("No se pudo actualizar la portada. Intenta nuevamente");
     } finally {
       setSubiendoPortada(false);
     }
+  };
+
+  const handleArtistaCreado = async (nuevoId: number) => {
+    const lista = await ArtistaService.getArtistas();
+    setArtistas(lista);
+    setArtistaId(nuevoId);
   };
 
   const nombreError = touchedSubmit && !nombre.trim();
@@ -286,7 +295,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
         </div>
 
         {/* Form */}
-        <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[75vh] overflow-y-auto px-1">
           {/* Nombre */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -320,8 +329,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
 
           {/* Artista */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Artista <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+              <span>Artista <span className="text-red-500">*</span></span>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">+ Nuevo</button>
             </label>
             <select
               name="artistaId"
@@ -502,6 +512,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           </button>
         </div>
       </div>
+      <ModalCrearArtista open={openCrearArtista} onClose={() => setOpenCrearArtista(false)} onCreated={handleArtistaCreado} />
     </div>
   );
 };
