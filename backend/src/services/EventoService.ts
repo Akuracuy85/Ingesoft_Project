@@ -121,6 +121,8 @@ export class EventoService {
           (documento) => this.mapearDocumentoDto(documento)
         ),
         zonas: (evento.zonas || []).map((zona) => this.mapearZonaDto(zona)),
+        fechaFinPreventa: evento.fechaFinPreventa ? evento.fechaFinPreventa.toISOString() : null,
+        fechaInicioPreventa: evento.fechaInicioPreventa ? evento.fechaInicioPreventa.toISOString() : null,
       }));
     } catch (error) {
       throw new CustomError(
@@ -183,6 +185,32 @@ export class EventoService {
     const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    // Validar fechaFinPreventa si viene
+    let fechaFinPreventa: Date | null = null;
+    let fechaInicioPreventa: Date | null = null;
+    if (data.fechaInicioPreventa) {
+      const fi = new Date(data.fechaInicioPreventa + 'T00:00:00');
+      if (Number.isNaN(fi.getTime())) {
+        throw new CustomError("La fechaInicioPreventa no es válida", StatusCodes.BAD_REQUEST);
+      }
+      if (fi.getTime() > fechaEvento.getTime()) {
+        throw new CustomError("La fecha inicio de preventa no puede ser mayor a la fecha del evento", StatusCodes.BAD_REQUEST);
+      }
+      fechaInicioPreventa = fi;
+    }
+    if (data.fechaFinPreventa) {
+      const ff = new Date(data.fechaFinPreventa + 'T00:00:00');
+      if (Number.isNaN(ff.getTime())) {
+        throw new CustomError("La fechaFinPreventa no es válida", StatusCodes.BAD_REQUEST);
+      }
+      if (ff.getTime() > fechaEvento.getTime()) {
+        throw new CustomError("La fecha fin de preventa no puede ser mayor a la fecha del evento", StatusCodes.BAD_REQUEST);
+      }
+      if (fechaInicioPreventa && ff.getTime() < fechaInicioPreventa.getTime()) {
+        throw new CustomError("La fecha fin de preventa no puede ser menor que la fecha inicio de preventa", StatusCodes.BAD_REQUEST);
+      }
+      fechaFinPreventa = ff;
+    }
     const imagenBanner = this.convertirImagen(data.imagenPortada);
 
     try {
@@ -196,6 +224,8 @@ export class EventoService {
         distrito: data.distrito.trim(),
         estado,
         fechaPublicacion: new Date(),
+        fechaFinPreventa, // NUEVO
+        fechaInicioPreventa, // NUEVO
         aforoTotal: 0,
         entradasVendidas: 0,
         codigoPrivado: this.generarCodigoPrivado(),
@@ -390,7 +420,40 @@ export class EventoService {
 
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    // Obtener artista (faltaba y causaba ReferenceError)
     const artista = await this.obtenerArtistaValido(data.artistaId);
+    // Validar y asignar fechaInicioPreventa/fechaFinPreventa
+    if (data.fechaInicioPreventa !== undefined) {
+      if (!data.fechaInicioPreventa) {
+        evento.fechaInicioPreventa = null;
+      } else {
+        const fi = new Date(data.fechaInicioPreventa + 'T00:00:00');
+        if (Number.isNaN(fi.getTime())) {
+          throw new CustomError("La fecha inicio de preventa no es válida", StatusCodes.BAD_REQUEST);
+        }
+        if (fi.getTime() > fechaEvento.getTime()) {
+          throw new CustomError("La fecha inicio de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
+        }
+        evento.fechaInicioPreventa = fi;
+      }
+    }
+    if (data.fechaFinPreventa !== undefined) {
+      if (!data.fechaFinPreventa) {
+        evento.fechaFinPreventa = null;
+      } else {
+        const ff = new Date(data.fechaFinPreventa + 'T00:00:00');
+        if (Number.isNaN(ff.getTime())) {
+          throw new CustomError("La fecha fin de preventa no es válida", StatusCodes.BAD_REQUEST);
+        }
+        if (ff.getTime() > fechaEvento.getTime()) {
+          throw new CustomError("La fecha fin de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
+        }
+        if (evento.fechaInicioPreventa && ff.getTime() < evento.fechaInicioPreventa.getTime()) {
+          throw new CustomError("La fecha fin de preventa no puede ser menor que la fecha inicio de preventa", StatusCodes.BAD_REQUEST);
+        }
+        evento.fechaFinPreventa = ff;
+      }
+    }
 
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
