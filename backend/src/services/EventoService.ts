@@ -28,7 +28,6 @@ import { S3Service } from "../services/S3Service";
 import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
-import { bufferToBase64 } from "../utils/ImageUtils";
 import { ColaService } from "./ColaService";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
