@@ -420,6 +420,8 @@ export class EventoService {
 
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    // Obtener artista (faltaba y causaba ReferenceError)
+    const artista = await this.obtenerArtistaValido(data.artistaId);
     // Validar y asignar fechaInicioPreventa/fechaFinPreventa
     if (data.fechaInicioPreventa !== undefined) {
       if (!data.fechaInicioPreventa) {
