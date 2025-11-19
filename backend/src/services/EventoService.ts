@@ -15,6 +15,13 @@ import { Organizador } from "../models/Organizador";
 import { Usuario } from "../models/Usuario";
 import { randomBytes } from "crypto";
 import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
+import { ActualizarDatosBasicosDto } from "../dto/evento/ActualizarDatosBasicosDto";
+import { ActualizarPortadaDto } from "../dto/evento/ActualizarPortadaDto";
+import { ActualizarImagenLugarDto } from "../dto/evento/ActualizarImagenLugarDto";
+import { ActualizarDocumentosDto } from "../dto/evento/ActualizarDocumentosDto";
+import { ActualizarTerminosDto } from "../dto/evento/ActualizarTerminosDto";
+import { ActualizarZonasDto } from "../dto/evento/ActualizarZonasDto";
+import { ActualizarEstadoDto } from "../dto/evento/ActualizarEstadoDto";
 import { Documento } from "../models/Documento";
 import { DocumentoDto } from "../dto/evento/DocumentoDto";
 import { ZonaDto } from "../dto/evento/ZonaDto";
@@ -230,15 +237,119 @@ export class EventoService {
     data: ActualizarEventoDto,
     organizadorId: number
   ): Promise<Evento> {
-    this.validarDatosObligatorios(data);
-    await this.obtenerOrganizador(organizadorId);
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    return this.aplicarActualizacion(evento, data);
+  }
 
-    // Recuperamos el evento completo para asegurar propiedad y poder sincronizar relaciones hijas.
+  async actualizarDatosBasicos(
+    eventoId: number,
+    data: ActualizarDatosBasicosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEvento(eventoId, data, organizadorId);
+  }
+
+  async actualizarPortada(
+    eventoId: number,
+    data: ActualizarPortadaDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { imagenPortada: data.imagenPortada ?? null },
+      organizadorId
+    );
+  }
+
+  async actualizarImagenLugar(
+    eventoId: number,
+    data: ActualizarImagenLugarDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { imagenLugar: data.imagenLugar ?? null },
+      organizadorId
+    );
+  }
+
+  async actualizarDocumentosRespaldo(
+    eventoId: number,
+    data: ActualizarDocumentosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { documentosRespaldo: data.documentos },
+      organizadorId
+    );
+  }
+
+  async actualizarTerminosEvento(
+    eventoId: number,
+    data: ActualizarTerminosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { terminosUso: data.terminosUso },
+      organizadorId
+    );
+  }
+
+  async actualizarZonas(
+    eventoId: number,
+    data: ActualizarZonasDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { zonas: data.zonas },
+      organizadorId
+    );
+  }
+
+  async actualizarEstadoOrganizador(
+    eventoId: number,
+    data: ActualizarEstadoDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEventoParcial(
+      eventoId,
+      { estado: data.estado },
+      organizadorId
+    );
+  }
+
+  private async actualizarEventoParcial(
+    eventoId: number,
+    parcial: Partial<ActualizarEventoDto>,
+    organizadorId: number
+  ): Promise<Evento> {
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    const dto = this.completarCamposObligatorios(evento, parcial);
+    return this.aplicarActualizacion(evento, dto);
+  }
+
+  private async obtenerEventoPropietario(
+    eventoId: number,
+    organizadorId: number
+  ): Promise<Evento> {
+    await this.obtenerOrganizador(organizadorId);
     const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
 
     if (!evento || evento.organizador.id !== organizadorId) {
       throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
     }
+
+    return evento;
+  }
+
+  private async aplicarActualizacion(
+    evento: Evento,
+    data: ActualizarEventoDto
+  ): Promise<Evento> {
+    this.validarDatosObligatorios(data);
 
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
@@ -261,7 +372,6 @@ export class EventoService {
         : null;
     }
 
-    // NUEVO: permitir actualizar la imagen del lugar/estadio
     if (data.imagenLugar !== undefined) {
       evento.imagenLugar = data.imagenLugar
         ? this.convertirImagen(data.imagenLugar)
@@ -289,6 +399,57 @@ export class EventoService {
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private completarCamposObligatorios(
+    evento: Evento,
+    parcial: Partial<ActualizarEventoDto>
+  ): ActualizarEventoDto {
+    const artistaIdActual = evento.artista?.id;
+    if (!artistaIdActual) {
+      throw new CustomError(
+        "El evento no tiene un artista asignado",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const { fecha, hora } = this.obtenerFechaYHoraDesdeEvento(evento);
+
+    return {
+      nombre: parcial.nombre ?? evento.nombre,
+      descripcion: parcial.descripcion ?? evento.descripcion,
+      fecha: parcial.fecha ?? fecha,
+      hora: parcial.hora ?? hora,
+      artistaId: parcial.artistaId ?? artistaIdActual,
+      lugar: parcial.lugar ?? evento.lugar,
+      departamento: parcial.departamento ?? evento.departamento,
+      provincia: parcial.provincia ?? evento.provincia,
+      distrito: parcial.distrito ?? evento.distrito,
+      estado: parcial.estado ?? evento.estado,
+      imagenPortada: parcial.imagenPortada,
+      imagenLugar: parcial.imagenLugar,
+      terminosUso: parcial.terminosUso,
+      documentosRespaldo: parcial.documentosRespaldo,
+      zonas: parcial.zonas,
+    };
+  }
+
+  private obtenerFechaYHoraDesdeEvento(evento: Evento): {
+    fecha: string;
+    hora: string;
+  } {
+    const fechaEvento = evento.fechaEvento;
+    if (!fechaEvento) {
+      throw new CustomError(
+        "El evento no tiene una fecha registrada",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    const iso = fechaEvento.toISOString();
+    return {
+      fecha: iso.slice(0, 10),
+      hora: iso.slice(11, 16),
+    };
   }
 
   private async obtenerOrganizador(organizadorId: number): Promise<Organizador> {

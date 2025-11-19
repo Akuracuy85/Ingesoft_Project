@@ -149,43 +149,128 @@ export class EventoController {
   };
 
   actualizarEvento = async (req: Request, res: Response) => {
-    const organizadorId = req.userId;
-
-    if (!organizadorId) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        success: false,
-        message: "No autorizado",
-      });
-    }
-
-    const eventoId = Number(req.params.id);
-
-    if (!Number.isInteger(eventoId) || eventoId <= 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "El identificador del evento no es válido",
-      });
-    }
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
 
     try {
       const evento = await this.eventoService.actualizarEvento(
-        eventoId,
+        ids.eventoId,
         req.body,
-        organizadorId
+        ids.organizadorId
       );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 
-      if (evento.estado === EstadoEvento.CANCELADO) {
-        await this.emailService.SendEventCancelledEmail(evento.id);
-      }
-      else {
-        console.log("Enviando email de actualización de evento...");
-        await this.emailService.SendUpdateEventEmail(evento.id);
-      }
+  actualizarDatosBasicos = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
 
-      res.status(StatusCodes.OK).json({
-        success: true,
-        eventoId: evento.id,
-      });
+    try {
+      const evento = await this.eventoService.actualizarDatosBasicos(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarPortada = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarPortada(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarImagenLugar = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarImagenLugar(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarDocumentos = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarDocumentosRespaldo(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarTerminos = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarTerminosEvento(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarZonas = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarZonas(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  actualizarEstadoOrganizador = async (req: Request, res: Response) => {
+    const ids = this.validarOrganizadorYEvento(req, res);
+    if (!ids) return;
+
+    try {
+      const evento = await this.eventoService.actualizarEstadoOrganizador(
+        ids.eventoId,
+        req.body,
+        ids.organizadorId
+      );
+      await this.responderActualizacion(res, evento);
     } catch (error) {
       HandleResponseError(res, error);
     }
