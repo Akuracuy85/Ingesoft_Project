@@ -22,6 +22,8 @@ import type { Tarjeta } from "@/models/Tarjeta";
 export default function InformacionPersonal() {
   const [userInfo, setUserInfo] = useState({
     fullName: "",
+    lastName: "",
+    motherLastName: "",
     email: "",
     dni: "",
     phone: "",
@@ -46,6 +48,8 @@ export default function InformacionPersonal() {
 
         setUserInfo({
           fullName: profile.nombre,
+          lastName: profile.apellidoPaterno || "",
+          motherLastName: profile.apellidoMaterno || "",
           email: profile.email,
           dni: profile.dni,
           phone: profile.celular,
@@ -67,6 +71,8 @@ export default function InformacionPersonal() {
     try {
       await PerfilService.updateProfile({
         nombre: userInfo.fullName,
+        apellidoPaterno: userInfo.lastName,
+        apellidoMaterno: userInfo.motherLastName,
         email: userInfo.email,
         dni: userInfo.dni,
         celular: userInfo.phone,
@@ -136,6 +142,26 @@ export default function InformacionPersonal() {
                       onChange={(e) => setUserInfo({ ...userInfo, fullName: e.target.value })}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="flex items-center gap-2 text-gray-700">
+                      <User className="w-4 h-4" /> Apellido paterno
+                    </Label>
+                    <Input
+                      id="lastName"
+                      value={userInfo.lastName}
+                      onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="motherLastName" className="flex items-center gap-2 text-gray-700">
+                      <User className="w-4 h-4" /> Apellido materno
+                    </Label>
+                    <Input
+                      id="motherLastName"
+                      value={userInfo.motherLastName}
+                      onChange={(e) => setUserInfo({ ...userInfo, motherLastName: e.target.value })}
+                    />
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email" className="flex items-center gap-2 text-gray-700">
@@ -193,7 +219,7 @@ export default function InformacionPersonal() {
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4"
                     >
                       <div className="flex items-center gap-4">
-                        <div className= {`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${TipoDeTarjeta(card.numeroTarjeta) === 'Visa' ? 'from-blue-500 to-blue-700' : 'from-red-600 to-orange-400'}`}>
+                        <div className={`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${TipoDeTarjeta(card.numeroTarjeta) === 'Visa' ? 'from-blue-500 to-blue-700' : 'from-red-600 to-orange-400'}`}>
                           <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>
