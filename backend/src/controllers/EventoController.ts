@@ -400,7 +400,48 @@ export class EventoController {
     }
   };
 
+  private validarOrganizadorYEvento(
+    req: Request,
+    res: Response
+  ): { eventoId: number; organizadorId: number } | null {
+    const organizadorId = req.userId;
 
+    if (!organizadorId) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+      return null;
+    }
+
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es vǭlido",
+      });
+      return null;
+    }
+
+    return { eventoId, organizadorId };
+  }
+
+  private async responderActualizacion(res: Response, evento: Evento) {
+    await this.notificarActualizacionEvento(evento);
+    res.status(StatusCodes.OK).json({
+      success: true,
+      eventoId: evento.id,
+    });
+  }
+
+  private async notificarActualizacionEvento(evento: Evento) {
+    if (evento.estado === EstadoEvento.CANCELADO) {
+      await this.emailService.SendEventCancelledEmail(evento.id);
+      return;
+    }
+    await this.emailService.SendUpdateEventEmail(evento.id);
+  }
 }
 
 function parseFiltros(query: Request['query']): IFiltrosEvento {
