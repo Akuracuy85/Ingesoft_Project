@@ -3,6 +3,6 @@ export interface DocumentoDto {
   nombreArchivo: string;
   tipo: string;
   tamano: number;
-  url: string;
+  url?: string;
   contenidoBase64?: string;
 }
