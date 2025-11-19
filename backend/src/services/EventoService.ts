@@ -36,6 +36,7 @@ import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { bufferToBase64 } from "@/utils/ImageUtils";
+import { tienePropiedad } from "@/utils/ObjectUtils";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -254,7 +255,7 @@ export class EventoService {
     data: ActualizarPortadaDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "imagenPortada")) {
+    if (!tienePropiedad(data, "imagenPortada")) {
       throw new CustomError(
         "Debes enviar la imagen de portada o null para eliminarla",
         StatusCodes.BAD_REQUEST
@@ -272,7 +273,7 @@ export class EventoService {
     data: ActualizarImagenLugarDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "imagenLugar")) {
+    if (!tienePropiedad(data, "imagenLugar")) {
       throw new CustomError(
         "Debes enviar la imagen del lugar o null para eliminarla",
         StatusCodes.BAD_REQUEST
@@ -290,7 +291,7 @@ export class EventoService {
     data: ActualizarDocumentosDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "documentosRespaldo")) {
+    if (!tienePropiedad(data, "documentosRespaldo")) {
       throw new CustomError(
         "Debes enviar la lista completa de documentos de respaldo",
         StatusCodes.BAD_REQUEST
@@ -308,7 +309,7 @@ export class EventoService {
     data: ActualizarTerminosDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "terminosUso")) {
+    if (!tienePropiedad(data, "terminosUso")) {
       throw new CustomError(
         "Debes enviar los términos de uso (o null para eliminarlos)",
         StatusCodes.BAD_REQUEST
@@ -326,7 +327,7 @@ export class EventoService {
     data: ActualizarZonasDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "zonas")) {
+    if (!tienePropiedad(data, "zonas")) {
       throw new CustomError(
         "Debes enviar el arreglo de zonas a actualizar",
         StatusCodes.BAD_REQUEST
@@ -344,7 +345,7 @@ export class EventoService {
     data: ActualizarEstadoDto,
     organizadorId: number
   ): Promise<Evento> {
-    if (!this.tienePropiedad(data, "estado")) {
+    if (!tienePropiedad(data, "estado")) {
       throw new CustomError(
         "Debes indicar el nuevo estado del evento",
         StatusCodes.BAD_REQUEST
@@ -977,11 +978,6 @@ export class EventoService {
 
   private generarCodigoPrivado(): string {
     return randomBytes(4).toString("hex").toUpperCase();
-  }
-
-  private tienePropiedad(obj: unknown, propiedad: string): boolean {
-    if (!obj || typeof obj !== "object") return false;
-    return Object.prototype.hasOwnProperty.call(obj, propiedad);
   }
 
   /**
