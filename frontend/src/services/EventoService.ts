@@ -163,6 +163,9 @@ class EventoService extends HttpClient {
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
       cola: ev.cola || undefined,
+      documento: "",
+      fechaFinPreventa: ev.fechaFinPreventa ? extractFecha(ev.fechaFinPreventa) : null,
+      fechaInicioPreventa: ev.fechaInicioPreventa ? extractFecha(ev.fechaInicioPreventa) : null,
     } as Event;
   }
 
@@ -299,6 +302,8 @@ export interface CrearEventoPayload {
   lugar: string;
   estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
   imagenPortada?: string; // base64 sin prefijo (opcional)
+  fechaFinPreventa?: string; // NUEVO campo opcional YYYY-MM-DD
+  fechaInicioPreventa?: string; // NUEVO campo opcional YYYY-MM-DD
 }
 
 export interface ActualizarEventoPayload {
@@ -316,6 +321,8 @@ export interface ActualizarEventoPayload {
   terminosUso?: BackendDocumentoDto | null;
   // NUEVO: imagen del lugar/estadio según modelo backend (imagenLugar)
   imagenLugar?: string | null;
+  fechaFinPreventa?: string | null; // NUEVO campo opcional YYYY-MM-DD
+  fechaInicioPreventa?: string | null; // NUEVO campo opcional YYYY-MM-DD
 }
 
 export function mapEstadoUIToBackend(estado: string): string {
