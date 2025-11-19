@@ -280,7 +280,7 @@ export class EventoService {
   ): Promise<Evento> {
     return this.actualizarEventoParcial(
       eventoId,
-      { documentosRespaldo: data.documentos },
+      { documentosRespaldo: data.documentosRespaldo },
       organizadorId
     );
   }
