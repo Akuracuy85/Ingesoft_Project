@@ -38,6 +38,9 @@ import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { bufferToBase64 } from "@/utils/ImageUtils";
 import { tienePropiedad } from "@/utils/ObjectUtils";
 
+const TIPO_TERMINOS_USO = "TerminosUso";
+const TIPO_DOCUMENTO_RESPALDO = "DocumentoRespaldo";
+
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
   private static instance: EventoService;
@@ -614,8 +617,8 @@ export class EventoService {
     }
     const carpetaS3 = `eventos/${evento.id}/terminos`;
     if (evento.terminosUso) {
-      // Mantener tipo lógico
-      evento.terminosUso.tipo = "terminos de uso";
+      evento.terminosUso.tipo = TIPO_TERMINOS_USO; // tipo lógico unificado
+      evento.terminosUso.evento = evento; // asegurar relación
       await this.prepararDocumentoParaGuardar(
         evento.terminosUso,
         terminosDto,
@@ -623,13 +626,12 @@ export class EventoService {
         evento.terminosUso.url,
         true
       );
-      evento.terminosUso.evento = evento;
       await this.eventoRepository.guardarDocumento(evento.terminosUso);
       return;
     }
     const documento = new Documento();
-    documento.tipo = "terminos de uso";
-    documento.evento = evento;
+    documento.tipo = TIPO_TERMINOS_USO;
+    documento.evento = evento; // asignar siempre
     await this.prepararDocumentoParaGuardar(
       documento,
       terminosDto,
@@ -683,7 +685,8 @@ export class EventoService {
     for (const docDto of documentosDto) {
       if (docDto.id && documentosPorId.has(docDto.id)) {
         const documento = documentosPorId.get(docDto.id)!;
-        documento.tipo = "documento de respaldo";
+        documento.tipo = TIPO_DOCUMENTO_RESPALDO;
+        documento.evento = evento; // asegurar relación
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
@@ -691,11 +694,11 @@ export class EventoService {
           documento.url,
           false
         );
-        documento.evento = evento;
         idsRecibidos.add(docDto.id);
       } else {
         const documento = new Documento();
-        documento.tipo = "documento de respaldo";
+        documento.tipo = TIPO_DOCUMENTO_RESPALDO;
+        documento.evento = evento; // asegurar relación
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
@@ -703,7 +706,6 @@ export class EventoService {
           null,
           false
         );
-        documento.evento = evento;
         nuevos.push(documento);
       }
     }
@@ -783,16 +785,12 @@ export class EventoService {
       );
     }
     documento.tamano = tamanoFinal;
-    // Guardar MIME en contentType separado
+    // MIME opcional: sólo asignar si disponible
     const mime = this.normalizarTipoDocumento(dto.tipo, tipoDesdeCarga, documento.contentType);
-    documento.contentType = mime;
-    // No sobrescribir tipo lógico si ya está asignado
-    if (!documento.tipo || (!esTerminos && documento.tipo === "terminos de uso")) {
-      // Si viene de respaldo y no tiene tipo lógico
-      if (!esTerminos && documento.tipo !== "terminos de uso") {
-        documento.tipo = documento.tipo || "documento de respaldo";
-      }
+    if (mime) {
+      documento.contentType = mime;
     }
+    // No modificar documento.tipo aquí (tipo lógico ya establecido antes)
     documento.url = url!;
   }
 

@@ -63,7 +63,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
         fr.onerror = () => reject(new Error("No se pudo leer el archivo"));
         fr.readAsDataURL(file);
       });
-      list.push({ nombreArchivo: file.name, tipo: 'documento de respaldo', tamano: file.size, contenidoBase64: base64 });
+      list.push({ nombreArchivo: file.name, tipo: 'DocumentoRespaldo', tamano: file.size, contenidoBase64: base64 });
     }
     return list;
   };
@@ -79,7 +79,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
       const existentes: DocumentoDtoPayload[] = documentos.map((d) => ({
         id: d.id,
         nombreArchivo: d.nombreArchivo,
-        tipo: 'documento de respaldo',
+        tipo: 'DocumentoRespaldo',
         tamano: d.tamano,
         url: d.url,
       }));
@@ -105,7 +105,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
       const payloadDocs: DocumentoDtoPayload[] = restantes.map((d) => ({
         id: d.id,
         nombreArchivo: d.nombreArchivo,
-        tipo: 'documento de respaldo',
+        tipo: 'DocumentoRespaldo',
         tamano: d.tamano,
         url: d.url,
       }));
@@ -164,7 +164,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
               <FileText className="h-4 w-4 text-gray-600" />
               <div>
                 <p className="font-medium text-gray-900">{doc.nombreArchivo}</p>
-                <p className="text-xs text-gray-500">{(doc.tamano/1024).toFixed(0)} KB · documento de respaldo</p>
+                <p className="text-xs text-gray-500">{(doc.tamano/1024).toFixed(0)} KB · DocumentoRespaldo</p>
               </div>
             </div>
 
