@@ -5,6 +5,7 @@ import { normalizeFecha } from "@/utils/normalizeFecha";
 import { actualizarEvento, mapEstadoUIToBackend } from "@/services/EventoService";
 import ArtistaService, { type Artista } from "@/services/ArtistaService";
 import NotificationService from "@/services/NotificationService";
+import ModalCrearArtista from "./ModalCrearArtista";
 
 interface EventoEditable {
   id: number;
@@ -47,6 +48,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
   const [artistas, setArtistas] = useState<Artista[]>([]);
+  const [openCrearArtista, setOpenCrearArtista] = useState(false);
 
   // Helper reutilizable: convertir File a base64 (sin prefijo data:...)
   const fileToBase64 = (file: File): Promise<string> => {
@@ -259,6 +261,12 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     }
   };
 
+  const handleArtistaCreado = async (nuevoId: number) => {
+    const lista = await ArtistaService.getArtistas();
+    setArtistas(lista);
+    setArtistaId(nuevoId);
+  };
+
   const nombreError = touchedSubmit && !nombre.trim();
   const descripcionError = touchedSubmit && !descripcion.trim();
   const fechaError = touchedSubmit && !fecha;
@@ -321,8 +329,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
 
           {/* Artista */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Artista <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+              <span>Artista <span className="text-red-500">*</span></span>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">+ Nuevo</button>
             </label>
             <select
               name="artistaId"
@@ -503,6 +512,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           </button>
         </div>
       </div>
+      <ModalCrearArtista open={openCrearArtista} onClose={() => setOpenCrearArtista(false)} onCreated={handleArtistaCreado} />
     </div>
   );
 };
