@@ -290,6 +290,12 @@ export class EventoService {
     data: ActualizarDocumentosDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "documentosRespaldo")) {
+      throw new CustomError(
+        "Debes enviar la lista completa de documentos de respaldo",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { documentosRespaldo: data.documentosRespaldo },
@@ -302,6 +308,12 @@ export class EventoService {
     data: ActualizarTerminosDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "terminosUso")) {
+      throw new CustomError(
+        "Debes enviar los términos de uso (o null para eliminarlos)",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { terminosUso: data.terminosUso },
@@ -332,6 +344,12 @@ export class EventoService {
     data: ActualizarEstadoDto,
     organizadorId: number
   ): Promise<Evento> {
+    if (!this.tienePropiedad(data, "estado")) {
+      throw new CustomError(
+        "Debes indicar el nuevo estado del evento",
+        StatusCodes.BAD_REQUEST
+      );
+    }
     return this.actualizarEventoParcial(
       eventoId,
       { estado: data.estado },
