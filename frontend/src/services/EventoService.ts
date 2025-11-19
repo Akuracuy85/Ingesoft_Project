@@ -5,8 +5,7 @@ import HttpClient from "./Client";
 import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
 import type { PriceRangeType } from "../types/PriceRangeType";
-import { extractFecha, extractHora } from "../utils/date-utils";
-import { bufferToBase64 } from "@/utils/imagenUtils";
+import { extractFecha } from "../utils/date-utils";
 
 export type EventDetailsForPurchase = Event & {
   zonasDisponibles: ZonePurchaseDetail[];
@@ -72,12 +71,16 @@ interface BackendEventoEntity {
   distrito?: string;
   lugar?: string;
   estado: string;
-  imagenBanner?: any; // Simplificado: representamos solo base64 string o null
-  imagenLugar?: any;
+  imagenBanner?: string | null; // base64 o null
+  imagenLugar?: string | null;  // base64 o null
   artista?: { id: number; nombre: string; categoria?: { nombre: string } };
-  zonas?: unknown[]; // se podría tipar más adelante
+  artistaId?: number;
+  zonas?: unknown[];
   cola?: unknown;
   documentosRespaldo?: BackendDocumentoDto[];
+  terminosUso?: BackendDocumentoDto | null;
+  fechaFinPreventa?: string | Date | null;
+  fechaInicioPreventa?: string | Date | null;
 }
 interface BackendDocumentoDto { id?: number; nombreArchivo: string; tipo: string; tamano: number; url: string; }
 interface EventoDetalladoOrganizador {
@@ -139,34 +142,26 @@ class EventoService extends HttpClient {
     return await super.get<EventDetailsForPurchase>(path);
   }
 
-  async obtenerPorId(id: number): Promise<Event> {
+  async obtenerPorId(id: number) {
     if (!id) throw new Error("Se requiere un ID válido de evento");
     const respuesta = await super.get<{ success?: boolean; evento: BackendEventoEntity }>(`/${id}`);
     const ev = respuesta.evento;
     if (!ev) throw new Error("Evento no encontrado");
-    // Mapear a un objeto interno para edición (no usamos el modelo público Event porque difiere)
     return {
       id: ev.id,
-      title: ev.nombre,
-      description: ev.descripcion,
-      date: extractFecha(ev.fechaEvento),
-      time: extractHora(ev.fechaEvento),
-      departamento: ev.departamento || "",
-      provincia: ev.provincia || "",
-      distrito: ev.distrito || "",
-      place: ev.lugar || "",
-      // Simplificado: si viene null -> ""
-      image: ev.imagenBanner ?? "",
-      imageBanner: await bufferToBase64(ev.imagenBanner?.data) || null,
-      imageLugar: await bufferToBase64(ev.imagenLugar?.data) || null,
-      artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
-      category: ev.artista?.categoria?.nombre ?? undefined,
-      zonas: ev.zonas || [],
-      cola: ev.cola || undefined,
-      documento: "",
+      nombre: ev.nombre,
+      descripcion: ev.descripcion,
+      fechaEvento: typeof ev.fechaEvento === 'string' ? ev.fechaEvento : ev.fechaEvento.toISOString(),
+      departamento: ev.departamento || '',
+      provincia: ev.provincia || '',
+      distrito: ev.distrito || '',
+      lugar: ev.lugar || '',
+      imagenBannerBase64: ev.imagenBanner || null,
+      imagenLugarBase64: ev.imagenLugar || null,
+      artistaId: ev.artistaId ?? ev.artista?.id ?? null,
       fechaFinPreventa: ev.fechaFinPreventa ? extractFecha(ev.fechaFinPreventa) : null,
       fechaInicioPreventa: ev.fechaInicioPreventa ? extractFecha(ev.fechaInicioPreventa) : null,
-    } as Event;
+    };
   }
 
   // Nuevo: listado detallado para organizador (usa GET /evento/ que devuelve obtenerEventosDetallados)
@@ -185,8 +180,8 @@ class EventoService extends HttpClient {
       lugar: ev.lugar || "",
       imagenBannerBase64: ev.imagenBanner ? (typeof ev.imagenBanner === "string" ? ev.imagenBanner : null) : null,
       documentosRespaldo: ev.documentosRespaldo || [],
-      terminosUso: null,
-      artistaId: ev.artista?.id ?? null,
+      terminosUso: ev.terminosUso || null,
+      artistaId: ev.artistaId ?? ev.artista?.id ?? null,
     }));
   }
 
@@ -263,21 +258,57 @@ class EventoService extends HttpClient {
     };
     await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}`, payload);
   }
+
+  async getTerminosUso(eventoId: number): Promise<BackendDocumentoDto | null> {
+    const eventos = await this.listarDetalladosOrganizador();
+    const evento = eventos.find(e => e.id === eventoId);
+    return evento?.terminosUso || null;
+  }
+
+  async updateTerminosUso(eventoId: number, archivo: File | null): Promise<{ success: boolean; eventoId: number }> {
+    const eventos = await this.listarDetalladosOrganizador();
+    const evento = eventos.find(e => e.id === eventoId);
+    if (!evento) throw new Error("Evento no encontrado");
+
+    let terminosUso: BackendDocumentoDto | null | undefined = undefined;
+    if (archivo === null) {
+      terminosUso = null;
+    } else if (archivo) {
+      const base64 = await this.fileToBase64(archivo);
+      terminosUso = {
+        nombreArchivo: archivo.name,
+        tipo: archivo.type || 'application/pdf',
+        tamano: archivo.size,
+        url: '',
+        contenidoBase64: base64,
+      } as BackendDocumentoDto & { contenidoBase64: string };
+    }
+
+    // Solo enviamos lo requerido por el endpoint /terminos
+    return await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}/terminos`, { terminosUso });
+  }
+
+  private async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remover prefijo data: si existe para consistencia (el backend acepta ambos)
+        const limpio = result.replace(/^data:.*;base64,/, '');
+        resolve(limpio);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
 const eventoServiceInstance = new EventoService();
 
-// Función nombrada para facilitar el consumo tipado en componentes
-export function listarBasicosOrganizador() {
-  return eventoServiceInstance.listarBasicosOrganizador();
-}
 export const createEvent = (payload: CrearEventoPayload) => eventoServiceInstance.createEvent(payload);
 export const listarDetalladosOrganizador = () => eventoServiceInstance.listarDetalladosOrganizador();
 export const getDocumentosRespaldo = (eventoId: number) => eventoServiceInstance.getDocumentosRespaldo(eventoId);
 // Renombramos obtenerPorId para edición detallada (mismo endpoint) si se requiere distinto naming
-export function obtenerEventoDetalladoOrganizador(id: number) {
-  return eventoServiceInstance.obtenerPorId(id);
-}
 export const obtenerEventosDetallados = (id: number) => eventoServiceInstance.obtenerPorId(id);
 export const actualizarEvento = (id: number, data: ActualizarEventoPayload) =>
   eventoServiceInstance.put<{ success: boolean; eventoId: number }>(`/${id}`, data);
@@ -286,6 +317,8 @@ export const updateDocumentosRespaldo = (
   documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
 ) =>
   eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos);
+export const getTerminosUso = (eventoId: number) => eventoServiceInstance.getTerminosUso(eventoId);
+export const updateTerminosUso = (eventoId: number, archivo: File | null) => eventoServiceInstance.updateTerminosUso(eventoId, archivo);
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
 

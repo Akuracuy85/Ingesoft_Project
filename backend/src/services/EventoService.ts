@@ -405,8 +405,14 @@ export class EventoService {
     await this.obtenerOrganizador(organizadorId);
     const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
 
-    if (!evento || evento.organizador.id !== organizadorId) {
+    if (!evento) {
       throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+    if (evento.organizador.id !== organizadorId) {
+      throw new CustomError(
+        "No autorizado para gestionar este evento",
+        StatusCodes.FORBIDDEN
+      );
     }
 
     return evento;
@@ -596,6 +602,11 @@ export class EventoService {
       return;
     }
 
+    // Validación específica para términos de uso (PDF <=10MB)
+    if (terminosDto) {
+      this.validarTerminosPdf(terminosDto);
+    }
+
     if (!terminosDto) {
       // Null explícito significa eliminar los términos actuales.
       if (evento.terminosUso?.id) {
@@ -631,6 +642,35 @@ export class EventoService {
       documento
     );
     evento.terminosUso = documentoGuardado;
+  }
+
+  private validarTerminosPdf(dto: DocumentoDto) {
+    // Solo validar si viene contenido para subir o se pretende crear/reemplazar
+    const nombre = dto.nombreArchivo?.trim().toLowerCase();
+    const tipo = dto.tipo?.trim().toLowerCase();
+    const tamano = Number(dto.tamano);
+
+    // Tamaño máximo 10MB
+    const MAX_BYTES = 10 * 1024 * 1024; // 10 MiB
+    if (Number.isFinite(tamano) && tamano > MAX_BYTES) {
+      throw new CustomError(
+        "El archivo de términos excede el tamaño máximo de 10MB",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    // Validación de tipo y extensión PDF
+    const esPdfPorMime = tipo === "application/pdf";
+    const esPdfPorNombre = nombre?.endsWith(".pdf");
+    if (!esPdfPorMime && !esPdfPorNombre) {
+      throw new CustomError(
+        "Solo se permite subir documentos PDF como términos de uso",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    // Si no hay contenido base64 y tampoco URL, se rechazará luego en prepararDocumentoParaGuardar
+    // Aquí no se hace más validación de contenido.
   }
 
   private async sincronizarDocumentosRespaldo(
