@@ -25,9 +25,11 @@ import { Repository } from "typeorm";
 import { TarifaDto } from "../dto/evento/TarifaDto";
 import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
+import { ColaService } from "../services/ColaService";
 import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
-import { ColaService } from "./ColaService";
+import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
+import { bufferToBase64 } from "@/utils/ImageUtils";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -62,7 +64,7 @@ export class EventoService {
         );
       return eventos.map(({ nombre, fechaEvento, estado }) => ({
         nombre,
-        fecha: fechaEvento,
+        fecha: ConvertirFechaUTCaPeru(fechaEvento),
         estado,
       }));
     } catch (error) {
@@ -90,7 +92,7 @@ export class EventoService {
         nombre: evento.nombre,
         descripcion: evento.descripcion,
         estado: evento.estado,
-        fechaEvento: evento.fechaEvento.toISOString(),
+        fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento).toISOString(), //Restando 5 horas para hacer match con perú
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
@@ -155,6 +157,7 @@ export class EventoService {
   async obtenerDetalleEvento(id: number): Promise<Evento> {
     try {
       const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
+      evento.fechaEvento = ConvertirFechaUTCaPeru(evento.fechaEvento); //Restamos 5 horas para que esté en hora de perú
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
@@ -258,6 +261,13 @@ export class EventoService {
     if (data.imagenPortada !== undefined) {
       evento.imagenBanner = data.imagenPortada
         ? this.convertirImagen(data.imagenPortada)
+        : null;
+    }
+
+    // NUEVO: permitir actualizar la imagen del lugar/estadio
+    if (data.imagenLugar !== undefined) {
+      evento.imagenLugar = data.imagenLugar
+        ? this.convertirImagen(data.imagenLugar)
         : null;
     }
 
@@ -927,7 +937,7 @@ export class EventoService {
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
-        "Error al obtener los emails de los asistentes al evento",
+        "Error al obtener los emails de los asistentes al evento: " + error.message,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

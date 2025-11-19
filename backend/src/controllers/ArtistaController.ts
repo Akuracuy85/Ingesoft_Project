@@ -30,6 +30,16 @@ export class ArtistaController {
       HandleResponseError(res, error);
     }
   };
+
+  crear = async (req: Request, res: Response) => {
+    try {
+      const { nombre, categoriaId, prioridad } = req.body;
+      const creado = await this.artistaService.crearArtista({ nombre, categoriaId: Number(categoriaId), prioridad: Number(prioridad) });
+      res.status(StatusCodes.CREATED).json({ success: true, data: creado });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 }
 
 export const artistaController = ArtistaController.getInstance();

@@ -34,6 +34,10 @@ export class TarjetaRepository {
             // relations: ["cliente"] // No es necesario cargar el cliente si solo se usa para el WHERE
         });
     }
+
+    async insertarTarjeta(tarjeta: Tarjeta): Promise<Tarjeta> {
+        return await this.repository.save(tarjeta);
+    }
     
     /**
      * Elimina una tarjeta por su ID.

@@ -1,6 +1,8 @@
 import React from "react";
-import { Calendar, FileText, Settings } from "lucide-react";
+import { Calendar, FileText, LogOut, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import AuthService from "@/services/AuthService";
 
 interface MenuItem {
   name: string;
@@ -11,6 +13,7 @@ const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar },
   { name: "Reportes", icon: FileText },
   { name: "Configuración", icon: Settings },
+  { name: "Salir", icon: LogOut },
 ];
 
 interface SidebarOrganizadorProps {
@@ -18,6 +21,20 @@ interface SidebarOrganizadorProps {
 }
 
 const SidebarOrganizador: React.FC<SidebarOrganizadorProps> = ({ activeItem }) => {
+
+  const navigate = useNavigate();
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try{
+      await AuthService.logout();
+    }
+    catch(e) {}
+    finally {
+      navigate("/login")
+    }
+  }
+
+
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Logo */}
@@ -39,11 +56,12 @@ const SidebarOrganizador: React.FC<SidebarOrganizadorProps> = ({ activeItem }) =
             return (
               <li key={item.name}>
                 <button
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
+                  onClick={item.name == "Salir" ? handleLogout : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}

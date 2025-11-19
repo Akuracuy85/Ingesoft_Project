@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
+import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
+import ModalCrearArtista from "./ModalCrearArtista";
 
 export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
 
@@ -16,6 +19,8 @@ export interface NuevoEventoForm {
   departamento: string;
   provincia: string;
   distrito: string;
+  // Nuevo: artista seleccionado
+  artistaId: number | null;
 }
 
 const defaultForm: NuevoEventoForm = {
@@ -29,6 +34,7 @@ const defaultForm: NuevoEventoForm = {
   departamento: "",
   provincia: "",
   distrito: "",
+  artistaId: null,
 };
 
 interface ModalCrearEventoProps {
@@ -45,6 +51,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
+  const [artistas, setArtistas] = useState<Artista[]>([]);
+  const [openCrearArtista, setOpenCrearArtista] = useState(false);
 
   // Reset del formulario al abrir
   useEffect(() => {
@@ -55,6 +63,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
       UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
       setProvincias([]);
       setDistritos([]);
+      // Cargar artistas
+      ArtistaService.getArtistas().then(setArtistas).catch(() => setArtistas([]));
     }
   }, [open]);
 
@@ -96,6 +106,19 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
     setForm((prev) => ({ ...prev, distrito: e.target.value }));
   };
 
+  const handleArtistaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const parsed = value ? Number(value) : NaN;
+    setForm((prev) => ({ ...prev, artistaId: !isNaN(parsed) && parsed > 0 ? parsed : null }));
+  };
+
+  const handleArtistaCreado = async (nuevoId: number) => {
+    // Refrescar lista y seleccionar
+    const lista = await ArtistaService.getArtistas();
+    setArtistas(lista);
+    setForm((prev) => ({ ...prev, artistaId: nuevoId }));
+  };
+
   const handleGuardar = () => {
     setTouchedSubmit(true);
 
@@ -108,9 +131,10 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
       !form.departamento ||
       !form.provincia ||
       !form.distrito ||
-      !form.lugar.trim()
+      !form.lugar.trim() ||
+      !form.artistaId
     ) {
-      alert("Por favor completa todos los campos obligatorios.");
+      NotificationService.warning("Por favor completa todos los campos obligatorios");
       return;
     }
 
@@ -127,6 +151,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   const provinciaError = touchedSubmit && !form.provincia;
   const distritoError = touchedSubmit && !form.distrito;
   const lugarError = touchedSubmit && !form.lugar.trim();
+  const artistaError = touchedSubmit && !form.artistaId;
 
   if (!open) return null;
 
@@ -142,7 +167,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
         </div>
 
         {/* Form */}
-        <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[75vh] overflow-y-auto px-1">
           {/* Nombre del evento */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -175,6 +200,30 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               }`}
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Artista */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+              <span>Artista <span className="text-red-500">*</span></span>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">
+                + Nuevo
+              </button>
+            </label>
+            <select
+              name="artistaId"
+              value={form.artistaId ?? ""}
+              onChange={handleArtistaChange}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                artistaError ? "border-red-500" : "border-gray-300"
+              }`}
+            >
+              <option value="">Selecciona artista</option>
+              {artistas.map((a) => (
+                <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+              ))}
+            </select>
+            {artistaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
           </div>
 
           {/* Fecha y Hora */}
@@ -328,6 +377,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           </button>
         </div>
       </div>
+      <ModalCrearArtista open={openCrearArtista} onClose={() => setOpenCrearArtista(false)} onCreated={handleArtistaCreado} />
     </div>
   );
 };

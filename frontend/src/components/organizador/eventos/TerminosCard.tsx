@@ -1,17 +1,30 @@
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Upload, X } from "lucide-react";
 
 export default function TerminosCard() {
-  const [contenido, setContenido] = useState<string>(
-    `1. El evento se realizará en la fecha y hora indicadas.\n2. No se permiten reembolsos después de 48 horas.\n3. Los menores de edad deben estar acompañados por un adulto.`
-  );
+  // Estado local: único PDF de términos
+  const [terminosPDF, setTerminosPDF] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGuardar = () => {
-    alert("Términos y condiciones actualizados correctamente.");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null);
+    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    if (!file) return;
+
+    const isPdfByMime = file.type === "application/pdf";
+    const isPdfByName = file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfByMime && !isPdfByName) {
+      setError("Solo se permite subir archivos PDF.");
+      e.target.value = "";
+      return;
+    }
+
+    setTerminosPDF(file);
   };
 
-  const handleHistorial = () => {
-    alert("Aquí se mostraría el historial de cambios (funcionalidad futura).");
+  const handleEliminar = () => {
+    setTerminosPDF(null);
+    setError(null);
   };
 
   return (
@@ -23,38 +36,51 @@ export default function TerminosCard() {
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Términos y condiciones</h3>
-          <p className="text-sm text-gray-500">Actualiza los términos del evento.</p>
+          <p className="text-sm text-gray-500">Sube un documento PDF con los términos del evento.</p>
         </div>
       </div>
 
-      {/* Campo de texto */}
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
-        <textarea
-          value={contenido}
-          onChange={(e) => setContenido(e.target.value)}
-          rows={6}
-          className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-        />
-      </div>
+      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
-      {/* Botones */}
-      <div className="flex gap-3 justify-between">
-        <button
-          onClick={handleHistorial}
-          className="border border-gray-300 text-gray-700 rounded-md px-4 py-2 w-1/2 hover:bg-gray-50 text-sm"
-          type="button"
+      {/* Zona de subida (cuando no hay PDF) */}
+      {!terminosPDF && (
+        <label
+          htmlFor="terminos-upload"
+          className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-32 text-gray-500 cursor-pointer hover:bg-gray-50"
         >
-          Ver historial
-        </button>
-        <button
-          onClick={handleGuardar}
-          className="bg-amber-500 text-white rounded-md px-4 py-2 w-1/2 hover:bg-amber-600 text-sm font-medium"
-          type="button"
-        >
-          Guardar cambios
-        </button>
-      </div>
+          <Upload className="h-6 w-6 mb-2" />
+          <p className="text-sm">Arrastra el PDF aquí o haz clic para seleccionar</p>
+          <p className="text-xs text-gray-400">Solo PDF (máx. 10MB)</p>
+          <input
+            id="terminos-upload"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </label>
+      )}
+
+      {/* Fila con el archivo (cuando hay PDF) */}
+      {terminosPDF && (
+        <div className="flex justify-between items-center border border-gray-200 rounded-md px-4 py-2 text-sm bg-white">
+          <div className="flex items-center gap-3">
+            <FileText className="h-4 w-4 text-gray-600" />
+            <div>
+              <p className="font-medium text-gray-900">{terminosPDF.name}</p>
+              <p className="text-xs text-gray-500">PDF · {(terminosPDF.size / 1024).toFixed(0)} KB</p>
+            </div>
+          </div>
+          <button
+            onClick={handleEliminar}
+            className="text-gray-400 hover:text-red-500 transition"
+            aria-label={`Eliminar ${terminosPDF.name}`}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
