@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
 import ArtistaService, { type Artista } from "@/services/ArtistaService";
 import NotificationService from "@/services/NotificationService";
+import ModalCrearArtista from "./ModalCrearArtista";
 
 export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
 
@@ -51,6 +52,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   const [provincias, setProvincias] = useState<LocationOption[]>([]);
   const [distritos, setDistritos] = useState<LocationOption[]>([]);
   const [artistas, setArtistas] = useState<Artista[]>([]);
+  const [openCrearArtista, setOpenCrearArtista] = useState(false);
 
   // Reset del formulario al abrir
   useEffect(() => {
@@ -108,6 +110,13 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
     const value = e.target.value;
     const parsed = value ? Number(value) : NaN;
     setForm((prev) => ({ ...prev, artistaId: !isNaN(parsed) && parsed > 0 ? parsed : null }));
+  };
+
+  const handleArtistaCreado = async (nuevoId: number) => {
+    // Refrescar lista y seleccionar
+    const lista = await ArtistaService.getArtistas();
+    setArtistas(lista);
+    setForm((prev) => ({ ...prev, artistaId: nuevoId }));
   };
 
   const handleGuardar = () => {
@@ -195,8 +204,11 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 
           {/* Artista */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Artista <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+              <span>Artista <span className="text-red-500">*</span></span>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">
+                + Nuevo
+              </button>
             </label>
             <select
               name="artistaId"
@@ -365,6 +377,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           </button>
         </div>
       </div>
+      <ModalCrearArtista open={openCrearArtista} onClose={() => setOpenCrearArtista(false)} onCreated={handleArtistaCreado} />
     </div>
   );
 };

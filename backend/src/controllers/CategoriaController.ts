@@ -30,6 +30,17 @@ export class CategoriaController {
       HandleResponseError(res, error);
     }
   };
+
+  // Nuevo: crear categoría
+  crear = async (req: Request, res: Response) => {
+    try {
+      const { nombre } = req.body;
+      const creada = await this.categoriaService.crearCategoria({ nombre });
+      res.status(StatusCodes.CREATED).json({ success: true, data: creada });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 }
 
 export const categoriaController = CategoriaController.getInstance();

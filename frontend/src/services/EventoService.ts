@@ -314,6 +314,8 @@ export interface ActualizarEventoPayload {
   estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION | CANCELADO
   imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
   terminosUso?: BackendDocumentoDto | null;
+  // NUEVO: imagen del lugar/estadio según modelo backend (imagenLugar)
+  imagenLugar?: string | null;
 }
 
 export function mapEstadoUIToBackend(estado: string): string {

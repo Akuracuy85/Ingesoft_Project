@@ -1,5 +1,6 @@
 // src/services/ArtistaService.ts
 import { ArtistaRepository } from "../repositories/ArtistaRepository";
+import { CategoriaRepository } from "../repositories/CategoriaRepository";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 
@@ -25,9 +26,39 @@ export class ArtistaService {
 
   async listarArtistasParaDropdown(): Promise<ArtistaDropdown[]> {
     try {
-      return await this.artistaRepository.listarNombres();
+      return await this.artistaRepository.listarNombres() as any; // mantiene compatibilidad
     } catch (error) {
       throw new CustomError("Error al obtener los artistas", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // Nuevo: crear artista con validaciones básicas
+  async crearArtista(data: { nombre: string; categoriaId: number; prioridad: number; }): Promise<any> {
+    const { nombre, categoriaId, prioridad } = data;
+    if (!nombre || !nombre.trim()) {
+      throw new CustomError("El nombre es obligatorio", StatusCodes.BAD_REQUEST);
+    }
+    if (!Number.isInteger(prioridad) || prioridad < 0) {
+      throw new CustomError("La prioridad debe ser un entero >= 0", StatusCodes.BAD_REQUEST);
+    }
+    if (!Number.isInteger(categoriaId) || categoriaId <= 0) {
+      throw new CustomError("La categoría es obligatoria", StatusCodes.BAD_REQUEST);
+    }
+    try {
+      const categoriaRepo = CategoriaRepository.getInstance();
+      const categoria = await categoriaRepo.buscarPorId(categoriaId);
+      if (!categoria) {
+        throw new CustomError("La categoría no existe", StatusCodes.BAD_REQUEST);
+      }
+      const nuevo = await this.artistaRepository.crear({
+        nombre: nombre.trim(),
+        prioridad,
+        categoria,
+      });
+      return nuevo;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al crear artista", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 }
