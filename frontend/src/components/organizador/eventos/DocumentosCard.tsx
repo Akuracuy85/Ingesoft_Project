@@ -7,9 +7,9 @@ import { getDocumentosRespaldo, updateDocumentosRespaldo } from "@/services/Even
 interface DocumentoDtoPayload {
   id?: number;
   nombreArchivo: string;
-  tipo: string; // lógico
+  tipo: string;
   tamano: number;
-  url?: string;
+  url?: string; // mantenemos opcional para documentos nuevos sin URL
   contenidoBase64?: string;
 }
 
@@ -63,7 +63,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
         fr.onerror = () => reject(new Error("No se pudo leer el archivo"));
         fr.readAsDataURL(file);
       });
-      list.push({ nombreArchivo: file.name, tipo: 'DocumentoRespaldo', tamano: file.size, contenidoBase64: base64 });
+      list.push({ nombreArchivo: file.name, tipo: file.type, tamano: file.size, contenidoBase64: base64 });
     }
     return list;
   };
@@ -79,7 +79,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
       const existentes: DocumentoDtoPayload[] = documentos.map((d) => ({
         id: d.id,
         nombreArchivo: d.nombreArchivo,
-        tipo: 'DocumentoRespaldo',
+        tipo: d.tipo,
         tamano: d.tamano,
         url: d.url,
       }));
@@ -105,7 +105,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
       const payloadDocs: DocumentoDtoPayload[] = restantes.map((d) => ({
         id: d.id,
         nombreArchivo: d.nombreArchivo,
-        tipo: 'DocumentoRespaldo',
+        tipo: d.tipo,
         tamano: d.tamano,
         url: d.url,
       }));
@@ -164,7 +164,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
               <FileText className="h-4 w-4 text-gray-600" />
               <div>
                 <p className="font-medium text-gray-900">{doc.nombreArchivo}</p>
-                <p className="text-xs text-gray-500">{(doc.tamano/1024).toFixed(0)} KB · DocumentoRespaldo</p>
+                <p className="text-xs text-gray-500">{doc.tipo.includes('/') ? doc.tipo.split('/').pop()?.toUpperCase() : (doc.nombreArchivo.includes('.') ? doc.nombreArchivo.split('.').pop()?.toUpperCase() : doc.tipo)}</p>
               </div>
             </div>
 
@@ -176,14 +176,6 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
               >
                 {doc.estado}
               </span>
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 text-xs hover:underline"
-              >
-                Descargar
-              </a>
               <button
                 onClick={() => handleEliminar(doc.id)}
                 className="text-gray-400 hover:text-red-500 transition"

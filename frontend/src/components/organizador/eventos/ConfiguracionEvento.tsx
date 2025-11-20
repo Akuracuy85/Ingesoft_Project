@@ -22,7 +22,7 @@ export default function ConfiguracionEvento({ evento }: { evento: EventoSeleccio
       <div className="col-span-2">
         <ZonasYTarifasCard eventoId={evento.eventoId} eventoEstadoUI={evento.estado} eventoNombre={evento.nombre} />
       </div>
-      <TerminosCard eventoId={evento.eventoId} />
+      <TerminosCard />
       <DocumentosCard eventoId={evento.eventoId} />
     </div>
   );
