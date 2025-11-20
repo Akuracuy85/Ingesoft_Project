@@ -787,14 +787,12 @@ export class EventoService {
       const s3 = S3Service.getInstance();
       await s3.eliminarPorUrl(url);
     } catch (error) {
-      // Se ignora cualquier error para no afectar la operación principal.
       console.warn("No se pudo eliminar el archivo en S3:", error);
     }
   }
 
   private async sincronizarZonas(evento: Evento, zonasDto: ZonaDto[]) {
     const actuales = evento.zonas ?? [];
-    // Igual que con documentos, se indexan las zonas existentes para mantener consistencia y recalcular el aforo.
     const zonasPorId = new Map<number, Zona>(
       actuales.filter((zona) => zona.id).map((zona) => [zona.id as number, zona])
     );
@@ -848,7 +846,6 @@ export class EventoService {
     }
 
     evento.zonas = resultado;
-    // Se recalcula el aforo con las zonas vigentes, evitando datos obsoletos.
     evento.aforoTotal = resultado.reduce(
       (total, zona) => total + (zona.capacidad ?? 0),
       0
@@ -860,9 +857,7 @@ export class EventoService {
     propiedad: "tarifaNormal" | "tarifaPreventa",
     tarifaDto?: TarifaDto | null
   ) {
-    if (tarifaDto === undefined) {
-      return;
-    }
+    if (tarifaDto === undefined) return;
 
     if (tarifaDto === null) {
       zona[propiedad] = null;
@@ -902,9 +897,7 @@ export class EventoService {
     const tarifaExistente = zona[propiedad] as Tarifa | null | undefined;
     const tarifa = tarifaExistente ?? new Tarifa();
 
-    if (tarifaDto.id) {
-      tarifa.id = tarifaDto.id;
-    }
+    if (tarifaDto.id) tarifa.id = tarifaDto.id;
 
     tarifa.nombre = tarifaDto.nombre.trim();
     tarifa.precio = tarifaDto.precio;
