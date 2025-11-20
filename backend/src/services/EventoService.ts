@@ -36,8 +36,8 @@ import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { ColaService } from "./ColaService";
-import { bufferToBase64 } from "@/utils/ImageUtils";
-import { tienePropiedad } from "@/utils/ObjectUtils";
+import { bufferToBase64 } from "../utils/ImageUtils";
+import { tienePropiedad } from "../utils/ObjectUtils";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
