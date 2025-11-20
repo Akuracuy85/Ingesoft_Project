@@ -19,6 +19,4 @@ export class Documento {
     onDelete: "CASCADE",
   })
   evento?: Evento;
-  @Column({ nullable: true })
-  contentType?: string;
 }
