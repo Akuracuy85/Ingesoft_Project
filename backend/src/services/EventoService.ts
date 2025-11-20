@@ -15,6 +15,13 @@ import { Organizador } from "../models/Organizador";
 import { Usuario } from "../models/Usuario";
 import { randomBytes } from "crypto";
 import { ActualizarEventoDto } from "../dto/evento/ActualizarEventoDto";
+import { ActualizarDatosBasicosDto } from "../dto/evento/ActualizarDatosBasicosDto";
+import { ActualizarPortadaDto } from "../dto/evento/ActualizarPortadaDto";
+import { ActualizarImagenLugarDto } from "../dto/evento/ActualizarImagenLugarDto";
+import { ActualizarDocumentosDto } from "../dto/evento/ActualizarDocumentosDto";
+import { ActualizarTerminosDto } from "../dto/evento/ActualizarTerminosDto";
+import { ActualizarZonasDto } from "../dto/evento/ActualizarZonasDto";
+import { ActualizarEstadoDto } from "../dto/evento/ActualizarEstadoDto";
 import { Documento } from "../models/Documento";
 import { DocumentoDto } from "../dto/evento/DocumentoDto";
 import { ZonaDto } from "../dto/evento/ZonaDto";
@@ -29,6 +36,8 @@ import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { ColaService } from "./ColaService";
+import { bufferToBase64 } from "@/utils/ImageUtils";
+import { tienePropiedad } from "@/utils/ObjectUtils";
 
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
@@ -115,6 +124,8 @@ export class EventoService {
           (documento) => this.mapearDocumentoDto(documento)
         ),
         zonas: (evento.zonas || []).map((zona) => this.mapearZonaDto(zona)),
+        fechaFinPreventa: evento.fechaFinPreventa ? evento.fechaFinPreventa.toISOString() : null,
+        fechaInicioPreventa: evento.fechaInicioPreventa ? evento.fechaInicioPreventa.toISOString() : null,
       }));
     } catch (error) {
       throw new CustomError(
@@ -177,6 +188,32 @@ export class EventoService {
     const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    // Validar fechaFinPreventa si viene
+    let fechaFinPreventa: Date | null = null;
+    let fechaInicioPreventa: Date | null = null;
+    if (data.fechaInicioPreventa) {
+      const fi = new Date(data.fechaInicioPreventa + 'T00:00:00');
+      if (Number.isNaN(fi.getTime())) {
+        throw new CustomError("La fechaInicioPreventa no es válida", StatusCodes.BAD_REQUEST);
+      }
+      if (fi.getTime() > fechaEvento.getTime()) {
+        throw new CustomError("La fecha inicio de preventa no puede ser mayor a la fecha del evento", StatusCodes.BAD_REQUEST);
+      }
+      fechaInicioPreventa = fi;
+    }
+    if (data.fechaFinPreventa) {
+      const ff = new Date(data.fechaFinPreventa + 'T00:00:00');
+      if (Number.isNaN(ff.getTime())) {
+        throw new CustomError("La fechaFinPreventa no es válida", StatusCodes.BAD_REQUEST);
+      }
+      if (ff.getTime() > fechaEvento.getTime()) {
+        throw new CustomError("La fecha fin de preventa no puede ser mayor a la fecha del evento", StatusCodes.BAD_REQUEST);
+      }
+      if (fechaInicioPreventa && ff.getTime() < fechaInicioPreventa.getTime()) {
+        throw new CustomError("La fecha fin de preventa no puede ser menor que la fecha inicio de preventa", StatusCodes.BAD_REQUEST);
+      }
+      fechaFinPreventa = ff;
+    }
     const imagenBanner = this.convertirImagen(data.imagenPortada);
 
     try {
@@ -190,6 +227,8 @@ export class EventoService {
         distrito: data.distrito.trim(),
         estado,
         fechaPublicacion: new Date(),
+        fechaFinPreventa, // NUEVO
+        fechaInicioPreventa, // NUEVO
         aforoTotal: 0,
         entradasVendidas: 0,
         codigoPrivado: this.generarCodigoPrivado(),
@@ -232,19 +271,192 @@ export class EventoService {
     data: ActualizarEventoDto,
     organizadorId: number
   ): Promise<Evento> {
-    this.validarDatosObligatorios(data);
-    await this.obtenerOrganizador(organizadorId);
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    return this.aplicarActualizacion(evento, data);
+  }
 
-    // Recuperamos el evento completo para asegurar propiedad y poder sincronizar relaciones hijas.
+  async actualizarDatosBasicos(
+    eventoId: number,
+    data: ActualizarDatosBasicosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    return this.actualizarEvento(eventoId, data, organizadorId);
+  }
+
+  async actualizarPortada(
+    eventoId: number,
+    data: ActualizarPortadaDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "imagenPortada")) {
+      throw new CustomError(
+        "Debes enviar la imagen de portada o null para eliminarla",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { imagenPortada: data.imagenPortada ?? null },
+      organizadorId
+    );
+  }
+
+  async actualizarImagenLugar(
+    eventoId: number,
+    data: ActualizarImagenLugarDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "imagenLugar")) {
+      throw new CustomError(
+        "Debes enviar la imagen del lugar o null para eliminarla",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { imagenLugar: data.imagenLugar ?? null },
+      organizadorId
+    );
+  }
+
+  async actualizarDocumentosRespaldo(
+    eventoId: number,
+    data: ActualizarDocumentosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "documentosRespaldo")) {
+      throw new CustomError(
+        "Debes enviar la lista completa de documentos de respaldo",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { documentosRespaldo: data.documentosRespaldo },
+      organizadorId
+    );
+  }
+
+  async actualizarTerminosEvento(
+    eventoId: number,
+    data: ActualizarTerminosDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "terminosUso")) {
+      throw new CustomError(
+        "Debes enviar los términos de uso (o null para eliminarlos)",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { terminosUso: data.terminosUso },
+      organizadorId
+    );
+  }
+
+  async actualizarZonas(
+    eventoId: number,
+    data: ActualizarZonasDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "zonas")) {
+      throw new CustomError(
+        "Debes enviar el arreglo de zonas a actualizar",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { zonas: data.zonas },
+      organizadorId
+    );
+  }
+
+  async actualizarEstadoOrganizador(
+    eventoId: number,
+    data: ActualizarEstadoDto,
+    organizadorId: number
+  ): Promise<Evento> {
+    if (!tienePropiedad(data, "estado")) {
+      throw new CustomError(
+        "Debes indicar el nuevo estado del evento",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    return this.actualizarEventoParcial(
+      eventoId,
+      { estado: data.estado },
+      organizadorId
+    );
+  }
+
+  private async actualizarEventoParcial(
+    eventoId: number,
+    parcial: Partial<ActualizarEventoDto>,
+    organizadorId: number
+  ): Promise<Evento> {
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    const dto = this.completarCamposObligatorios(evento, parcial);
+    return this.aplicarActualizacion(evento, dto);
+  }
+
+  private async obtenerEventoPropietario(
+    eventoId: number,
+    organizadorId: number
+  ): Promise<Evento> {
+    await this.obtenerOrganizador(organizadorId);
     const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
 
     if (!evento || evento.organizador.id !== organizadorId) {
       throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
     }
 
+    return evento;
+  }
+
+  private async aplicarActualizacion(
+    evento: Evento,
+    data: ActualizarEventoDto
+  ): Promise<Evento> {
+    this.validarDatosObligatorios(data);
+
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    // Obtener artista (faltaba y causaba ReferenceError)
     const artista = await this.obtenerArtistaValido(data.artistaId);
+    // Validar y asignar fechaInicioPreventa/fechaFinPreventa
+    if (data.fechaInicioPreventa !== undefined) {
+      if (!data.fechaInicioPreventa) {
+        evento.fechaInicioPreventa = null;
+      } else {
+        const fi = new Date(data.fechaInicioPreventa + 'T00:00:00');
+        if (Number.isNaN(fi.getTime())) {
+          throw new CustomError("La fecha inicio de preventa no es válida", StatusCodes.BAD_REQUEST);
+        }
+        if (fi.getTime() > fechaEvento.getTime()) {
+          throw new CustomError("La fecha inicio de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
+        }
+        evento.fechaInicioPreventa = fi;
+      }
+    }
+    if (data.fechaFinPreventa !== undefined) {
+      if (!data.fechaFinPreventa) {
+        evento.fechaFinPreventa = null;
+      } else {
+        const ff = new Date(data.fechaFinPreventa + 'T00:00:00');
+        if (Number.isNaN(ff.getTime())) {
+          throw new CustomError("La fecha fin de preventa no es válida", StatusCodes.BAD_REQUEST);
+        }
+        if (ff.getTime() > fechaEvento.getTime()) {
+          throw new CustomError("La fecha fin de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
+        }
+        if (evento.fechaInicioPreventa && ff.getTime() < evento.fechaInicioPreventa.getTime()) {
+          throw new CustomError("La fecha fin de preventa no puede ser menor que la fecha inicio de preventa", StatusCodes.BAD_REQUEST);
+        }
+        evento.fechaFinPreventa = ff;
+      }
+    }
 
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
@@ -263,7 +475,6 @@ export class EventoService {
         : null;
     }
 
-    // NUEVO: permitir actualizar la imagen del lugar/estadio
     if (data.imagenLugar !== undefined) {
       evento.imagenLugar = data.imagenLugar
         ? this.convertirImagen(data.imagenLugar)
@@ -291,6 +502,57 @@ export class EventoService {
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private completarCamposObligatorios(
+    evento: Evento,
+    parcial: Partial<ActualizarEventoDto>
+  ): ActualizarEventoDto {
+    const artistaIdActual = evento.artista?.id;
+    if (!artistaIdActual) {
+      throw new CustomError(
+        "El evento no tiene un artista asignado",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const { fecha, hora } = this.obtenerFechaYHoraDesdeEvento(evento);
+
+    return {
+      nombre: parcial.nombre ?? evento.nombre,
+      descripcion: parcial.descripcion ?? evento.descripcion,
+      fecha: parcial.fecha ?? fecha,
+      hora: parcial.hora ?? hora,
+      artistaId: parcial.artistaId ?? artistaIdActual,
+      lugar: parcial.lugar ?? evento.lugar,
+      departamento: parcial.departamento ?? evento.departamento,
+      provincia: parcial.provincia ?? evento.provincia,
+      distrito: parcial.distrito ?? evento.distrito,
+      estado: parcial.estado ?? evento.estado,
+      imagenPortada: parcial.imagenPortada,
+      imagenLugar: parcial.imagenLugar,
+      terminosUso: parcial.terminosUso,
+      documentosRespaldo: parcial.documentosRespaldo,
+      zonas: parcial.zonas,
+    };
+  }
+
+  private obtenerFechaYHoraDesdeEvento(evento: Evento): {
+    fecha: string;
+    hora: string;
+  } {
+    const fechaEvento = evento.fechaEvento;
+    if (!fechaEvento) {
+      throw new CustomError(
+        "El evento no tiene una fecha registrada",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+    const iso = fechaEvento.toISOString();
+    return {
+      fecha: iso.slice(0, 10),
+      hora: iso.slice(11, 16),
+    };
   }
 
   private async obtenerOrganizador(organizadorId: number): Promise<Organizador> {

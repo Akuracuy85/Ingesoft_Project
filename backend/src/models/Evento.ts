@@ -44,6 +44,12 @@ export class Evento {
   @Column({ type: "datetime" })
   fechaPublicacion: Date;
 
+  // NUEVO: fecha inicio y fin de preventa global (nullable para eventos antiguos)
+  @Column({ type: "datetime", nullable: true })
+  fechaInicioPreventa?: Date | null;
+  @Column({ type: "datetime", nullable: true })
+  fechaFinPreventa?: Date | null;
+
   @Column({ type: "int" })
   aforoTotal: number;
 
