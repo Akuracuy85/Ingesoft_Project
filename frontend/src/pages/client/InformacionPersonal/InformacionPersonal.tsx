@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
+import NotificationService from "@/services/NotificationService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import {
   AlertDialog,
@@ -77,27 +78,27 @@ export default function InformacionPersonal() {
 
   const validarAntesDeGuardar = () => {
     if (!soloLetras(userInfo.fullName)) {
-      alert("El nombre solo debe contener letras.");
+       NotificationService.warning("El nombre solo debe contener letras.");
       return false;
     }
     if (!soloLetras(userInfo.lastName)) {
-      alert("El apellido paterno solo debe contener letras.");
+       NotificationService.warning("El apellido paterno solo debe contener letras.");
       return false;
     }
     if (!soloLetras(userInfo.motherLastName)) {
-      alert("El apellido materno solo debe contener letras.");
+      NotificationService.warning("El apellido materno solo debe contener letras.");
       return false;
     }
     if (!emailValido(userInfo.email)) {
-      alert("Correo electrónico inválido.");
+      NotificationService.warning("Correo electrónico inválido.");
       return false;
     }
     if (userInfo.dni.length !== 8) {
-      alert("El DNI debe tener 8 dígitos.");
+      NotificationService.warning("El DNI debe tener 8 dígitos.");
       return false;
     }
     if (userInfo.phone.length !== 9) {
-      alert("El número de teléfono debe tener 9 dígitos.");
+      NotificationService.warning("El número de teléfono debe tener 9 dígitos.");
       return false;
     }
 
