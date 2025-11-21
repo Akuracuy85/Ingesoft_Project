@@ -23,6 +23,18 @@ export class CategoriaRepository {
       order: { nombre: "ASC" } // Ordenar alfabéticamente
     });
   }
+
+  // Nuevo: buscar por id
+  async buscarPorId(id: number): Promise<Categoria | null> {
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return await this.repository.findOne({ where: { id } });
+  }
+
+  // Crear categoría
+  async crear(data: Partial<Categoria>): Promise<Categoria> {
+    const entidad = this.repository.create(data);
+    return await this.repository.save(entidad);
+  }
 }
 
 export const categoriaRepository = CategoriaRepository.getInstance();

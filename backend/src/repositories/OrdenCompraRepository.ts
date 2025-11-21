@@ -2,7 +2,7 @@ import { AppDataSource } from "../database/data-source";
 import { DetalleOrden } from "../models/DetalleOrden";
 import { OrdenCompra } from "../models/OrdenCompra";
 import { Zona } from "../models/Zona";
-import { Repository } from "typeorm";
+import { Repository, Between } from "typeorm";
 import { Usuario } from "../models/Usuario";
 import { EstadoOrden } from "../enums/EstadoOrden";
 
@@ -67,6 +67,59 @@ export class OrdenCompraRepository {
       where: { id },
       relations: ["cliente", "evento", "detalles", "detalles.zona"]
     });
+  }
+
+  /**
+   * Lista órdenes (compras) aplicando filtros opcionales.
+   * Soporta filtros por cliente, evento, estado y rango de fechas (createdAt).
+   */
+  async listarCompras(filtros: {
+    clienteId?: number;
+    eventoId?: number;
+    estado?: EstadoOrden;
+    fechaInicio?: Date;
+    fechaFin?: Date;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<OrdenCompra[]> {
+    const qb = this.repository.createQueryBuilder('orden')
+      .leftJoinAndSelect('orden.cliente', 'cliente')
+      .leftJoinAndSelect('orden.evento', 'evento')
+      .leftJoinAndSelect('orden.detalles', 'detalles')
+      .leftJoinAndSelect('detalles.zona', 'zona')
+      .orderBy('orden.createdAt', 'DESC');
+
+    if (filtros.clienteId) {
+      qb.andWhere('cliente.id = :clienteId', { clienteId: filtros.clienteId });
+    }
+
+    if (filtros.eventoId) {
+      qb.andWhere('evento.id = :eventoId', { eventoId: filtros.eventoId });
+    }
+
+    if (filtros.estado) {
+      qb.andWhere('orden.estado = :estado', { estado: filtros.estado });
+    }
+
+    if (filtros.fechaInicio && filtros.fechaFin) {
+      qb.andWhere('orden.createdAt BETWEEN :inicio AND :fin', {
+        inicio: filtros.fechaInicio,
+        fin: filtros.fechaFin,
+      });
+    } else if (filtros.fechaInicio) {
+      qb.andWhere('orden.createdAt >= :inicio', { inicio: filtros.fechaInicio });
+    } else if (filtros.fechaFin) {
+      qb.andWhere('orden.createdAt <= :fin', { fin: filtros.fechaFin });
+    }
+
+    if (typeof filtros.limit === 'number') {
+      qb.limit(filtros.limit);
+    }
+    if (typeof filtros.offset === 'number') {
+      qb.offset(filtros.offset);
+    }
+
+    return await qb.getMany();
   }
   /**
    * Actualiza el estado de una orden a 'COMPLETADA' y suma los puntos

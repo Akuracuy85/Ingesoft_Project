@@ -26,6 +26,20 @@ export class CategoriaService {
       throw new CustomError("Error al obtener las categorías", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
+
+  // Nuevo: crear categoría
+  async crearCategoria(data: { nombre: string }): Promise<Categoria> {
+    const nombre = (data?.nombre || "").trim();
+    if (!nombre) {
+      throw new CustomError("El nombre es obligatorio", StatusCodes.BAD_REQUEST);
+    }
+    try {
+      return await this.categoriaRepository.crear({ nombre });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError("Error al crear la categoría", StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
 }
 
 export const categoriaService = CategoriaService.getInstance();

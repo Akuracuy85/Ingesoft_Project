@@ -32,7 +32,7 @@ export const Login = () => {
           navigate("/organizador/eventos");
         }
         else if (res.rol === "ADMINISTRADOR") {
-          navigate("/admin/usuarios");
+          navigate("/admin/eventos");
         }
         else {
           navigate("/eventos");

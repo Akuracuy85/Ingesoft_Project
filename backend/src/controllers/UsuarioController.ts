@@ -22,8 +22,8 @@ export class UsuarioController {
     try {
       const usuario = await this.usuarioService.buscarPorId(Number(req.params.id));
       res.status(StatusCodes.OK).json({
-        success : true,
-        usuario : usuario
+        success: true,
+        usuario: usuario
       });
     } catch (error) {
       HandleResponseError(res, error);
@@ -34,8 +34,8 @@ export class UsuarioController {
     try {
       const usuarios = await this.usuarioService.buscarPorRol(req.params.rol as any);
       res.status(StatusCodes.OK).json({
-        success : true,
-        usuarios : usuarios
+        success: true,
+        usuarios: usuarios
       });
     } catch (error) {
       HandleResponseError(res, error);
@@ -46,7 +46,7 @@ export class UsuarioController {
     try {
       await this.usuarioService.crearUsuario(req.body);
       res.status(StatusCodes.CREATED).json({
-        success : true,
+        success: true,
       });
     } catch (error) {
       HandleResponseError(res, error);
@@ -57,7 +57,7 @@ export class UsuarioController {
     try {
       await this.usuarioService.editarUsuario(Number(req.params.id), req.body);
       res.status(StatusCodes.OK).json({
-        success : true,
+        success: true,
       });
     } catch (error) {
       HandleResponseError(res, error);
@@ -65,52 +65,117 @@ export class UsuarioController {
   }
 
   borrar = async (req: Request, res: Response) => {
+    const idUsuarioObjetivo = Number(req.params.id);
+
+    // 1. Validación del ID
+    if (!Number.isInteger(idUsuarioObjetivo) || idUsuarioObjetivo <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del usuario no es válido",
+      });
+    }
+
+    // 2. Validación del Autor (Administrador)
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
     try {
-      await this.usuarioService.desactivarUsuario(Number(req.params.id));
-      res.status(StatusCodes.OK).json({ 
-        success : true,
-        message: "Usuario eliminado correctamente"
+      // 3. Llamada al Servicio (pasando ID y Autor)
+      await this.usuarioService.desactivarUsuario(idUsuarioObjetivo, autor);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Usuario eliminado correctamente",
       });
     } catch (error) {
       HandleResponseError(res, error);
     }
-  }
+  };
 
   activar = async (req: Request, res: Response) => {
+    const idUsuarioObjetivo = Number(req.params.id);
+
+    // 1. Validar ID
+    if (!Number.isInteger(idUsuarioObjetivo) || idUsuarioObjetivo <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del usuario no es válido",
+      });
+    }
+
+    // 2. Validar Autor
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
     try {
-      await this.usuarioService.activarUsuario(Number(req.params.id));
+      // 3. Llamada al servicio
+      await this.usuarioService.activarUsuario(idUsuarioObjetivo, autor);
+
       res.status(StatusCodes.OK).json({
-        success : true
+        success: true,
+        message: "Usuario activado correctamente",
       });
     } catch (error) {
       HandleResponseError(res, error);
     }
-  }
+  };
 
   desactivar = async (req: Request, res: Response) => {
+    const idUsuarioObjetivo = Number(req.params.id);
+
+    // 1. Validar ID
+    if (!Number.isInteger(idUsuarioObjetivo) || idUsuarioObjetivo <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del usuario no es válido",
+      });
+    }
+
+    // 2. Validar Autor
+    const autor = req.author;
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
     try {
-      await this.usuarioService.desactivarUsuario(Number(req.params.id));
+      // 3. Llamada al servicio
+      await this.usuarioService.desactivarUsuario(idUsuarioObjetivo, autor);
+
       res.status(StatusCodes.OK).json({
-        success : true
+        success: true,
+        message: "Usuario desactivado correctamente",
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  obtenerTodos = async (req: Request, res: Response) => {
+    try {
+      const usuarios = await this.usuarioService.getAllUser();
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        usuarios: usuarios,
+        message: "Lista de usuarios obtenida correctamente."
       });
     } catch (error) {
       HandleResponseError(res, error);
     }
   }
-
-  obtenerTodos = async (req: Request, res: Response) => {
-    try {
-      const usuarios = await this.usuarioService.getAllUser();
-      
-      res.status(StatusCodes.OK).json({
-        success: true,
-        usuarios: usuarios,
-        message: "Lista de usuarios obtenida correctamente."
-      });
-    } catch (error) {
-      HandleResponseError(res, error);
-    }
-  }
 
 }
 

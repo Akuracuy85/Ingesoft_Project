@@ -5,6 +5,7 @@ import { OrdenCompraService } from "../services/OrdenCompraService";
 import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
 import { CrearOrdenDto } from "../dto/orden/crear-orden.dto";
+import { EstadoOrden } from "../enums/EstadoOrden";
 import { plainToClass } from "class-transformer"; 
 import { validate } from "class-validator";
 import { CustomError } from "../types/CustomError";
@@ -120,6 +121,44 @@ export class OrdenCompraController {
         success: true,
         data: {
           cantidad: count // Devuelve el número total
+        }
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  /**
+   * Listar compras (admin) con filtros opcionales: clienteId, eventoId, estado, fechaInicio, fechaFin, limit, offset
+   */
+  listarComprasAdmin = async (req: Request, res: Response) => {
+    try {
+      // Parse query params
+      const clienteId = req.query.clienteId ? Number(req.query.clienteId) : undefined;
+      const eventoId = req.query.eventoId ? Number(req.query.eventoId) : undefined;
+      const estado = req.query.estado && typeof req.query.estado === 'string' ? req.query.estado as keyof typeof EstadoOrden : undefined;
+      const fechaInicio = req.query.fechaInicio ? String(req.query.fechaInicio) : undefined;
+      const fechaFin = req.query.fechaFin ? String(req.query.fechaFin) : undefined;
+      const limit = req.query.limit ? Number(req.query.limit) : undefined;
+      const offset = req.query.offset ? Number(req.query.offset) : undefined;
+
+      const filtros: any = {};
+      if (clienteId && Number.isInteger(clienteId) && clienteId > 0) filtros.clienteId = clienteId;
+      if (eventoId && Number.isInteger(eventoId) && eventoId > 0) filtros.eventoId = eventoId;
+      if (estado && EstadoOrden[estado]) filtros.estado = EstadoOrden[estado as keyof typeof EstadoOrden];
+      if (fechaInicio) filtros.fechaInicio = fechaInicio;
+      if (fechaFin) filtros.fechaFin = fechaFin;
+      if (limit !== undefined && !Number.isNaN(limit)) filtros.limit = limit;
+      if (offset !== undefined && !Number.isNaN(offset)) filtros.offset = offset;
+
+      const compras = await this.ordenCompraService.listarCompras(filtros);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: compras,
+        meta: {
+          limit: filtros.limit ?? null,
+          offset: filtros.offset ?? null
         }
       });
     } catch (error) {
