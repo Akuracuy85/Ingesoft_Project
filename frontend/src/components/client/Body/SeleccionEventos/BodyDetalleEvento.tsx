@@ -16,8 +16,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imageBanner: string | null;   // ← YA EXISTENTE
-  imageLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
+  imageBanner: string | null;   
+  imageLugar: string | null;   
   date: string;
   departamento: string;
   provincia: string;
@@ -155,29 +155,29 @@ export const BodyDetalleEvento: React.FC = () => {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
 
           <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
+            <h1 className="text-6xl md:text-8xl font-extrabold leading-tight drop-shadow-lg">
               {evento.nombre}
             </h1>
 
-            <h2 className="text-2xl md:text-4xl font-bold leading-tight drop-shadow-lg">
+            <h2 className="text-4xl md:text-6xl font-bold leading-tight drop-shadow-lg">
               {evento.artist?.nombre?.trim() || "Artista invitado"}
             </h2>
 
-            <p className="mt-6 text-lg md:text-xl text-gray-200">
-              <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
+            <p className="mt-6 text-lg md:text-3xl text-gray-200">
+              📅 <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
 
               {evento.lugar && (
                 <>
-                  {evento.lugar}
+                  📍 {evento.lugar}
                   <br />
                 </>
               )}
 
-              {`${evento.distrito}, ${evento.provincia}`}
+              📍 {`${evento.distrito}, ${evento.provincia}`}
               <br />
 
-              {horaEvento}
+              🕐 {horaEvento}
             </p>
           </div>
         </div>
@@ -192,37 +192,36 @@ export const BodyDetalleEvento: React.FC = () => {
             <img
               src={/*evento.imageLugar ||*/ mapaAsientos}
               alt="Lugar del Evento"
-              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg"
+              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg 
+                        transition-transform duration-300 hover:scale-105"
             />
           </div>
 
           {/* Tabla de tarifas */}
-          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md overflow-x-auto mt-16 ml-[-70px]">
+          <div className="w-full lg:w-[75%] bg-white rounded-lg shadow-md overflow-x-auto mt-40 ml-[-20px]">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ZONA
                   </th>
 
                   {tiposTarifas.map((tipo) => (
                     <th
                       key={tipo}
-                      className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider"
                     >
                       <div className="font-semibold">{tipo.toUpperCase()}</div>
 
                       {tipo === "Preventa" && rangoPreventa && (
-                        <div className="text-[11px] text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoPreventa.fechaInicio)} →{" "}
-                          {formatDMY(rangoPreventa.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
+                          ({formatDMY(rangoPreventa.fechaInicio)} → {formatDMY(rangoPreventa.fechaFin)})
                         </div>
                       )}
 
                       {tipo === "Normal" && rangoNormal && (
-                        <div className="text-[11px] text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoNormal.fechaInicio)} →{" "}
-                          {formatDMY(rangoNormal.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
+                          ({formatDMY(rangoNormal.fechaInicio)} → {formatDMY(rangoNormal.fechaFin)})
                         </div>
                       )}
                     </th>
@@ -233,18 +232,21 @@ export const BodyDetalleEvento: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {zonas.length > 0 ? (
                   zonas.map((zona) => (
-                    <tr key={zona.id}>
-                      <td className="px-10 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
+                    <tr
+                      key={zona.id}
+                      className="hover:bg-orange-100 transition-colors duration-200"
+                    >
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl font-medium text-gray-900 text-center">
                         {zona.nombre}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
                         {zona.tarifaPreventa
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
                         {zona.tarifaNormal
                           ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
                           : "—"}
@@ -255,7 +257,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   <tr>
                     <td
                       colSpan={1 + tiposTarifas.length}
-                      className="text-center py-6 text-gray-500 text-sm"
+                      className="text-center py-6 text-gray-500 text-lg md:text-xl"
                     >
                       No hay zonas disponibles para este evento.
                     </td>
@@ -271,13 +273,13 @@ export const BodyDetalleEvento: React.FC = () => {
       <div className="bg-white px-4 md:px-12 py-16 w-full">
         <section className="text-center py-16">
           <motion.h2
-            className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight mb-10"
+            className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-10"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: false }}
           >
-            Compra tus entradas para {evento.nombre} <br />
+            Compra tus entradas para {evento.artist?.nombre?.trim()} <br />
             en {evento.distrito}
           </motion.h2>
 
