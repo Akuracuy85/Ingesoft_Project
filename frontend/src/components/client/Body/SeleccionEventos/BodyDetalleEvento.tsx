@@ -192,7 +192,8 @@ export const BodyDetalleEvento: React.FC = () => {
             <img
               src={/*evento.imageLugar ||*/ mapaAsientos}
               alt="Lugar del Evento"
-              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg"
+              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg 
+                        transition-transform duration-300 hover:scale-105"
             />
           </div>
 
@@ -231,7 +232,10 @@ export const BodyDetalleEvento: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {zonas.length > 0 ? (
                   zonas.map((zona) => (
-                    <tr key={zona.id}>
+                    <tr
+                      key={zona.id}
+                      className="hover:bg-orange-100 transition-colors duration-200"
+                    >
                       <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl font-medium text-gray-900 text-center">
                         {zona.nombre}
                       </td>
