@@ -197,32 +197,30 @@ export const BodyDetalleEvento: React.FC = () => {
           </div>
 
           {/* Tabla de tarifas */}
-          <div className="w-full lg:w-1/2 bg-white rounded-lg shadow-md overflow-x-auto mt-16 ml-[-70px]">
+          <div className="w-full lg:w-[75%] bg-white rounded-lg shadow-md overflow-x-auto mt-40 ml-[-20px]">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ZONA
                   </th>
 
                   {tiposTarifas.map((tipo) => (
                     <th
                       key={tipo}
-                      className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider"
                     >
                       <div className="font-semibold">{tipo.toUpperCase()}</div>
 
                       {tipo === "Preventa" && rangoPreventa && (
-                        <div className="text-[11px] text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoPreventa.fechaInicio)} →{" "}
-                          {formatDMY(rangoPreventa.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
+                          ({formatDMY(rangoPreventa.fechaInicio)} → {formatDMY(rangoPreventa.fechaFin)})
                         </div>
                       )}
 
                       {tipo === "Normal" && rangoNormal && (
-                        <div className="text-[11px] text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoNormal.fechaInicio)} →{" "}
-                          {formatDMY(rangoNormal.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
+                          ({formatDMY(rangoNormal.fechaInicio)} → {formatDMY(rangoNormal.fechaFin)})
                         </div>
                       )}
                     </th>
@@ -234,17 +232,17 @@ export const BodyDetalleEvento: React.FC = () => {
                 {zonas.length > 0 ? (
                   zonas.map((zona) => (
                     <tr key={zona.id}>
-                      <td className="px-10 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl font-medium text-gray-900 text-center">
                         {zona.nombre}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
                         {zona.tarifaPreventa
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
                         {zona.tarifaNormal
                           ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
                           : "—"}
@@ -255,7 +253,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   <tr>
                     <td
                       colSpan={1 + tiposTarifas.length}
-                      className="text-center py-6 text-gray-500 text-sm"
+                      className="text-center py-6 text-gray-500 text-lg md:text-xl"
                     >
                       No hay zonas disponibles para este evento.
                     </td>
