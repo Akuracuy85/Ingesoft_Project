@@ -4,6 +4,7 @@
 import { Router } from "express";
 import { ordenCompraController } from "../controllers/OrdenCompraController";
 import { sessionMiddleware } from "../middlewares/SessionMiddleware";
+import { autorMiddleware } from "../middlewares/AutorMiddleware";
 
 const router = Router();
 
@@ -44,6 +45,14 @@ router.patch(
   "/:id/confirmar-preventa",
   sessionMiddleware.VerificarToken,
   ordenCompraController.confirmarPreventa
+);
+
+// ADMIN: Listar compras con filtros (protegido)
+router.get(
+  "/admin/listar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  ordenCompraController.listarComprasAdmin
 );
 
 export default router;
