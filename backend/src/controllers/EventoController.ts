@@ -296,7 +296,6 @@ export class EventoController {
       });
     }
 
-    // 3. Llamada al Servicio (¡Esto es lo que faltaba!)
     try {
       const evento = await this.eventoService.aprobarEvento(
         eventoId,
