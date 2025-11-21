@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import type { User, UserFormData } from "../../models/User";
-
+import NotificationService from "@/services/NotificationService";
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -78,32 +78,32 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     e.preventDefault();
 
     if (!soloLetras(formData.nombre)) {
-      alert("El nombre solo debe contener letras.");
+      NotificationService.warning("El nombre solo debe contener letras.");
       return;
     }
 
     if (!soloLetras(formData.apellidoPaterno)) {
-      alert("El apellido paterno solo debe contener letras.");
+      NotificationService.warning("El apellido paterno solo debe contener letras.");
       return;
     }
 
     if (!soloLetras(formData.apellidoMaterno)) {
-      alert("El apellido materno solo debe contener letras.");
+      NotificationService.warning("El apellido materno solo debe contener letras.");
       return;
     }
 
     if (!soloNumeros(formData.dni) || formData.dni.length !== 8) {
-      alert("El DNI debe tener exactamente 8 dígitos.");
+      NotificationService.warning("El DNI debe tener exactamente 8 dígitos.");
       return;
     }
 
     if (!emailValido(formData.email)) {
-      alert("Correo electrónico inválido.");
+      NotificationService.warning("Correo electrónico inválido.");
       return;
     }
 
     if (!soloNumeros(formData.celular) || formData.celular.length !== 9) {
-      alert("El número de celular debe tener 9 dígitos.");
+      NotificationService.warning("El número de celular debe tener 9 dígitos.");
       return;
     }
 
