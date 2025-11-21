@@ -8,6 +8,7 @@ import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationService from "@/services/NotificationService";
+import PerfilService from "@/services/PerfilService";
 
 interface ArtistaDetalle {
   id: number;
@@ -99,7 +100,7 @@ export const BodyDetalleEvento: React.FC = () => {
   const rangoPreventa = primeraZonaConPreventa?.tarifaPreventa || null;
   const rangoNormal = primeraZonaConNormal?.tarifaNormal || null;
 
-  const handleColaClick = (tipo: string) => {
+  const handleColaClick = async (tipo: string) => {
     console.log(evento)
     console.log(tipo);
 
@@ -110,6 +111,8 @@ export const BodyDetalleEvento: React.FC = () => {
     }
 
     let tienePuntosParaEntrada = false;
+
+    
     if(tipo === "Preventa") {
       let minPuntosRequeridos = 99999;
       zonas.forEach((z) => {
@@ -117,7 +120,9 @@ export const BodyDetalleEvento: React.FC = () => {
         minPuntosRequeridos = Math.min(minPuntosRequeridos, puntosRequeridos);
       })
 
-      if (minPuntosRequeridos <= (user?.puntos ?? 0)) {
+      const puntos = await PerfilService.getPuntos();
+
+      if (minPuntosRequeridos <= (puntos.totalPoints ?? 0)) {
         tienePuntosParaEntrada = true;
       }
 
