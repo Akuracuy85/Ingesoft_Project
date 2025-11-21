@@ -18,4 +18,6 @@ export interface ActualizarEventoDto {
   terminosUso?: DocumentoDto | null;
   documentosRespaldo?: DocumentoDto[];
   zonas?: ZonaDto[];
+  fechaFinPreventa?: string; // NUEVO: fecha fin de preventa global (YYYY-MM-DD) opcional
+  fechaInicioPreventa?: string; // NUEVO: fecha inicio preventa global (YYYY-MM-DD) opcional
 }

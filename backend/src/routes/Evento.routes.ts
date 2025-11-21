@@ -44,6 +44,48 @@ router.put(
   eventoController.actualizarEvento
 );
 
+router.put(
+  "/:id/datos-basicos",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarDatosBasicos
+);
+
+router.put(
+  "/:id/portada",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarPortada
+);
+
+router.put(
+  "/:id/imagen-lugar",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarImagenLugar
+);
+
+router.put(
+  "/:id/zonas",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarZonas
+);
+
+router.put(
+  "/:id/documentos",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarDocumentos
+);
+
+router.put(
+  "/:id/terminos",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarTerminos
+);
+
+router.patch(
+  "/:id/estado",
+  sessionMiddleware.VerificarToken,
+  eventoController.actualizarEstadoOrganizador
+);
+
 // ADMIN: aprobar un evento (ruta protegida)
 router.patch(
   "/estado/:id/aprobar",

@@ -23,4 +23,6 @@ export interface EventoDetalleDto {
   terminosUso?: DocumentoDto | null;
   documentosRespaldo: DocumentoDto[];
   zonas: ZonaDto[];
+  fechaFinPreventa?: string | null; // NUEVO campo global preventa fin
+  fechaInicioPreventa?: string | null; // NUEVO campo global preventa inicio
 }

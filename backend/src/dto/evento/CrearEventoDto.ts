@@ -12,4 +12,6 @@ export interface CrearEventoDto {
   lugar: string;
   estado: EstadoEvento;
   imagenPortada?: string; // base64 opcional
+  fechaFinPreventa?: string; // fecha fin de preventa global (YYYY-MM-DD) opcional en creación
+  fechaInicioPreventa?: string; // NUEVO inicio preventa global opcional
 }
