@@ -14,4 +14,7 @@ export const AppDataSource = new DataSource({
   migrations: [],
   subscribers: [],
   timezone: "-05:00",
+  extra: {
+    connectionLimit: 15,
+  }
 });

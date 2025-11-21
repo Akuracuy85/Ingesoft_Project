@@ -4,8 +4,8 @@ import { Rol } from "../enums/Rol";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { PasswordHasher } from "../types/PasswordHasher";
-import { AccionRepository } from "@/repositories/AccionRepository"; // 1. Importar Repository
-import { TipoAccion } from "@/enums/TipoAccion"; // 2. Importar Enum
+import { AccionRepository } from "../repositories/AccionRepository"; // 1. Importar Repository
+import { TipoAccion } from "../enums/TipoAccion"; // 2. Importar Enum
 
 export class UsuarioService {
   private static instance: UsuarioService;
