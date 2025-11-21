@@ -16,8 +16,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imageBanner: string | null;   // ← YA EXISTENTE
-  imageLugar: string | null;    // ← DEBERÍA EXISTIR EN TU MODELO
+  imageBanner: string | null;   
+  imageLugar: string | null;   
   date: string;
   departamento: string;
   provincia: string;
@@ -279,7 +279,7 @@ export const BodyDetalleEvento: React.FC = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: false }}
           >
-            Compra tus entradas para {evento.nombre} <br />
+            Compra tus entradas para {evento.artist?.nombre?.trim()} <br />
             en {evento.distrito}
           </motion.h2>
 
