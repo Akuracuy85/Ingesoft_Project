@@ -8,18 +8,15 @@ import { Evento } from "../models/Evento";
 import { EventMapper } from '../dto/Event/EventMapper'; // <--- Importar el Mapper
 import { EstadoEvento } from "../enums/EstadoEvento";
 import { EmailService } from "../services/EmailService";
-import { ColaService } from "../services/ColaService";
 
 export class EventoController {
   private static instance: EventoController;
   private eventoService: EventoService;
   private emailService: EmailService;
-    private colaService: ColaService;
 
   private constructor() {
     this.eventoService = EventoService.getInstance();
     this.emailService = EmailService.getInstance();
-      this.colaService = ColaService.getInstance();
   }
 
   public static getInstance(): EventoController {
