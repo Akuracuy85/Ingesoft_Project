@@ -3,7 +3,7 @@ import { EventListResponseDTO } from './EventListResponseDTO';
 import { EventDetailsForPurchaseDTO } from './EventDetailsForPurchaseDTO';
 import { Tarifa } from "../../models/Tarifa";
 import { TarifaDto } from "../evento/TarifaDto";
-import { bufferToBase64 } from '@/utils/ImageUtils';
+import { bufferToBase64 } from '../../utils/ImageUtils';
 
 
 interface ArtistEntity {

@@ -4,6 +4,8 @@ import { Rol } from "../enums/Rol";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { PasswordHasher } from "../types/PasswordHasher";
+import { AccionRepository } from "../repositories/AccionRepository"; // 1. Importar Repository
+import { TipoAccion } from "../enums/TipoAccion"; // 2. Importar Enum
 
 export class UsuarioService {
   private static instance: UsuarioService;
@@ -92,37 +94,62 @@ export class UsuarioService {
     }
   }
 
-  async borrarUsuario(id: number) {
+  async borrarUsuario(id: number, autor: Usuario) {
     try {
       const usuario = await this.usuarioRepository.buscarPorId(id);
       if (!usuario) throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
-      return await this.usuarioRepository.borrarUsuario(usuario);
+      await this.usuarioRepository.borrarUsuario(usuario);
+
+      // 2. Registrar acción
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Usuario ${usuario.email} eliminado permanentemente`,
+        tipo: TipoAccion.DesactivarUsuario, // Usamos el tipo disponible en tu enum
+        autor: autor,
+      });
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError("Error al eliminar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async activarUsuario(id: number) {
+  async activarUsuario(id: number, autor: Usuario) {
     try {
       const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
       if (!usuarioExistente) {
         throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
       }
       await this.usuarioRepository.actualizarUsuario(id, { activo: true });
+
+      //Registro Accion de admin
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Usuario ${usuarioExistente.email} activado`,
+        tipo: TipoAccion.ActivarUsuario,
+        autor: autor, 
+      });
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError("Error al activar usuario", StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async desactivarUsuario(id: number) {
+  async desactivarUsuario(id: number, autor: Usuario) {
     try {
       const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
       if (!usuarioExistente) {
         throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
       }
       await this.usuarioRepository.actualizarUsuario(id, { activo: false });
+      const accionRepo = AccionRepository.getInstance();
+      await accionRepo.crearAccion({
+        fechaHora: new Date(),
+        descripcion: `Usuario ${usuarioExistente.email} desactivado`,
+        tipo: TipoAccion.DesactivarUsuario,
+        autor: autor,
+      });
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError("Error al desactivar usuario", StatusCodes.INTERNAL_SERVER_ERROR);

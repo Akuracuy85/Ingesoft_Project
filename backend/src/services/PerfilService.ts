@@ -1,4 +1,4 @@
-import { Rol } from "@/enums/Rol";
+import { Rol } from "../enums/Rol";
 import { Usuario } from "../models/Usuario";
 import { PerfilRepository } from "../repositories/PerfilRepository";
 import { TarjetaRepository } from "../repositories/TarjetaRepository";
