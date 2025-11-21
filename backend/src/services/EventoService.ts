@@ -790,7 +790,7 @@ export class EventoService {
      */
   async obtenerDatosParaCompra(id: number): Promise<Evento> {
     try {
-      // 🚨 Usamos el método que garantiza las relaciones necesarias para el DTO
+      //  Usamos el método que garantiza las relaciones necesarias para el DTO
       const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
 
       if (!evento) {
@@ -831,9 +831,9 @@ export class EventoService {
 
     evento.estado = EstadoEvento.PUBLICADO;
     evento.fechaPublicacion = new Date();
-
+    let guardado: Evento;
     try {
-      const guardado = await this.eventoRepository.guardarEvento(evento);
+      guardado = await this.eventoRepository.guardarEvento(evento);
       // Registrar la acción
       const accionRepo = AccionRepository.getInstance();
       await accionRepo.crearAccion({
@@ -842,19 +842,23 @@ export class EventoService {
         tipo: TipoAccion.AprobarEvento,
         autor,
       });
-
-      try {
-        await this.colaService.crearCola(guardado.id);
-      } catch (colaErr) {
-        console.warn("No se pudo crear la cola para el evento aprobado:", colaErr);
-      }
-      return guardado;
     } catch (error) {
       throw new CustomError(
         "Error al aprobar el evento",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
+    
+    try {
+        await this.colaService.crearCola(guardado.id);
+    } catch (colaErr) {
+      throw new CustomError(
+        "No se pudo crear la cola para el evento aprobado:",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    return guardado;
   }
 
   /**
