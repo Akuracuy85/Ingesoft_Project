@@ -164,20 +164,20 @@ export const BodyDetalleEvento: React.FC = () => {
             </h2>
 
             <p className="mt-6 text-lg md:text-3xl text-gray-200">
-              <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
+              📅 <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
 
               {evento.lugar && (
                 <>
-                  {evento.lugar}
+                  📍 {evento.lugar}
                   <br />
                 </>
               )}
 
-              {`${evento.distrito}, ${evento.provincia}`}
+              📍 {`${evento.distrito}, ${evento.provincia}`}
               <br />
 
-              {horaEvento}
+              🕐 {horaEvento}
             </p>
           </div>
         </div>

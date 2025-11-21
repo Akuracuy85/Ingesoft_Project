@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import type { User, UserFormData } from "../../models/User";
-
+import NotificationService from "@/services/NotificationService";
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: UserFormData) => void;
   user: User | null;
 }
+
+const soloLetras = (valor: string) =>
+  /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor);
+
+const emailValido = (valor: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+
+const soloNumeros = (valor: string) =>
+  /^[0-9]*$/.test(valor);
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) => {
   const initialFormData: UserFormData = {
@@ -46,6 +55,19 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    if (["nombre", "apellidoPaterno", "apellidoMaterno"].includes(name)) {
+      if (!soloLetras(value) && value !== "") return;
+    }
+
+    if (name === "dni") {
+      if (!soloNumeros(value) || value.length > 8) return;
+    }
+
+    if (name === "celular") {
+      if (!soloNumeros(value) || value.length > 9) return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === "activo" ? value === "true" : value,
@@ -54,8 +76,40 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    if (!soloLetras(formData.nombre)) {
+      NotificationService.warning("El nombre solo debe contener letras.");
+      return;
+    }
+
+    if (!soloLetras(formData.apellidoPaterno)) {
+      NotificationService.warning("El apellido paterno solo debe contener letras.");
+      return;
+    }
+
+    if (!soloLetras(formData.apellidoMaterno)) {
+      NotificationService.warning("El apellido materno solo debe contener letras.");
+      return;
+    }
+
+    if (!soloNumeros(formData.dni) || formData.dni.length !== 8) {
+      NotificationService.warning("El DNI debe tener exactamente 8 dígitos.");
+      return;
+    }
+
+    if (!emailValido(formData.email)) {
+      NotificationService.warning("Correo electrónico inválido.");
+      return;
+    }
+
+    if (!soloNumeros(formData.celular) || formData.celular.length !== 9) {
+      NotificationService.warning("El número de celular debe tener 9 dígitos.");
+      return;
+    }
+
     onSave(formData);
   };
+
 
   if (!isOpen) return null;
 
@@ -76,30 +130,34 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               className="border rounded-md px-3 py-2 col-span-2"
               required
             />
+
             <input
               name="apellidoPaterno"
               value={formData.apellidoPaterno}
               onChange={handleChange}
               placeholder="Apellido paterno"
-              className="border rounded-md px-3 py-2 col-span-1"
+              className="border rounded-md px-3 py-2"
               required
             />
+
             <input
               name="apellidoMaterno"
               value={formData.apellidoMaterno}
               onChange={handleChange}
               placeholder="Apellido materno"
-              className="border rounded-md px-3 py-2 col-span-1"
+              className="border rounded-md px-3 py-2"
               required
             />
+
             <input
               name="dni"
               value={formData.dni}
               onChange={handleChange}
-              placeholder="DNI"
+              placeholder="DNI (8 dígitos)"
               className="border rounded-md px-3 py-2 col-span-2"
               required
             />
+
             <input
               name="email"
               type="email"
@@ -109,13 +167,15 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               className="border rounded-md px-3 py-2 col-span-2"
               required
             />
+
             <input
               name="celular"
               value={formData.celular}
               onChange={handleChange}
-              placeholder="Celular"
+              placeholder="Celular (9 dígitos)"
               className="border rounded-md px-3 py-2 col-span-2"
             />
+
             <select
               name="rol"
               value={formData.rol}
@@ -126,6 +186,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               <option value="Organizador">Organizador</option>
               <option value="Administrador">Administrador</option>
             </select>
+
             <select
               name="activo"
               value={formData.activo ? "true" : "false"}
@@ -145,6 +206,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
             >
               Cancelar
             </button>
+
             <button
               type="submit"
               className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
