@@ -7,6 +7,6 @@ export interface ZonePurchaseDetail {
     nombre: string; 
     capacidad: number;
     cantidadComprada: number;
-    tarifaNormal: Tarifa; 
-    tarifaPreventa: Tarifa; 
+    tarifaNormal: Tarifa;
+    tarifaPreventa: Tarifa;
 }
