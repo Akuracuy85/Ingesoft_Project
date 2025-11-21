@@ -155,15 +155,15 @@ export const BodyDetalleEvento: React.FC = () => {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
 
           <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
+            <h1 className="text-6xl md:text-8xl font-extrabold leading-tight drop-shadow-lg">
               {evento.nombre}
             </h1>
 
-            <h2 className="text-2xl md:text-4xl font-bold leading-tight drop-shadow-lg">
+            <h2 className="text-4xl md:text-6xl font-bold leading-tight drop-shadow-lg">
               {evento.artist?.nombre?.trim() || "Artista invitado"}
             </h2>
 
-            <p className="mt-6 text-lg md:text-xl text-gray-200">
+            <p className="mt-6 text-lg md:text-3xl text-gray-200">
               <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
 
@@ -271,7 +271,7 @@ export const BodyDetalleEvento: React.FC = () => {
       <div className="bg-white px-4 md:px-12 py-16 w-full">
         <section className="text-center py-16">
           <motion.h2
-            className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight mb-10"
+            className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-10"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
