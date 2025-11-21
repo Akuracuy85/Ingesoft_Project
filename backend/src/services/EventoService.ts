@@ -1212,6 +1212,54 @@ export class EventoService {
       );
     }
   }
+  async listarEventosAdmin(filtros: {
+    fechaInicio?: string;
+    fechaFin?: string;
+    nombreEvento?: string;
+    nombreOrganizador?: string;
+  }): Promise<Evento[]> {
+    try {
+      let fechaInicioDate: Date | undefined;
+      let fechaFinDate: Date | undefined;
+
+      // 1. Validación y Conversión de Fechas
+      if (filtros.fechaInicio) {
+        fechaInicioDate = new Date(filtros.fechaInicio);
+        if (isNaN(fechaInicioDate.getTime())) {
+          throw new CustomError("La fecha de inicio no es válida.", StatusCodes.BAD_REQUEST);
+        }
+      }
+
+      if (filtros.fechaFin) {
+        fechaFinDate = new Date(filtros.fechaFin);
+        if (isNaN(fechaFinDate.getTime())) {
+          throw new CustomError("La fecha de fin no es válida.", StatusCodes.BAD_REQUEST);
+        }
+      }
+
+      if (fechaInicioDate && fechaFinDate && fechaInicioDate > fechaFinDate) {
+        throw new CustomError("La fecha de inicio no puede ser mayor a la fecha de fin.", StatusCodes.BAD_REQUEST);
+      }
+
+      // 2. Llamada al Repositorio
+      const eventos = await this.eventoRepository.listarEventosAdmin({
+        fechaInicio: fechaInicioDate,
+        fechaFin: fechaFinDate,
+        nombreEvento: filtros.nombreEvento,
+        nombreOrganizador: filtros.nombreOrganizador,
+      });
+
+      return eventos;
+
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener el listado de eventos para administración",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
 }
 
 export const eventoService = EventoService.getInstance();

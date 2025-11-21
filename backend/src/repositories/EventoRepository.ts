@@ -7,6 +7,12 @@ import { Acción } from "../models/Acción";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { Brackets, Repository } from "typeorm";
+  export interface IFiltrosEventoAdmin {
+  fechaInicio?: Date;
+  fechaFin?: Date;
+  nombreEvento?: string;      // Búsqueda por nombre del evento
+  nombreOrganizador?: string; // Búsqueda por nombre/apellido del organizador
+}
 
 export type EventoBasico = Pick<Evento, "nombre" | "fechaEvento" | "estado">;
 
@@ -357,6 +363,69 @@ export class EventoRepository {
     });
   }
 
+  async listarEventosAdmin(filtros: IFiltrosEventoAdmin): Promise<Evento[]> {
+    const qb = this.repository.createQueryBuilder("evento");
+
+    // 1. SELECCIÓN EXPLÍCITA DE CAMPOS DEL EVENTO (Sin imágenes)
+    qb.select([
+      "evento.id",
+      "evento.nombre",
+      "evento.fechaEvento",
+      "evento.fechaPublicacion",
+      "evento.aforoTotal",
+      "evento.entradasVendidas",
+      "evento.gananciaTotal",
+    ]);
+
+    // 2. Uniones con otras tablas (Relaciones)
+    
+    // Organizador: Traemos datos básicos para mostrar en la tabla
+    qb.leftJoin("evento.organizador", "organizador")
+      .addSelect([
+        "organizador.id",
+        "organizador.nombre",
+        "organizador.apellidoPaterno",
+        "organizador.email",
+        "organizador.rol"
+      ]);
+
+
+    // 3. APLICACIÓN DE FILTROS
+
+    // Filtro por Rango de Fechas
+    if (filtros.fechaInicio && filtros.fechaFin) {
+      qb.andWhere("evento.fechaEvento BETWEEN :inicio AND :fin", {
+        inicio: filtros.fechaInicio,
+        fin: filtros.fechaFin,
+      });
+    } else if (filtros.fechaInicio) {
+      qb.andWhere("evento.fechaEvento >= :inicio", { inicio: filtros.fechaInicio });
+    } else if (filtros.fechaFin) {
+      qb.andWhere("evento.fechaEvento <= :fin", { fin: filtros.fechaFin });
+    }
+
+    // Filtro por Nombre del Evento (parcial, sin distinguir mayúsculas)
+    if (filtros.nombreEvento) {
+      qb.andWhere("evento.nombre LIKE :nombreEvento", { 
+        nombreEvento: `%${filtros.nombreEvento}%` 
+      });
+    }
+
+    // Filtro por Organizador (Nombre, Apellido o Email)
+    if (filtros.nombreOrganizador) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          subQb.where("organizador.nombre LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
+               .orWhere("organizador.apellidoPaterno LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
+        })
+      );
+    }
+
+    // Ordenar por fecha descendente (lo más nuevo primero)
+    qb.orderBy("evento.fechaEvento", "DESC");
+
+    return await qb.getMany();
+  }
 }
 
 export const eventoRepository = EventoRepository.getInstance();
