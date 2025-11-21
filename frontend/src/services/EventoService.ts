@@ -78,6 +78,8 @@ interface BackendEventoEntity {
   zonas?: unknown[]; // se podría tipar más adelante
   cola?: unknown;
   documentosRespaldo?: BackendDocumentoDto[];
+  fechaInicioPreventa?: string | Date;
+  fechaFinPreventa?: string | Date;
 }
 interface BackendDocumentoDto { id?: number; nombreArchivo: string; tipo: string; tamano: number; url: string; }
 interface EventoDetalladoOrganizador {
