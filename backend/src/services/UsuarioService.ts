@@ -78,14 +78,24 @@ export class UsuarioService {
     }
   }
 
-  async editarUsuario(id: number, data: Partial<Usuario>) {
+  async editarUsuario(id: number, data: Partial<Usuario>, autor: Usuario) {
     try {
       const usuarioExistente = await this.usuarioRepository.buscarPorId(id);
       if (!usuarioExistente) {
         throw new CustomError("Usuario no encontrado", StatusCodes.NOT_FOUND);
       }
 
-      if (data.password) delete data.password;
+      // LÓGICA DE PROTECCIÓN DE CONTRASEÑA
+      if (data.password === "" || data.password === null || data.password === undefined) {
+        // Si viene vacío o nulo, lo eliminamos del objeto 'data'.
+        // Al usar QueryBuilder en el repo, este campo será ignorado y la BD conservará el valor anterior.
+        delete data.password;
+      } else {
+        // Si viene una contraseña real, hay que hashearla antes de guardar
+        data.password = await PasswordHasher.hash(data.password);
+      }
+
+      // Ahora 'data' solo tiene los campos que realmente queremos cambiar
       const usuarioActualizado = await this.usuarioRepository.actualizarUsuario(id, data);
       return usuarioActualizado;
     } catch (error) {
