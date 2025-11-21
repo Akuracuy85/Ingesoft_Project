@@ -1,5 +1,5 @@
 import React from "react"
-import { Edit, Trash2, Power } from "lucide-react"
+import { Edit, Power } from "lucide-react"
 import type { User } from "../../models/User"
 
 interface UserTableProps {
@@ -9,7 +9,7 @@ interface UserTableProps {
   onDelete: (userId: number) => void
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus, onDelete }) => {
+const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -79,14 +79,6 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus, on
                         }
                       >
                         <Power className="h-4 w-4" />
-                      </button>
-
-                      <button
-                        onClick={() => onDelete(user.id)}
-                        className="text-red-500 hover:text-red-700 transition"
-                        title="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
