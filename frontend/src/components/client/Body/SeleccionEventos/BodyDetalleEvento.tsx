@@ -8,6 +8,7 @@ import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationService from "@/services/NotificationService";
+import PerfilService from "@/services/PerfilService";
 
 interface ArtistaDetalle {
   id: number;
@@ -16,8 +17,8 @@ interface ArtistaDetalle {
 
 interface EventoDetalle {
   nombre: string;
-  imageBanner: string | null;   
-  imageLugar: string | null;   
+  imageBanner: string | null;
+  imageLugar: string | null;
   date: string;
   departamento: string;
   provincia: string;
@@ -28,7 +29,7 @@ interface EventoDetalle {
   lugar: string | null;
 }
 
-// ===== Helpers =====
+// Helpers
 const formatDMY = (iso: string) => {
   if (!iso) return "";
   const d = new Date(iso);
@@ -51,7 +52,7 @@ const isZonaAgotada = (zona: Zone) =>
 export const BodyDetalleEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   const { evento, isLoading, error } = useEventoDetalle(eventoId) as {
@@ -60,11 +61,9 @@ export const BodyDetalleEvento: React.FC = () => {
     error: string | null;
   };
 
-
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
+      <div className="min-h-screen flex items-center justify-center text-lg dark:text-gray-200">
         Cargando evento...
       </div>
     );
@@ -79,7 +78,6 @@ export const BodyDetalleEvento: React.FC = () => {
   }
 
   const zonas: Zone[] = evento.zonas || [];
-
   const tiposTarifas = Array.from(
     new Set(
       zonas.flatMap((z) => {
@@ -92,17 +90,13 @@ export const BodyDetalleEvento: React.FC = () => {
   );
 
   const horaEvento = evento.time || "";
-
   const primeraZonaConPreventa = zonas.find((z) => z.tarifaPreventa);
   const primeraZonaConNormal = zonas.find((z) => z.tarifaNormal);
 
   const rangoPreventa = primeraZonaConPreventa?.tarifaPreventa || null;
   const rangoNormal = primeraZonaConNormal?.tarifaNormal || null;
 
-  const handleColaClick = (tipo: string) => {
-    console.log(evento)
-    console.log(tipo);
-
+  const handleColaClick = async (tipo: string) => {
     if (!isLoggedIn) {
       NotificationService.warning("Debes iniciar sesión para comprar entradas");
       navigate("/login");
@@ -110,22 +104,33 @@ export const BodyDetalleEvento: React.FC = () => {
     }
 
     let tienePuntosParaEntrada = false;
-    if(tipo === "Preventa") {
-      let minPuntosRequeridos = 99999;
-      zonas.forEach((z) => {
-        const puntosRequeridos = Math.ceil((z.tarifaPreventa?.precio ?? 99999) * 0.3) ;
-        minPuntosRequeridos = Math.min(minPuntosRequeridos, puntosRequeridos);
-      })
 
-      if (minPuntosRequeridos <= (user?.puntos ?? 0)) {
+    if (tipo === "Preventa") {
+      let minPuntosRequeridos = 99999;
+
+      zonas.forEach((z) => {
+        const puntosRequeridos = Math.ceil(
+          (z.tarifaPreventa?.precio ?? 99999) * 0.3
+        );
+        minPuntosRequeridos = Math.min(minPuntosRequeridos, puntosRequeridos);
+      });
+
+      const puntos = await PerfilService.getPuntos();
+
+      if (minPuntosRequeridos <= (puntos.totalPoints ?? 0)) {
         tienePuntosParaEntrada = true;
       }
 
       if (!tienePuntosParaEntrada) {
-        NotificationService.warning("Necesitas al menos " + minPuntosRequeridos + " puntos para comprar una entrada en Preventa");
+        NotificationService.warning(
+          "Necesitas al menos " +
+            minPuntosRequeridos +
+            " puntos para comprar una entrada en Preventa"
+        );
         return;
       }
     }
+
     navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });
   };
 
@@ -139,89 +144,103 @@ export const BodyDetalleEvento: React.FC = () => {
     });
   };
 
-  console.log("Evento detalle:", evento);
-
   return (
-    <main className="w-full overflow-x-hidden">
-      {/* === SECCIÓN 1: DETALLES DEL EVENTO === */}
+    <main className="w-full overflow-x-hidden dark:text-gray-100">
+
+      {/* ===== BANNER ===== */}
       <section
-        className="relative bg-cover bg-center bg-no-repeat text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 py-32 min-h-[85vh]"
+        className="
+          relative bg-cover bg-center bg-no-repeat 
+          text-white px-4 sm:px-8 md:px-16 lg:px-20 xl:px-32 
+          py-32 min-h-[85vh]
+        "
         style={{
-          backgroundImage: `url(${evento.imageBanner || "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"})`,
+          backgroundImage: `url(${
+            evento.imageBanner ||
+            "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"
+          })`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70 dark:to-black/80" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-
           <div className="text-center md:text-left">
-            <h1 className="text-6xl md:text-8xl font-extrabold leading-tight drop-shadow-lg">
-              {evento.nombre}
-            </h1>
+            <h1 className="text-6xl md:text-8xl font-extrabold">{evento.nombre}</h1>
 
-            <h2 className="text-4xl md:text-6xl font-bold leading-tight drop-shadow-lg">
+            <h2 className="text-4xl md:text-6xl font-bold">
               {evento.artist?.nombre?.trim() || "Artista invitado"}
             </h2>
 
-            <p className="mt-6 text-lg md:text-3xl text-gray-200">
+            <p className="mt-6 text-lg md:text-3xl text-gray-200 dark:text-gray-300">
               📅 <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
-
               {evento.lugar && (
                 <>
                   📍 {evento.lugar}
                   <br />
                 </>
               )}
-
-              📍 {`${evento.distrito}, ${evento.provincia}`}
+              📍 {evento.distrito}, {evento.provincia}
               <br />
-
               🕐 {horaEvento}
             </p>
           </div>
         </div>
       </section>
 
-      {/* === SECCIÓN 2: MAPA/LUGAR Y TARIFAS === */}
-      <div className="bg-[#fff4ea] px-4 md:px-12 pt-10 pb-16 w-full">
+      {/* Separador entre Sección 1 y Sección 2 */}
+      <div className="h-8 bg-gradient-to-b from-black/30 to-[#fff4ea] dark:from-black/30 dark:to-[#0F1424]" />
+
+
+      {/* ===== MAPA + TABLA DE TARIFAS ===== */}
+      <div className="bg-[#fff4ea] dark:bg-[#0F1424] px-4 md:px-12 pt-10 pb-16 transition-colors">
+
         <section className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-24">
 
-          {/* Imagen del lugar */}
+          {/* Imagen del mapa */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={/*evento.imageLugar ||*/ mapaAsientos}
+              src={mapaAsientos}
               alt="Lugar del Evento"
-              className="w-full max-w-md object-contain mix-blend-multiply rounded-lg 
-                        transition-transform duration-300 hover:scale-105"
+              className="
+                w-full max-w-md rounded-lg object-contain 
+                mix-blend-multiply dark:mix-blend-normal
+                transition-transform duration-300 hover:scale-105
+              "
             />
           </div>
 
-          {/* Tabla de tarifas */}
-          <div className="w-full lg:w-[75%] bg-white rounded-lg shadow-md overflow-x-auto mt-40 ml-[-20px]">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          {/* Tabla */}
+          <div className="
+            w-full lg:w-[75%] bg-white dark:bg-gray-800 
+            rounded-lg shadow-md overflow-x-auto 
+            mt-40 ml-[-20px]
+          ">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-600 dark:text-gray-200 uppercase">
                     ZONA
                   </th>
 
                   {tiposTarifas.map((tipo) => (
                     <th
                       key={tipo}
-                      className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-600 dark:text-gray-200 uppercase"
                     >
-                      <div className="font-semibold">{tipo.toUpperCase()}</div>
+                      <div>{tipo.toUpperCase()}</div>
 
                       {tipo === "Preventa" && rangoPreventa && (
-                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoPreventa.fechaInicio)} → {formatDMY(rangoPreventa.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 dark:text-gray-300 mt-1">
+                          ({formatDMY(rangoPreventa.fechaInicio)} →
+                          {formatDMY(rangoPreventa.fechaFin)})
                         </div>
                       )}
 
                       {tipo === "Normal" && rangoNormal && (
-                        <div className="text-xs md:text-sm text-gray-400 font-normal mt-1">
-                          ({formatDMY(rangoNormal.fechaInicio)} → {formatDMY(rangoNormal.fechaFin)})
+                        <div className="text-xs md:text-sm text-gray-400 dark:text-gray-300 mt-1">
+                          ({formatDMY(rangoNormal.fechaInicio)} →
+                          {formatDMY(rangoNormal.fechaFin)})
                         </div>
                       )}
                     </th>
@@ -229,24 +248,24 @@ export const BodyDetalleEvento: React.FC = () => {
                 </tr>
               </thead>
 
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {zonas.length > 0 ? (
                   zonas.map((zona) => (
                     <tr
                       key={zona.id}
-                      className="hover:bg-orange-100 transition-colors duration-200"
+                      className="hover:bg-orange-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl font-medium text-gray-900 text-center">
+                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-900 dark:text-gray-100 font-medium">
                         {zona.nombre}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
+                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-700 dark:text-gray-200">
                         {zona.tarifaPreventa
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>
 
-                      <td className="px-10 py-4 whitespace-nowrap text-lg md:text-xl text-gray-700 text-center">
+                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-700 dark:text-gray-200">
                         {zona.tarifaNormal
                           ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
                           : "—"}
@@ -257,7 +276,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   <tr>
                     <td
                       colSpan={1 + tiposTarifas.length}
-                      className="text-center py-6 text-gray-500 text-lg md:text-xl"
+                      className="text-center py-6 text-gray-500 dark:text-gray-300 text-lg md:text-xl"
                     >
                       No hay zonas disponibles para este evento.
                     </td>
@@ -266,18 +285,23 @@ export const BodyDetalleEvento: React.FC = () => {
               </tbody>
             </table>
           </div>
+
         </section>
       </div>
+      
+      {/* Separador entre Sección 2 y Sección 3 */}
+      <div className="h-8 bg-gradient-to-b from-[#fff4ea] to-white dark:from-[#151526] dark:to-gray-900" />
+                  
 
-      {/* === SECCIÓN 3: COMPRA === */}
-      <div className="bg-white px-4 md:px-12 py-16 w-full">
+      {/* ===== SECCIÓN COMPRA ===== */}
+      <div className="bg-white dark:bg-gray-900 px-4 md:px-12 py-16">
+
         <section className="text-center py-16">
           <motion.h2
-            className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-10"
+            className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight mb-10"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: false }}
           >
             Compra tus entradas para {evento.artist?.nombre?.trim()} <br />
             en {evento.distrito}
@@ -287,8 +311,7 @@ export const BodyDetalleEvento: React.FC = () => {
             className="flex flex-wrap justify-center gap-6"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: false }}
+            transition={{ duration: 0.8 }}
           >
             {tiposTarifas.map((tipo) => {
               const tarifa =
@@ -303,19 +326,25 @@ export const BodyDetalleEvento: React.FC = () => {
                   key={tipo}
                   onClick={() => !disabled && handleColaClick(tipo)}
                   disabled={disabled}
-                  className={`px-10 py-4 rounded-md text-lg font-semibold transition-colors cursor-pointer ${
-                    disabled
-                      ? "bg-gray-400 cursor-not-allowed text-white"
-                      : "bg-black text-white hover:bg-gray-800"
-                  }`}
+                  className={`
+                    px-10 py-4 rounded-md text-lg font-semibold
+                    transition-colors cursor-pointer
+                    ${
+                      disabled
+                        ? "bg-gray-400 cursor-not-allowed text-white"
+                        : "bg-black dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"
+                    }
+                  `}
                 >
                   Comprar {tipo}
                 </button>
               );
             })}
           </motion.div>
+
         </section>
       </div>
+
     </main>
   );
 };

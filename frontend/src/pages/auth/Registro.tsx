@@ -2,10 +2,14 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import logoUnite from "@/assets/Logo_Unite.svg";
 import concierto from "@/assets/login/concierto-1.png";
 import UsuarioService from "@/services/UsuarioService";
 import NotificationService from "@/services/NotificationService";
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
+import { Moon, Sun } from "lucide-react";
+import { useDarkMode } from "@/hooks/useModoOscuro";
+import React from "react";
 
 export const Registro = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +28,9 @@ export const Registro = () => {
   const [apellidoMaterno, setApellidoMaterno] = useState("");
   const [email, setEmail] = useState("");
 
+  const { isDark, toggleDarkMode } = useDarkMode();
+
+  
   const navigate = useNavigate();
   const contraseñasCoinciden =
     password === confirmPassword || confirmPassword === "";
@@ -101,7 +108,11 @@ export const Registro = () => {
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-gray-100">
+    <div className="relative flex flex-col min-h-screen 
+                bg-gray-100 dark:bg-gray-900 
+                text-gray-900 dark:text-gray-100 
+                transition-colors">
+
       {/* Fondo */}
       <img
         src={concierto}
@@ -110,19 +121,51 @@ export const Registro = () => {
       />
 
       {/* Header */}
-      <header className="absolute top-0 left-0 w-full bg-white border-b border-gray-300 py-2 px-8 flex items-center shadow-sm">
-        <img src={logoUnite} alt="Logo Unite" className="h-12 w-auto" />
-      </header>
+      <header className="
+        absolute top-0 left-0 w-full 
+        flex items-center justify-between 
+        px-6 py-3 
+        bg-white/80 dark:bg-gray-900/80 
+        backdrop-blur-md shadow-md
+      ">
+      {/* Logo */}
+      <img
+        src={isDark ? LogoDark : LogoLight}
+        alt="Logo Unite"
+        className="h-12 w-auto transition-opacity duration-300"
+      />
+
+      {/* Toggle Dark Mode */}
+      <button
+        onClick={toggleDarkMode}
+        className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 
+                  hover:scale-110 transition flex items-center justify-center"
+        title="Cambiar tema"
+      >
+      {isDark ? (
+        <Sun className="h-5 w-5 text-yellow-300" />
+      ) : (
+        <Moon className="h-5 w-5 text-gray-800" />
+      )}
+    </button>
+  </header>
 
       {/* Contenido */}
       <div className="relative z-10 flex flex-1 justify-center items-center p-6 mt-20">
-        <div className="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl p-10 w-[90%] max-w-5xl">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">
+        <div className="
+          bg-white/90 dark:bg-gray-800/90 
+          backdrop-blur-md 
+          shadow-xl rounded-2xl p-10 
+          w-[90%] max-w-5xl 
+          transition-colors
+        ">
+
+          <h2 className="text-3xl font-semibold text-gray-700 dark:text-gray-300 font-medium mb-2 text-center ">
             Crear cuenta
           </h2>
 
           {/* Volver al login */}
-          <p className="text-center mt-6 text-gray-600">
+          <p className="block text-gray-700 dark:text-gray-300 font-medium mb-2 text-center">
             ¿Ya tienes cuenta?{" "}
             <Link to="/login" className="text-blue-600 hover:underline">
               Ingresa aquí
@@ -130,7 +173,7 @@ export const Registro = () => {
           </p>
 
           {/* Quiere ser Organizador */}
-          <p className="text-center mt-6 text-gray-600">
+          <p className="block text-gray-700 dark:text-gray-300 font-medium mb-2 text-center">
             ¿Quieres una cuenta de organizador?{" "}
             <Link to="/organizador/registro" className="text-blue-600 hover:underline">
               Trata por aquí
@@ -139,23 +182,30 @@ export const Registro = () => {
 
           {/* Nombres */}
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Nombres</label>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">Nombres</label>
             <input
               type="text"
               placeholder="Ingresa tus nombres"
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                nombres ? "border-gray-300" : "border-red-500"
-              }`}
-            />
+              className={`
+                w-full px-4 py-3 
+                rounded-lg 
+                bg-white dark:bg-gray-700
+                text-gray-900 dark:text-gray-100 
+                border 
+                ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                focus:ring-2 focus:ring-orange-500 
+                outline-none
+              `}
+              />
 
           </div>
 
           {/* Apellidos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 Apellido Paterno
               </label>
               <input
@@ -163,14 +213,22 @@ export const Registro = () => {
                 placeholder="Ingresa tu apellido paterno"
                 value={apellidoPaterno}
                 onChange={(e) => setApellidoPaterno(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                  apellidoPaterno ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+  w-full px-4 py-3 
+  rounded-lg 
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-gray-100 
+  border 
+  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+  focus:ring-2 focus:ring-orange-500 
+  outline-none
+`}
+
               />
               {!apellidoPaterno}
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 Apellido Materno
               </label>
               <input
@@ -178,9 +236,16 @@ export const Registro = () => {
                 placeholder="Ingresa tu apellido materno"
                 value={apellidoMaterno}
                 onChange={(e) => setApellidoMaterno(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                  apellidoMaterno ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+  w-full px-4 py-3 
+  rounded-lg 
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-gray-100 
+  border 
+  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+  focus:ring-2 focus:ring-orange-500 
+  outline-none
+`}
               />
               {!apellidoMaterno}
             </div>
@@ -189,7 +254,7 @@ export const Registro = () => {
           {/* Documento y Teléfono */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 N° Documento de Identidad
               </label>
               <input
@@ -197,9 +262,16 @@ export const Registro = () => {
                 placeholder="Ingresa tu DNI"
                 value={dni}
                 onChange={handleDniChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                  esDniValido ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+  w-full px-4 py-3 
+  rounded-lg 
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-gray-100 
+  border 
+  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+  focus:ring-2 focus:ring-orange-500 
+  outline-none
+`}
               />
               {!esDniValido && dni.length > 0 && (
                 <p className="text-red-500 text-sm mt-1">
@@ -209,7 +281,7 @@ export const Registro = () => {
               {!dni}
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 Teléfono
               </label>
               <input
@@ -217,9 +289,17 @@ export const Registro = () => {
                 placeholder="Ingresa tu número de teléfono"
                 value={telefono}
                 onChange={handleTelefonoChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                  esTelefonoValido ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+  w-full px-4 py-3 
+  rounded-lg 
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-gray-100 
+  border 
+  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+  focus:ring-2 focus:ring-orange-500 
+  outline-none
+`}
+
               />
               {!esTelefonoValido && telefono.length > 0 && (
                 <p className="text-red-500 text-sm mt-1">
@@ -232,7 +312,7 @@ export const Registro = () => {
 
           {/* Correo */}
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
               Correo electrónico
             </label>
             <input
@@ -241,9 +321,16 @@ export const Registro = () => {
               value={email}
               onChange={handleEmailChange}
               required
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${
-                email && esEmailValido ? "border-gray-300" : "border-red-500"
-              }`}
+              className={`
+  w-full px-4 py-3 
+  rounded-lg 
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-gray-100 
+  border 
+  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+  focus:ring-2 focus:ring-orange-500 
+  outline-none
+`}
             />
             {!esEmailValido && email.length > 0 && (
               <p className="text-red-500 text-sm mt-1">
@@ -255,7 +342,7 @@ export const Registro = () => {
           {/* Contraseñas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="relative">
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 Contraseña
               </label>
               <input
@@ -263,9 +350,17 @@ export const Registro = () => {
                 placeholder="Ingresa tu contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none ${
-                  password ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  pr-12
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  outline-none
+                `}
               />
               <button
                 type="button"
@@ -278,7 +373,7 @@ export const Registro = () => {
             </div>
 
             <div className="relative">
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 Confirmar contraseña
               </label>
               <input
@@ -286,9 +381,17 @@ export const Registro = () => {
                 placeholder="Repite tu contraseña"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 outline-none border ${
-                  confirmPassword && contraseñasCoinciden ? "border-gray-300" : "border-red-500"
-                }`}
+                className={`
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  pr-12
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  outline-none
+                `}
               />
               <button
                 type="button"
@@ -321,16 +424,8 @@ export const Registro = () => {
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               className="mr-2"
             />
-            <span className="text-gray-700 text-sm">
-              Acepto los{" "}
-              <span className="font-semibold text-blue-600 cursor-pointer">
-                Términos y Condiciones
-              </span>{" "}
-              y la{" "}
-              <span className="font-semibold text-blue-600 cursor-pointer">
-                Política de Privacidad
-              </span>{" "}
-              de UNITE.
+            <span className="text-gray-700 text-sm dark:text-gray-300 font-medium mb-2">
+              Acepto los Términos y Condiciones y la Política de Privacidad de UNITE.
             </span>
           </div>
 
@@ -351,23 +446,43 @@ export const Registro = () => {
 
       {/* Popup de confirmación */}
       {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md w-[90%]">
-            <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+        <div className="
+          fixed inset-0 flex items-center justify-center 
+          bg-black/50 dark:bg-black/70 
+          backdrop-blur-sm 
+          z-50 transition-colors
+        ">
+          <div className="
+            bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            rounded-2xl shadow-lg p-8 
+            text-center max-w-md w-[90%]
+            transition-colors
+          ">
+            <h3 className="text-2xl font-semibold mb-4">
               Registro exitoso
             </h3>
-            <p className="text-gray-700 mb-6">
+
+            <p className="mb-6">
               Tu cuenta ha sido creada correctamente.
             </p>
+
             <button
-              onClick={() => navigate("/login")}
-              className="w-full bg-[#e58c00] hover:bg-[#cc7b00] text-white font-semibold py-3 rounded-full transition-all"
+              onClick={() => navigate('/login')}
+              className="
+                w-full 
+                bg-[#e58c00] hover:bg-[#cc7b00] 
+                text-white font-semibold 
+                py-3 rounded-full 
+                transition-all
+              "
             >
-              VOLVER AL INICIO
-            </button>
-          </div>
-        </div>
-      )}
+          VOLVER AL INICIO
+        </button>
+      </div>
+    </div>
+  )}
+
     </div>
   );
 };

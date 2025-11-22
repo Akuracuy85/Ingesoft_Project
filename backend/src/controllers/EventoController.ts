@@ -123,6 +123,38 @@ export class EventoController {
       HandleResponseError(res, error);
     }
   };
+listarEventosAdmin = async (req: Request, res: Response) => {
+    // Validación de Autor (Admin)
+    const autor = req.author;
+
+    if (!autor) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+
+    try {
+      // 1. Extraer los filtros de la URL (Query Params)
+      const { fechaInicio, fechaFin, nombreEvento, nombreOrganizador } = req.query;
+
+      // 2. Llamar al servicio con los filtros
+      const eventos = await this.eventoService.listarEventosAdmin({
+        fechaInicio: fechaInicio as string,
+        fechaFin: fechaFin as string,
+        nombreEvento: nombreEvento as string,
+        nombreOrganizador: nombreOrganizador as string,
+      });
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        count: eventos.length,
+        eventos,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 
   crearEvento = async (req: Request, res: Response) => {
     const organizadorId = req.userId;

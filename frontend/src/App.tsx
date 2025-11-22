@@ -25,7 +25,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
           <Routes>
             {/* Rutas públicas */}
             <Route path="/" element={<Navigate to="/eventos" replace />} />
