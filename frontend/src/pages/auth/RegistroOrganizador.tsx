@@ -432,19 +432,47 @@ const inputClass = (valid = true) =>
 
       {/* POPUP */}
       {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-2xl p-8 text-center max-w-md w-[90%]">
-            <h3 className="text-2xl font-semibold mb-4">Registro exitoso</h3>
-            <p className="mb-6">Tu cuenta de organizador ha sido creada correctamente.</p>
-            <button
-              onClick={() => navigate("/login")}
-              className="w-full bg-[#e58c00] hover:bg-[#cc7b00] text-white font-semibold py-3 rounded-full"
-            >
-              VOLVER AL INICIO
-            </button>
-          </div>
-        </div>
-      )}
+  <div
+    className="
+      fixed inset-0 flex items-center justify-center
+      bg-black/50 dark:bg-black/70
+      backdrop-blur-sm
+      z-50 transition-colors
+    "
+  >
+    <div
+      className="
+        bg-white dark:bg-gray-800
+        text-gray-900 dark:text-gray-100
+        rounded-2xl shadow-lg p-8
+        text-center max-w-md w-[90%]
+        transition-colors
+      "
+    >
+      <h3 className="text-2xl font-semibold mb-4">
+        Registro exitoso
+      </h3>
+
+      <p className="mb-6">
+        Tu cuenta de organizador ha sido creada correctamente.
+      </p>
+
+      <button
+        onClick={() => navigate('/login')}
+        className="
+          w-full
+          bg-[#e58c00] hover:bg-[#cc7b00]
+          text-white font-semibold
+          py-3 rounded-full
+          transition-all
+        "
+      >
+        VOLVER AL INICIO
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
