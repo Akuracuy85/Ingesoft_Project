@@ -84,11 +84,11 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           {selectedIds.length === 0 && (
             <span className="text-gray-400">Selecciona...</span>
           )}
-          {selectedNames.map((name) => (
-            <span
-              key={name}
-              className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex items-center gap-1"
-            >
+          {selectedNames.map((name) => (
+            <span
+              key={name}
+              className="bg-[#F6BA26]/20 text-[#C37723] px-2 py-1 rounded-full flex items-center gap-1"
+            >
               {name}
               <button
                 className="text-sm font-bold"
@@ -122,14 +122,14 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               key={option.id}
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
             >
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(option.id)}
-                // 🛑 RENDERIZADO: Bloquear el cambio de checkbox si está deshabilitado
-                onChange={() => !disabled && toggleOption(option.id)}
-                className="accent-indigo-600"
-                disabled={disabled} // También deshabilitar el input nativo
-              />
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(option.id)}
+                // 🛑 RENDERIZADO: Bloquear el cambio de checkbox si está deshabilitado
+                onChange={() => !disabled && toggleOption(option.id)}
+                className="accent-[#F6BA26]"
+                disabled={disabled} // También deshabilitar el input nativo
+              />
               <span>{option.nombre}</span>
             </label>
           ))}

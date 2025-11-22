@@ -41,7 +41,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
         className={`flex items-center justify-between border rounded px-3 py-2 cursor-pointer transition-colors ${
           disabled
             ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-            : "border-gray-300 bg-white hover:border-indigo-500"
+            : "border-gray-300 bg-white hover:border-[#C37723]"
         }`}
         onClick={() => !disabled && setOpen(!open)}
       >
@@ -75,7 +75,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
               <div
                 key={opt.id}
                 className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                  value === opt.id ? "bg-indigo-50 text-indigo-700" : ""
+                  value === opt.id ? "bg-[#F6BA26]/20 text-[#C37723]" : ""
                 }`}
                 onClick={() => {
                   onChange(opt.id);

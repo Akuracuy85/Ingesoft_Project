@@ -190,12 +190,12 @@ export const FilterModal = ({
                         Cancelar
                     </button>
                     {/* BOTÓN DE ACEPTAR */}
-                    <button
-                        onClick={handleApply}
-                        className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
-                    >
-                        Aceptar
-                    </button>
+            <button
+                onClick={handleApply}
+                className="px-6 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
+            >
+                Aceptar
+            </button>
                 </div>
           </div>
         </div>

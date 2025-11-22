@@ -57,7 +57,7 @@ export default class HttpClient {
     // La URL base completa será: API_BASE_URL + basePath
     this.client = axios.create({
       baseURL: API_BASE_URL + basePath,
-      timeout: 10000,
+      timeout: 50000,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
