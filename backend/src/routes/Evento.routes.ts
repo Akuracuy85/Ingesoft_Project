@@ -16,6 +16,14 @@ router.get(
   sessionMiddleware.VerificarToken,
   eventoController.obtenerDatosBasicos
 );
+// ADMIN: Listar todos los eventos REPORTES
+//http://localhost:3000/api/evento/admin/listar?nombreEvento=Rock Fusion Noche 1
+router.get(
+  "/admin/listar",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.listarEventosAdmin
+);
 
 router.get(
   "/",
