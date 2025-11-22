@@ -8,7 +8,6 @@ interface EventListProps {
 
 export const EventList: React.FC<EventListProps> = ({ events }) => {
   const ITEMS_PER_PAGE = 20;
-
   const [currentPage, setCurrentPage] = React.useState(1);
 
   const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
@@ -27,23 +26,31 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
 
   return (
     <div className="flex flex-col gap-8">
-      
-      <div className="grid gap-6 justify-center"
-        style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}>
 
-          
+      {/* GRID */}
+      <div
+        className="grid gap-6 justify-center"
+        style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}
+      >
         {paginatedEvents.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}
       </div>
 
+      {/* PAGINACIÓN */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-6 gap-2 flex-wrap">
 
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
+            className="
+              px-3 py-1 border rounded disabled:opacity-40 cursor-pointer
+              bg-white dark:bg-gray-800
+              text-black dark:text-white
+              border-gray-300 dark:border-gray-600
+              hover:bg-gray-100 dark:hover:bg-gray-700
+            "
           >
             Anterior
           </button>
@@ -52,11 +59,14 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
             <button
               key={page}
               onClick={() => handlePageChange(page)}
-              className={`px-3 py-1 border rounded cursor-pointer ${
-                currentPage === page
+              className={`
+                px-3 py-1 border rounded cursor-pointer
+                border-gray-300 dark:border-gray-600
+                ${currentPage === page
                   ? "bg-indigo-600 text-white"
-                  : "bg-white text-indigo-600 hover:bg-indigo-100"
-              }`}
+                  : "bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-gray-700"
+                }
+              `}
             >
               {page}
             </button>
@@ -65,14 +75,19 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-40 cursor-pointer"
+            className="
+              px-3 py-1 border rounded disabled:opacity-40 cursor-pointer
+              bg-white dark:bg-gray-800
+              text-black dark:text-white
+              border-gray-300 dark:border-gray-600
+              hover:bg-gray-100 dark:hover:bg-gray-700
+            "
           >
             Siguiente
           </button>
 
         </div>
       )}
-
     </div>
   );
 };

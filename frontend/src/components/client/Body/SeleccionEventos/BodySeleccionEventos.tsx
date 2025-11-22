@@ -70,11 +70,17 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
     if (events.length === 0) {
         if (hasActiveFilters) {
             return (
-                <main className="flex flex-col w-full items-center justify-start bg-white text-black">
+                <main className="flex flex-col w-full items-center justify-start 
+                    bg-white dark:bg-gray-900 
+                    text-black dark:text-white 
+                    transition-colors">
                     {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
                     
                     <div className="w-full max-w-6xl flex justify-center items-center p-6 h-96">
-                        <div className="text-center p-8 border border-indigo-200 rounded-lg bg-indigo-50">
+                        <div className="text-center p-8 rounded-lg 
+                            border border-indigo-200 dark:border-indigo-700
+                            bg-indigo-50 dark:bg-indigo-900/40
+                            transition-colors">
                             <h3 className="text-2xl font-bold text-indigo-800 mb-2">
                                 ¡No hay resultados!
                             </h3>
@@ -98,12 +104,15 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
     }
 
     return (
-        <main className="flex flex-col w-full items-center justify-start bg-white text-black">
+        <main className="flex flex-col w-full items-center justify-start 
+            bg-white dark:bg-gray-900 
+            text-black dark:text-white 
+            transition-colors">
             
             {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
 
             <section className="w-full max-w-7xl flex flex-col gap-8 p-6">
-                <h2 className="text-2xl font-semibold text-gray-800">
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 transition-colors">
                     {hasActiveFilters ? "Resultados de búsqueda" : "Próximos eventos"}
                 </h2>
                 <EventList events={events} /> 
