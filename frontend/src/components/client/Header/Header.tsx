@@ -8,6 +8,8 @@ import { User, LogOut } from "lucide-react";
 import { useFilters } from '../../../context/FilterContext';
 import { type FiltersType } from "../../../types/FiltersType";
 import { Sun, Moon } from "lucide-react";
+import LogoLight from "@/assets/Logo_Unite_Actualizado.png";
+import LogoDark from "@/assets/Logo_Unite_Actualizado_2.png";
 
 interface HeaderProps {
   showFilterButton?: boolean;
@@ -79,11 +81,12 @@ React.useEffect(() => {
             // Llamar a resetFilters ANTES de navegar a "/"
             onClick={resetFilters}
           >
-            <img
-              className="w-[175px] h-[78px] object-contain"
-              alt="Logo Unite"
-              src="https://c.animaapp.com/mgx1kaihbC7QfN/img/logo-unite-actualizado-1.svg"
-            />
+<img
+  className="w-[175px] h-[78px] object-contain transition-opacity duration-300"
+  alt="Logo Unite"
+  src={isDark ? LogoDark : LogoLight}
+/>
+
           </Link>
         </div>
 
