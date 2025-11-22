@@ -1,13 +1,15 @@
-// src/components/Header.tsx (FINAL CON RESETEO DE LOGO)
+// src/components/Header.tsx
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FilterModal } from "./FilterModal";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { User, LogOut } from "lucide-react";
 import { useFilters } from '../../../context/FilterContext';
 import { type FiltersType } from "../../../types/FiltersType";
-
+import { Sun, Moon } from "lucide-react";
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 interface HeaderProps {
   showFilterButton?: boolean;
   onApplyNewFilters?: (filters: FiltersType) => void;
@@ -34,27 +36,60 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
     }
   }, [setFilters, onApplyNewFilters]);
 
+  const [isDark, setIsDark] = useState(() => {
+  return document.documentElement.classList.contains("dark");
+});
+
+const toggleDarkMode = () => {
+  const html = document.documentElement;
+
+  if (html.classList.contains("dark")) {
+    html.classList.remove("dark");
+    setIsDark(false);
+    localStorage.setItem("theme", "light");
+  } else {
+    html.classList.add("dark");
+    setIsDark(true);
+    localStorage.setItem("theme", "dark");
+  }
+};
+
+// Mantener tema al recargar
+useEffect(() => {
+  if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+    setIsDark(true);
+  }
+}, []);
 
   return (
     <>
-      {/* 🔹 HEADER PRINCIPAL */}
-      <header className="fixed top-0 left-0 w-full h-[102px] px-6 bg-white/90 backdrop-blur-md shadow-md flex items-center justify-between z-50">
+      {/* HEADER PRINCIPAL */}
+      <header className="
+        fixed top-0 left-0 w-full h-[102px] px-6 
+        bg-white/90 dark:bg-gray-900/90 
+        backdrop-blur-md shadow-md 
+        flex items-center justify-between 
+        z-50 transition-colors
+      ">
+
         {/* LOGO */}
         <div className="flex items-center">
           <Link
             to="/"
-            // 🛑 SOLUCIÓN: Llama a resetFilters ANTES de navegar a "/"
+            // Llamar a resetFilters ANTES de navegar a "/"
             onClick={resetFilters}
           >
-            <img
-              className="w-[175px] h-[78px] object-contain"
-              alt="Logo Unite"
-              src="https://c.animaapp.com/mgx1kaihbC7QfN/img/logo-unite-actualizado-1.svg"
-            />
+<img
+  className="w-[175px] h-[78px] object-contain transition-opacity duration-300"
+  alt="Logo Unite"
+  src={isDark ? LogoDark : LogoLight}
+/>
+
           </Link>
         </div>
 
-        {/* 🔸 BOTONES DERECHA (Se mantiene sin cambios) */}
+        {/* BOTONES DERECHA */}
         <div className="flex items-center justify-end flex-1 gap-4">
 
           {showFilterButton && (
@@ -71,6 +106,20 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
             </button>
           )}
 
+          {/* Botón Dark Mode */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-110 transition flex items-center justify-center"
+            title="Cambiar tema"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5 text-yellow-300" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-800" />
+            )}
+          </button>
+
+
           {/* ... Lógica de Auth ... */}
           {isLoading ? (
             <div className="flex gap-4">
@@ -81,7 +130,10 @@ export const Header: React.FC<HeaderProps> = ({ showFilterButton = false, onAppl
             <>
               <Link
                 to="/perfil"
-                className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition"
+                className="flex items-center gap-2 
+                  text-gray-700 dark:text-gray-200 
+                  hover:text-indigo-600 dark:hover:text-indigo-400 
+                  transition"
               >
                 <User className="h-5 w-5" />
                 <span className="font-medium text-sm">
