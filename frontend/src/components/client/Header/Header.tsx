@@ -1,6 +1,6 @@
-// src/components/Header.tsx (FINAL CON RESETEO DE LOGO)
+// src/components/Header.tsx
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FilterModal } from "./FilterModal";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,9 +8,8 @@ import { User, LogOut } from "lucide-react";
 import { useFilters } from '../../../context/FilterContext';
 import { type FiltersType } from "../../../types/FiltersType";
 import { Sun, Moon } from "lucide-react";
-import LogoLight from "@/assets/Logo_Unite_Actualizado.png";
-import LogoDark from "@/assets/Logo_Unite_Actualizado_2.png";
-
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 interface HeaderProps {
   showFilterButton?: boolean;
   onApplyNewFilters?: (filters: FiltersType) => void;
@@ -56,7 +55,7 @@ const toggleDarkMode = () => {
 };
 
 // Mantener tema al recargar
-React.useEffect(() => {
+useEffect(() => {
   if (localStorage.getItem("theme") === "dark") {
     document.documentElement.classList.add("dark");
     setIsDark(true);

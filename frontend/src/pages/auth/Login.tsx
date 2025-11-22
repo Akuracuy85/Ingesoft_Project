@@ -5,11 +5,13 @@ import { motion } from "framer-motion";
 import ReCAPTCHA from "react-google-recaptcha";
 
 import concierto from "@/assets/login/concierto-1.png";
-import LogoLight from "@/assets/Logo_Unite_Actualizado.png";
-import LogoDark from "@/assets/Logo_Unite_Actualizado_2.png";
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 
 import { useAuth } from "@/hooks/useAuth";
 import NotificationService from "@/services/NotificationService";
+
+import { useDarkMode } from "@/hooks/useModoOscuro";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,32 +22,7 @@ export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // 🌙 Estado del modo oscuro
-  const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains("dark");
-  });
-
-  const toggleDarkMode = () => {
-    const html = document.documentElement;
-
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-      setIsDark(false);
-      localStorage.setItem("theme", "light");
-    } else {
-      html.classList.add("dark");
-      setIsDark(true);
-      localStorage.setItem("theme", "dark");
-    }
-  };
-
-  // Mantener el tema entre recargas
-  React.useEffect(() => {
-    if (localStorage.getItem("theme") === "dark") {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
-  }, []);
+  const { isDark, toggleDarkMode } = useDarkMode();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +47,6 @@ export const Login = () => {
       }
 
     } catch (err) {
-      console.error(err);
       NotificationService.error("Usuario o contraseña incorrectos");
     }
   };
@@ -102,7 +78,7 @@ export const Login = () => {
           transition-colors
         "
       >
-        {/* Logo dinámico */}
+        {/* Logo */}
         <img
           src={isDark ? LogoDark : LogoLight}
           alt="Logo Unite"
@@ -111,13 +87,13 @@ export const Login = () => {
 
         {/* Botón modo oscuro */}
         <button
-  onClick={toggleDarkMode}
-  className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 
-             hover:scale-110 transition flex items-center justify-center
-             mr-4"
-  title="Cambiar tema"
->
-
+          onClick={toggleDarkMode}
+          className="
+            p-2 rounded-full bg-gray-200 dark:bg-gray-700 
+            hover:scale-110 transition flex items-center justify-center
+            mr-4
+          "
+        >
           {isDark ? (
             <Sun className="h-5 w-5 text-yellow-300" />
           ) : (
@@ -145,6 +121,7 @@ export const Login = () => {
         </h1>
 
         <form onSubmit={handleSubmit}>
+
           {/* EMAIL */}
           <label className="block font-medium mb-2 text-gray-800 dark:text-gray-200">
             Correo electrónico
@@ -235,9 +212,7 @@ export const Login = () => {
           </Link>
 
           <div className="mt-2 sm:mt-0">
-            <span className="text-gray-700 dark:text-gray-300">
-              ¿No tienes cuenta?{" "}
-            </span>
+            <span className="text-gray-700 dark:text-gray-300">¿No tienes cuenta? </span>
             <Link to="/registro" className="text-blue-500 hover:underline">
               Regístrate
             </Link>

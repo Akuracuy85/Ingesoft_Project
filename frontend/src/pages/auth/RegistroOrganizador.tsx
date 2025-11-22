@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import { Eye, EyeOff, Moon, Sun } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import concierto from "@/assets/login/concierto-1.png";
 import UsuarioService from "@/services/UsuarioService";
 import NotificationService from "@/services/NotificationService";
-import LogoLight from "@/assets/Logo_Unite_Actualizado.png";
-import LogoDark from "@/assets/Logo_Unite_Actualizado_2.png";
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
+import { useDarkMode } from "@/hooks/useModoOscuro";
+
 
 export const RegistroOrganizador = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,30 +35,7 @@ export const RegistroOrganizador = () => {
 
   const navigate = useNavigate();
 
-  // === DARK MODE ===
-  const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains("dark");
-  });
-
-  const toggleDarkMode = () => {
-    const html = document.documentElement;
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-      setIsDark(false);
-      localStorage.setItem("theme", "light");
-    } else {
-      html.classList.add("dark");
-      setIsDark(true);
-      localStorage.setItem("theme", "dark");
-    }
-  };
-
-  useEffect(() => {
-    if (localStorage.getItem("theme") === "dark") {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
-  }, []);
+  const { isDark, toggleDarkMode } = useDarkMode();
 
   // === VALIDACIONES ===
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -162,7 +141,7 @@ const inputClass = (valid = true) =>
         className="
           absolute top-0 left-0 w-full
           flex items-center justify-between
-          px-6 py-3 pr-8
+          px-6 py-3
           bg-white/80 dark:bg-gray-900/80 
           backdrop-blur-md shadow-md
         "
@@ -403,15 +382,7 @@ const inputClass = (valid = true) =>
               className="mr-2"
             />
             <span className="text-sm">
-              Acepto los{" "}
-              <span className="text-blue-500 cursor-pointer">
-                Términos y Condiciones
-              </span>{" "}
-              y la{" "}
-              <span className="text-blue-500 cursor-pointer">
-                Política de Privacidad
-              </span>{" "}
-              de UNITE.
+              Acepto los Términos y Condiciones y la Política de Privacidad de UNITE.
             </span>
           </div>
 

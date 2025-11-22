@@ -5,9 +5,10 @@ import ReCAPTCHA from "react-google-recaptcha";
 import concierto from "@/assets/login/concierto-1.png";
 import UsuarioService from "@/services/UsuarioService";
 import NotificationService from "@/services/NotificationService";
-import LogoLight from "@/assets/Logo_Unite_Actualizado.png";
-import LogoDark from "@/assets/Logo_Unite_Actualizado_2.png";
+import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
+import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 import { Moon, Sun } from "lucide-react";
+import { useDarkMode } from "@/hooks/useModoOscuro";
 import React from "react";
 
 export const Registro = () => {
@@ -27,32 +28,7 @@ export const Registro = () => {
   const [apellidoMaterno, setApellidoMaterno] = useState("");
   const [email, setEmail] = useState("");
 
-    // Dark mode state
-  const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains("dark");
-  });
-
-  const toggleDarkMode = () => {
-    const html = document.documentElement;
-
-    if (html.classList.contains("dark")) {
-      html.classList.remove("dark");
-      setIsDark(false);
-      localStorage.setItem("theme", "light");
-    } else {
-      html.classList.add("dark");
-      setIsDark(true);
-      localStorage.setItem("theme", "dark");
-    }
-  };
-
-  // Mantener el tema al recargar
-  React.useEffect(() => {
-    if (localStorage.getItem("theme") === "dark") {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    }
-  }, []);
+  const { isDark, toggleDarkMode } = useDarkMode();
 
   
   const navigate = useNavigate();
@@ -146,43 +122,43 @@ export const Registro = () => {
 
       {/* Header */}
       <header className="
-  absolute top-0 left-0 w-full 
-  flex items-center justify-between 
-  px-6 py-3 
-  bg-white/80 dark:bg-gray-900/80 
-  backdrop-blur-md shadow-md
-">
-  {/* Logo */}
-  <img
-    src={isDark ? LogoDark : LogoLight}
-    alt="Logo Unite"
-    className="h-12 w-auto transition-opacity duration-300"
-  />
+        absolute top-0 left-0 w-full 
+        flex items-center justify-between 
+        px-6 py-3 
+        bg-white/80 dark:bg-gray-900/80 
+        backdrop-blur-md shadow-md
+      ">
+      {/* Logo */}
+      <img
+        src={isDark ? LogoDark : LogoLight}
+        alt="Logo Unite"
+        className="h-12 w-auto transition-opacity duration-300"
+      />
 
-  {/* Toggle Dark Mode */}
-  <button
-    onClick={toggleDarkMode}
-    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 
-               hover:scale-110 transition flex items-center justify-center"
-    title="Cambiar tema"
-  >
-    {isDark ? (
-      <Sun className="h-5 w-5 text-yellow-300" />
-    ) : (
-      <Moon className="h-5 w-5 text-gray-800" />
-    )}
-  </button>
-</header>
+      {/* Toggle Dark Mode */}
+      <button
+        onClick={toggleDarkMode}
+        className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 
+                  hover:scale-110 transition flex items-center justify-center"
+        title="Cambiar tema"
+      >
+      {isDark ? (
+        <Sun className="h-5 w-5 text-yellow-300" />
+      ) : (
+        <Moon className="h-5 w-5 text-gray-800" />
+      )}
+    </button>
+  </header>
 
       {/* Contenido */}
       <div className="relative z-10 flex flex-1 justify-center items-center p-6 mt-20">
         <div className="
-  bg-white/90 dark:bg-gray-800/90 
-  backdrop-blur-md 
-  shadow-xl rounded-2xl p-10 
-  w-[90%] max-w-5xl 
-  transition-colors
-">
+          bg-white/90 dark:bg-gray-800/90 
+          backdrop-blur-md 
+          shadow-xl rounded-2xl p-10 
+          w-[90%] max-w-5xl 
+          transition-colors
+        ">
 
           <h2 className="text-3xl font-semibold text-gray-700 dark:text-gray-300 font-medium mb-2 text-center ">
             Crear cuenta
@@ -213,16 +189,16 @@ export const Registro = () => {
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
               className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
-/>
+                w-full px-4 py-3 
+                rounded-lg 
+                bg-white dark:bg-gray-700
+                text-gray-900 dark:text-gray-100 
+                border 
+                ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                focus:ring-2 focus:ring-orange-500 
+                outline-none
+              `}
+              />
 
           </div>
 
@@ -375,16 +351,16 @@ export const Registro = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  pr-12
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  pr-12
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  outline-none
+                `}
               />
               <button
                 type="button"
@@ -406,16 +382,16 @@ export const Registro = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  pr-12
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  pr-12
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  outline-none
+                `}
               />
               <button
                 type="button"
@@ -449,15 +425,7 @@ export const Registro = () => {
               className="mr-2"
             />
             <span className="text-gray-700 text-sm dark:text-gray-300 font-medium mb-2">
-              Acepto los{" "}
-              <span className="font-semibold text-blue-600 cursor-pointer">
-                Términos y Condiciones
-              </span>{" "}
-              y la{" "}
-              <span className="font-semibold text-blue-600 cursor-pointer">
-                Política de Privacidad
-              </span>{" "}
-              de UNITE.
+              Acepto los Términos y Condiciones y la Política de Privacidad de UNITE.
             </span>
           </div>
 
@@ -478,42 +446,42 @@ export const Registro = () => {
 
       {/* Popup de confirmación */}
       {showPopup && (
-  <div className="
-    fixed inset-0 flex items-center justify-center 
-    bg-black/50 dark:bg-black/70 
-    backdrop-blur-sm 
-    z-50 transition-colors
-  ">
-    <div className="
-      bg-white dark:bg-gray-800 
-      text-gray-900 dark:text-gray-100
-      rounded-2xl shadow-lg p-8 
-      text-center max-w-md w-[90%]
-      transition-colors
-    ">
-      <h3 className="text-2xl font-semibold mb-4">
-        Registro exitoso
-      </h3>
+        <div className="
+          fixed inset-0 flex items-center justify-center 
+          bg-black/50 dark:bg-black/70 
+          backdrop-blur-sm 
+          z-50 transition-colors
+        ">
+          <div className="
+            bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            rounded-2xl shadow-lg p-8 
+            text-center max-w-md w-[90%]
+            transition-colors
+          ">
+            <h3 className="text-2xl font-semibold mb-4">
+              Registro exitoso
+            </h3>
 
-      <p className="mb-6">
-        Tu cuenta ha sido creada correctamente.
-      </p>
+            <p className="mb-6">
+              Tu cuenta ha sido creada correctamente.
+            </p>
 
-      <button
-        onClick={() => navigate('/login')}
-        className="
-          w-full 
-          bg-[#e58c00] hover:bg-[#cc7b00] 
-          text-white font-semibold 
-          py-3 rounded-full 
-          transition-all
-        "
-      >
-        VOLVER AL INICIO
-      </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="
+                w-full 
+                bg-[#e58c00] hover:bg-[#cc7b00] 
+                text-white font-semibold 
+                py-3 rounded-full 
+                transition-all
+              "
+            >
+          VOLVER AL INICIO
+        </button>
+      </div>
     </div>
-  </div>
-)}
+  )}
 
     </div>
   );
