@@ -177,7 +177,7 @@ export class EventoService {
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
-        "Error al obtener el detalle del evento",
+        "Error al obtener el detalle del evento: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
@@ -623,11 +623,12 @@ export class EventoService {
       return;
     }
 
-    const carpetaS3 = `eventos/${evento.id}/terminos`;
+    const carpetaS3 = `${evento.id}/terminos`;
 
     if (evento.terminosUso) {
       evento.terminosUso.tipo = TIPO_TERMINOS_USO;
       evento.terminosUso.evento = evento;
+      
       await this.prepararDocumentoParaGuardar(
         evento.terminosUso,
         terminosDto,
@@ -699,7 +700,7 @@ export class EventoService {
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
-          `eventos/${evento.id}/documentos`,
+          `${evento.id}/documentos`,
           documento.url,
           false
         );
@@ -710,7 +711,7 @@ export class EventoService {
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
-          `eventos/${evento.id}/documentos`
+          `${evento.id}/documentos`
         );
         documento.evento = evento;
         nuevos.push(documento);
@@ -772,7 +773,7 @@ export class EventoService {
       const resultado = await s3.subirBase64({
         base64: dto.contenidoBase64,
         fileName: documento.nombreArchivo,
-        contentType: dto.tipo,
+        contentType: "application/pdf",
         prefix: carpetaS3,
       });
       url = resultado.url;
