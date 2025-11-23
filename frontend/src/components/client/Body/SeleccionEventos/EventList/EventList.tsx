@@ -10,6 +10,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   const ITEMS_PER_PAGE = 20;
   const [currentPage, setCurrentPage] = React.useState(1);
   const listRef = React.useRef<HTMLDivElement | null>(null);
+  const scrollAnimRef = React.useRef<number | null>(null);
 
   const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
 
@@ -24,10 +25,61 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
     }
   };
 
-  React.useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  React.useLayoutEffect(() => {
+    if (scrollAnimRef.current) {
+      cancelAnimationFrame(scrollAnimRef.current);
+      scrollAnimRef.current = null;
     }
+
+    const headerEl = document.querySelector("header");
+    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+    const extraOffset = 100;
+
+    const heading = document.getElementById("proximos-eventos");
+    let target = 0;
+    if (heading) {
+      const rect = heading.getBoundingClientRect();
+      target = window.scrollY + rect.top - headerHeight - extraOffset;
+    } else if (listRef.current) {
+      const rect = listRef.current.getBoundingClientRect();
+      target = window.scrollY + rect.top - headerHeight - extraOffset;
+    }
+
+    const doc = document.documentElement;
+    const docScrollHeight = doc ? doc.scrollHeight : document.body.scrollHeight;
+    const startY = Math.max(0, docScrollHeight - window.innerHeight);
+
+    const duration = 650;
+    let startTime: number | null = null;
+
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const diff = target - startY;
+
+    window.scrollTo(0, startY);
+
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeInOutCubic(progress);
+      window.scrollTo(0, Math.round(startY + diff * eased));
+      if (elapsed < duration) {
+        scrollAnimRef.current = requestAnimationFrame(step);
+      } else {
+        scrollAnimRef.current = null;
+      }
+    };
+
+    scrollAnimRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (scrollAnimRef.current) {
+        cancelAnimationFrame(scrollAnimRef.current);
+        scrollAnimRef.current = null;
+      }
+    };
   }, [currentPage]);
 
   return (
@@ -98,3 +150,4 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
     </div>
   );
 };
+
