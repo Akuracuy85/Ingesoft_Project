@@ -9,6 +9,7 @@ interface EventListProps {
 export const EventList: React.FC<EventListProps> = ({ events }) => {
   const ITEMS_PER_PAGE = 20;
   const [currentPage, setCurrentPage] = React.useState(1);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
 
   const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
 
@@ -20,15 +21,21 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  React.useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [currentPage]);
 
   return (
     <div className="flex flex-col gap-8">
 
       {/* GRID */}
       <div
+        ref={listRef}
         className="grid gap-6 justify-center"
         style={{ gridTemplateColumns: "repeat(auto-fill, 260px)" }}
       >
