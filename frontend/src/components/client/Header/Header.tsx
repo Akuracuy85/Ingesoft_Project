@@ -12,6 +12,7 @@ import { type FiltersType } from "../../../types/FiltersType";
 // Logos
 import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
 import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
+import ListaIcon from "@/components/ui/icons/ListaIcon";
 
 // Modo oscuro
 import { useDarkMode } from "@/hooks/useModoOscuro";
@@ -101,11 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={toggleFilters}
               className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
             >
-              <img
-                className="w-5 h-5"
-                alt="List icon"
-                src="https://c.animaapp.com/mgx1kaihbC7QfN/img/list.svg"
-              />
+                  <ListaIcon className="w-5 h-5" />
               <span className="font-medium text-sm">Filtros</span>
             </button>
           )}
