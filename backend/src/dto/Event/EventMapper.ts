@@ -5,7 +5,6 @@ import { Tarifa } from "../../models/Tarifa";
 import { TarifaDto } from "../evento/TarifaDto";
 import { bufferToBase64 } from '../../utils/ImageUtils';
 
-
 interface ArtistEntity {
   nombre: string;
   categoria?: CategoriaEntity;
@@ -52,9 +51,6 @@ interface EventEntityWithZones extends EventEntity {
 
 export class EventMapper {
 
-  /**
-   * @description Mapea la entidad de Evento a la estructura de la lista de eventos.
-   */
   private static mapearTarifaDto(tarifa?: Tarifa | null): TarifaDto | null {
     if (!tarifa) {
       return null;
@@ -84,7 +80,6 @@ export class EventMapper {
       hour12: false
     });
 
-    //const place = `${entity.distrito}, ${entity.provincia}`;
     const place = entity.lugar;
     const mimeType = entity.mimeType || 'image/jpeg';
     const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
@@ -94,29 +89,25 @@ export class EventMapper {
       nombre: zona.nombre,
       capacidad: zona.capacidad,
       cantidadComprada: zona.cantidadComprada,
-
-      // Usa la función de ayuda para mapear las tarifas
       tarifaNormal: this.mapearTarifaDto(zona.tarifaNormal),
       tarifaPreventa: this.mapearTarifaDto(zona.tarifaPreventa)
     }));
 
-    // 🚀 ESTO ESTABA FALTANDO (o mal ubicado)
     return {
       id: entity.id,
       title: entity.nombre,
-      description: entity.descripcion, // <-- AÑADIDO
+      description: entity.descripcion,
       date: dateString,
       time: timeString,
-      departamento: entity.departamento, // <-- AÑADIDO
-      provincia: entity.provincia, // <-- AÑADIDO
-      distrito: entity.distrito, // <-- AÑADIDO
+      departamento: entity.departamento,
+      provincia: entity.provincia,
+      distrito: entity.distrito,
       place: place,
       image: imageBase64,
       imagePlace: imagePlaceBase64,
       artistName: entity.artista.nombre,
-      category: entity.artista.categoria?.nombre, // <-- AÑADIDO
-      zonas: zonasDto, // <-- AÑADIDO
-      //placeEspecific: placeEspecific, // <-- AÑADIDO
+      category: entity.artista.categoria?.nombre,
+      zonas: zonasDto,
     };
   }
 
@@ -135,6 +126,7 @@ export class EventMapper {
     //const place = `${entity.distrito}, ${entity.provincia}`;
     const place = entity.lugar;
     const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
+    const imageLugarBase64 = bufferToBase64(entity.imagenLugar, mimeType);
 
     // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)
     const zonasDisponibles = entity.zonas.map(zona => ({
@@ -160,6 +152,7 @@ export class EventMapper {
       time: timeString,
       place: place,
       image: imageBase64,
+      imageLugar: imageLugarBase64,
       artistName: entity.artista.nombre,
 
       // Propiedades específicas de Compra
@@ -168,6 +161,3 @@ export class EventMapper {
     };
   }
 }
-
-// 🛑 ELIMINADA: Esta línea estaba fuera de la clase y causando problemas.
-// const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
