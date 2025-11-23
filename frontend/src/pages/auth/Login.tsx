@@ -207,11 +207,13 @@ export const Login = () => {
 
         {/* Enlaces */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm">
-          <Link to="/restablecer" className="text-blue-500 hover:underline">
-            ¿Olvidaste tu contraseña?
-          </Link>
+          {/* 
+            <Link to="/restablecer" className="text-blue-500 hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          */}
 
-          <div className="mt-2 sm:mt-0">
+          <div className="mt-2 sm:mt-0 flex justify-center items-center gap-1 w-full text-center">
             <span className="text-gray-700 dark:text-gray-300">¿No tienes cuenta? </span>
             <Link to="/registro" className="text-blue-500 hover:underline">
               Regístrate
