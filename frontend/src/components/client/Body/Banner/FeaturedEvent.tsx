@@ -38,7 +38,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}
-          className="px-5 py-2 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
         >
           Ver detalles
         </button>

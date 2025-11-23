@@ -127,4 +127,9 @@
     width: 0;
     height: 0;
   }
+
+  /* Evita que aparezca el cursor de texto (caret) al hacer click en elementos no editables */
+  *:not(input):not(textarea):not([contenteditable="true"]) {
+    caret-color: transparent !important;
+  }
 }

@@ -63,8 +63,8 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
                 px-3 py-1 border rounded cursor-pointer
                 border-gray-300 dark:border-gray-600
                 ${currentPage === page
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-gray-700"
+                  ? "bg-[#F6BA26] text-white dark:text-gray-900"
+                  : "bg-white dark:bg-gray-800 text-[#F6BA26] dark:text-[#F6BA26] hover:bg-[#F6BA26]/10 dark:hover:bg-gray-700"
                 }
               `}
             >
