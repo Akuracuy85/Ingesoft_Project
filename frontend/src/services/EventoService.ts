@@ -224,8 +224,7 @@ class EventoService extends HttpClient {
   }
 
   async getDocumentosRespaldo(eventoId: number): Promise<BackendDocumentoDto[]> {
-    const eventos = await this.listarDetalladosOrganizador();
-    const evento = eventos.find(e => e.id === eventoId);
+    const evento = await this.obtenerPorId(eventoId)
     return evento?.documentosRespaldo || [];
   }
 
