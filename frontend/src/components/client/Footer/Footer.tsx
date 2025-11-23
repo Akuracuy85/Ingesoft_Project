@@ -7,11 +7,12 @@ export const Footer = () => {
         <div className="flex items-center justify-between">
           <div className="text-6xl font-semibold">Unite</div>
           <div className="text-base flex items-center">
-            <img src={Book} alt="Book" className="w-[72px] h-[72px] mr-2 inline-block" />
-              <a href='https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf' target="_blank" rel="noopener noreferrer">Términos y condiciones</a>
+            <a href='https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf' target="_blank" rel="noopener noreferrer">
+              <img src={Book} alt="Book" className="w-[72px] h-[72px] mr-2 inline-block" />
+              Términos y condiciones
+            </a>
           </div>
         </div>
-
         <div className="mt-4 text-center text-sm text-gray-300">© 2025 Unite. Todos los derechos reservados.</div>
       </div>
     </footer>
