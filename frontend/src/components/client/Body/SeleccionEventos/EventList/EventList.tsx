@@ -1,6 +1,7 @@
 import React from "react";
 import type { Event } from "../../../../../models/Event";
 import { EventCard } from "./EventCard";
+import { useState, useRef, useMemo, useLayoutEffect } from "react";
 
 interface EventListProps {
   events: Event[];
@@ -8,13 +9,13 @@ interface EventListProps {
 
 export const EventList: React.FC<EventListProps> = ({ events }) => {
   const ITEMS_PER_PAGE = 20;
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const listRef = React.useRef<HTMLDivElement | null>(null);
-  const scrollAnimRef = React.useRef<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnimRef = useRef<number | null>(null);
 
   const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
 
-  const paginatedEvents = React.useMemo(() => {
+  const paginatedEvents = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return events.slice(start, start + ITEMS_PER_PAGE);
   }, [currentPage, events]);
@@ -25,7 +26,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
     }
   };
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     if (scrollAnimRef.current) {
       cancelAnimationFrame(scrollAnimRef.current);
       scrollAnimRef.current = null;
