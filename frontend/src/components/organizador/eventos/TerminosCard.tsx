@@ -33,7 +33,6 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
       try {
         setCargandoInicial(true);
         const doc = await getTerminosUso(eventoId);
-        console.log("Doc: ", doc)
         if (!activo) return;
         if (doc) {
           const adaptado: DocumentoTerminos = {
