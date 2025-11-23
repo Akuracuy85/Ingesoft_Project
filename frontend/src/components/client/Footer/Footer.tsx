@@ -8,7 +8,7 @@ export const Footer = () => {
           <div className="text-6xl font-semibold">Unite</div>
           <div className="text-base flex items-center">
             <img src={Book} alt="Book" className="w-[72px] h-[72px] mr-2 inline-block" />
-              Términos y condiciones
+              <a href='https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf' target="_blank" rel="noopener noreferrer">Términos y condiciones</a>
           </div>
         </div>
 
