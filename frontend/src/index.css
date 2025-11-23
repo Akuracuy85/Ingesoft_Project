@@ -114,6 +114,13 @@
 }
 
 @layer base {
+  html, body {
+    background-color: white !important;
+  }
+
+  .dark html, .dark body {
+    background-color: #020817 !important;
+  }
   * {
     @apply border-border outline-ring/50;
   }

@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
+
+const getInitialTheme = () => {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") return true;
+  if (saved === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+};
 
 export function useDarkMode() {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    // Leer preferencia guardada
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") return true;
-    if (saved === "light") return false;
+  const [isDark, setIsDark] = useState<boolean>(getInitialTheme);
 
-    // Si no hay nada guardado, usar preferencia del sistema
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const root = document.documentElement;
     if (isDark) {
-      document.documentElement.classList.add("dark");
+      root.classList.add("dark");
       localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove("dark");
+      root.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
   }, [isDark]);
