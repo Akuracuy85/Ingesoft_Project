@@ -293,9 +293,9 @@ export default function InformacionPersonal() {
                   savedCards.map(card => (
                     <div
                       key={card.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4"
+                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4"
                     >
-                      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
+                      <div className="flex items-center justify-between p-4 rounded-lg mb-4 dark:bg-gray-800">
                         <div
                           className={`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${
                             TipoDeTarjeta(card.numeroTarjeta) === "Visa"
@@ -305,17 +305,17 @@ export default function InformacionPersonal() {
                         >
                           <CreditCard className="w-6 h-6 text-white" />
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">
+                        <div className="ml-4">
+                          <p className="font-semibold text-gray-900 dark:text-white">
                             {TipoDeTarjeta(card.numeroTarjeta)}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
                             {FormatearTarjeta(card.numeroTarjeta)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mr-6">
                         <Button
                           variant="outline"
                           size="sm"
