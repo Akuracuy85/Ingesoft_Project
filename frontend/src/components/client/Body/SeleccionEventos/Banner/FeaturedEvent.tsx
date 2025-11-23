@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Event } from "../../../../../models/Event";
 import { useNavigate } from "react-router-dom";
+import FlechaIzquierda from '../../../../../assets/Flecha_izquierda.svg';
+import FlechaDerecha from '../../../../../assets/Flecha_derecha.svg';
 
 interface FeaturedEventProps {
   events: Event[];
@@ -154,15 +156,15 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
       <button
         onClick={handlePrev}
         disabled={isTransitioning}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/20 rounded-full opacity-0 
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-[95px] h-[180px] flex items-center justify-center bg-black/20 rounded-4xl opacity-0 
                    group-hover:opacity-100 transition-all duration-300 
                    hover:scale-105 hover:bg-black/40 
                    focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <img
-          className="w-[85px]"
+          className="w-[85px] h-[85px] object-contain"
           alt="Anterior"
-          src="https://c.animaapp.com/mgx1kaihbC7QfN/img/frame-10.svg"
+          src={FlechaIzquierda}
         />
       </button>
 
@@ -170,15 +172,15 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
       <button
         onClick={handleNext}
         disabled={isTransitioning}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/20 rounded-full opacity-0 
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-[95px] h-[180px] flex items-center justify-center bg-black/20 rounded-4xl opacity-0 
                    group-hover:opacity-100 transition-all duration-300 
                    hover:scale-105 hover:bg-black/40 
                    focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <img
-          className="w-[85px]"
+          className="w-[85px] h-[85px] object-contain"
           alt="Siguiente"
-          src="https://c.animaapp.com/mgx1kaihbC7QfN/img/frame-11.svg"
+          src={FlechaDerecha}
         />
       </button>
     </section>

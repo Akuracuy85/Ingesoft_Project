@@ -45,7 +45,8 @@ export interface Event {
   cola?: Cola;
   estado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO";
   organizador: Organizador;
-  documentos: BackendDocumentoDto[];
+  documentosRespaldo: BackendDocumentoDto[];
+  terminosUso: BackendDocumentoDto;
   fechaFinPreventa?: string | null; // NUEVO: fin preventa global YYYY-MM-DD
   fechaInicioPreventa?: string | null; // NUEVO: inicio preventa global YYYY-MM-DD
 }
