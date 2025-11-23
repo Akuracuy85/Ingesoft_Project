@@ -5,6 +5,7 @@ import {
   Users,
   FileText,
   LogOut,
+  Handshake,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import AuthService from "@/services/AuthService";
@@ -19,7 +20,8 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar, path: "/admin/eventos" },
   { name: "Usuarios", icon: Users, path: "/admin/usuarios" },
-  { name: "Reportes", icon: FileText, path: "/admin/Reportes" },
+  { name: "Reportes", icon: FileText, path: "/admin/reportes" },
+  { name: "Terminos y Condiciones", icon: Handshake, path: "/admin/terminos" },
   { name: "Salir", icon: LogOut, path: "/login" },
 ];
 
@@ -33,6 +35,7 @@ interface SidebarAdminProps {
     | "Gestión de eventos"
     | "Usuarios"
     | "Reportes"
+    | "Terminos y Condiciones"
     | "Configuración";
   // Alternativamente, si no quieres escribir todos los nombres: activeItem: string;
 }

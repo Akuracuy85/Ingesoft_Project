@@ -2,12 +2,14 @@ import { PutObjectCommand, DeleteObjectCommand, S3Client } from "@aws-sdk/client
 import { randomUUID } from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../types/CustomError";
+import { ObtenerEnvObligatorio } from "@/utils/EnvUtils";
 
 interface UploadOptions {
   base64: string;
   fileName: string;
   contentType?: string;
   prefix?: string;
+  inline?: boolean;
 }
 
 interface UploadResult {
@@ -27,8 +29,8 @@ export class S3Service {
   private readonly enablePublicRead: boolean;
 
   private constructor() {
-    this.bucket = this.obtenerEnvObligatorio("AWS_S3_BUCKET");
-    this.region = this.obtenerEnvObligatorio("AWS_REGION");
+    this.bucket = ObtenerEnvObligatorio("AWS_S3_BUCKET");
+    this.region = ObtenerEnvObligatorio("AWS_REGION");
     this.publicUrlBase = process.env.AWS_S3_PUBLIC_URL?.replace(/\/+$/, "");
     this.defaultPrefix = process.env.AWS_S3_PREFIX?.replace(/^\/+|\/+$/g, "") ?? "";
     this.enablePublicRead = process.env.AWS_S3_PUBLIC_READ === "true";
@@ -40,10 +42,10 @@ export class S3Service {
     const credentials =
       accessKeyId && secretAccessKey
         ? {
-            accessKeyId,
-            secretAccessKey,
-            sessionToken: sessionToken || undefined,
-          }
+          accessKeyId,
+          secretAccessKey,
+          sessionToken: sessionToken || undefined,
+        }
         : undefined;
 
     this.client = new S3Client({
@@ -76,6 +78,7 @@ export class S3Service {
           Key: key,
           Body: buffer,
           ContentType: contentType,
+          ContentDisposition: options.inline ? "inline" : undefined,
           ACL: this.enablePublicRead ? "public-read" : undefined,
         })
       );
@@ -165,6 +168,10 @@ export class S3Service {
   }
 
   private construirKey(nombreArchivo: string, prefix?: string): string {
+    if (nombreArchivo.toLowerCase() === "terminosunite.pdf") {
+      return "TerminosUnite.pdf";
+    }
+
     const nombreNormalizado = this.normalizarNombre(nombreArchivo);
     const uuid = randomUUID();
     const partes = [
@@ -182,7 +189,7 @@ export class S3Service {
     return sinCarpeta.replace(/[^a-z0-9.\-]+/g, "-");
   }
 
-  private construirUrlPublica(key: string): string {
+  public construirUrlPublica(key: string): string {
     if (this.publicUrlBase) {
       return `${this.publicUrlBase}/${key}`;
     }
@@ -211,14 +218,4 @@ export class S3Service {
     return limpio;
   }
 
-  private obtenerEnvObligatorio(nombre: string): string {
-    const valor = process.env[nombre];
-    if (!valor) {
-      throw new CustomError(
-        `La variable de entorno ${nombre} es obligatoria para usar S3`,
-        StatusCodes.INTERNAL_SERVER_ERROR
-      );
-    }
-    return valor;
-  }
 }

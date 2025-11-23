@@ -18,6 +18,7 @@ import DetalleEvento from "./pages/client/DetalleEvento";
 import GestionEventos from "./pages/organizador/eventos/GestionEventos";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import CompraExitosa from "./pages/client/Eventos/CompraExitosa";
+import TerminosCondiciones from "./pages/admin/Terminos/TerminosYCondiciones";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ function App() {
             <Route path="/admin/usuarios" element={<AdminUsuarios />} />
             <Route path="/admin/eventos" element={<AdminEventos />} />
             <Route path="/admin/reportes" element={<AdminReportes />} />
+            <Route path="/admin/terminos" element={<TerminosCondiciones />} />
             <Route path="/organizador/eventos" element={<GestionEventos />} />
             <Route path="/info" element={<InformacionPersonal />} />
             <Route path="/compra-exitosa" element={<CompraExitosa />} />

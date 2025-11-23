@@ -1,6 +1,6 @@
 // src/services/EventoService.ts
 
-import { type Event } from "../models/Event";
+import { type BackendDocumentoDto, type Event } from "../models/Event";
 import HttpClient from "./Client";
 import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
@@ -75,13 +75,15 @@ interface BackendEventoEntity {
   imagenBanner?: any; // Simplificado: representamos solo base64 string o null
   imagenLugar?: any;
   artista?: { id: number; nombre: string; categoria?: { nombre: string } };
-  zonas?: unknown[]; // se podría tipar más adelante
+  artistaId?: number;
+  zonas?: unknown[]; 
   cola?: unknown;
   documentosRespaldo?: BackendDocumentoDto[];
-  fechaInicioPreventa?: string | Date;
-  fechaFinPreventa?: string | Date;
+  terminosUso?: BackendDocumentoDto | null;
+  fechaInicioPreventa?: string | Date | null;
+  fechaFinPreventa?: string | Date | null;
 }
-interface BackendDocumentoDto { id?: number; nombreArchivo: string; tipo: string; tamano: number; url: string; }
+
 interface EventoDetalladoOrganizador {
   id: number;
   nombre: string;
@@ -165,7 +167,7 @@ class EventoService extends HttpClient {
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],
       cola: ev.cola || undefined,
-      documento: "",
+      documentos: ev.documentosRespaldo,
       fechaFinPreventa: ev.fechaFinPreventa ? extractFecha(ev.fechaFinPreventa) : null,
       fechaInicioPreventa: ev.fechaInicioPreventa ? extractFecha(ev.fechaInicioPreventa) : null,
     } as Event;
@@ -265,6 +267,59 @@ class EventoService extends HttpClient {
     };
     await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}`, payload);
   }
+
+  async getTerminosUso(eventoId: number): Promise<BackendDocumentoDto | null> {
+    const evento = await this.obtenerPorId(eventoId);
+    
+    let terminoUso = null;
+    if (Array.isArray(evento?.documentos)) {
+      evento.documentos.forEach(doc => {
+        if (doc.tipo === "TerminosUso") {
+          terminoUso = doc;
+          return;
+        }
+      });
+    }
+
+    return terminoUso;
+  }
+
+  async updateTerminosUso(eventoId: number, archivo: File | null): Promise<{ success: boolean; eventoId: number }> {
+
+    const evento = await this.obtenerPorId(eventoId);
+    if (!evento) throw new Error("Evento no encontrado");
+
+    let terminosUso: BackendDocumentoDto | null | undefined = undefined;
+    if (archivo === null) {
+      terminosUso = null;
+    } else if (archivo) {
+      const base64 = await this.fileToBase64(archivo);
+      terminosUso = {
+        nombreArchivo: archivo.name,
+        tipo: archivo.type || 'application/pdf',
+        tamano: archivo.size,
+        url: '',
+        contenidoBase64: base64,
+      } as BackendDocumentoDto & { contenidoBase64: string };
+    }
+
+    // Solo enviamos lo requerido por el endpoint /terminos
+    return await this.put<{ success: boolean; eventoId: number }>(`/${eventoId}/terminos`, { terminosUso });
+  }
+
+  private async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remover prefijo data: si existe para consistencia (el backend acepta ambos)
+        const limpio = result.replace(/^data:.*;base64,/, '');
+        resolve(limpio);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
 const eventoServiceInstance = new EventoService();
@@ -288,6 +343,10 @@ export const updateDocumentosRespaldo = (
   documentos: Array<{ id?: number; nombreArchivo: string; tipo: string; tamano: number; url?: string; contenidoBase64?: string }>
 ) =>
   eventoServiceInstance.updateDocumentosRespaldo(eventoId, documentos);
+
+export const getTerminosUso = (eventoId: number) => eventoServiceInstance.getTerminosUso(eventoId);
+export const updateTerminosUso = (eventoId: number, archivo: File | null) => eventoServiceInstance.updateTerminosUso(eventoId, archivo);
+
 export default eventoServiceInstance;
 export type { EventoBasicoOrganizadorDTO };
 

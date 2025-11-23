@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, FileText, LogOut, Settings } from "lucide-react";
+import { Calendar, LogOut, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AuthService from "@/services/AuthService";
@@ -11,7 +11,6 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar },
-  { name: "Reportes", icon: FileText },
   { name: "Configuración", icon: Settings },
   { name: "Salir", icon: LogOut },
 ];
