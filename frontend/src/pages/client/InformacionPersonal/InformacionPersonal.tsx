@@ -19,6 +19,7 @@ import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-re
 import PerfilService from "../../../services/PerfilService";
 import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import type { Tarjeta } from "@/models/Tarjeta";
+import { useDarkMode } from "@/hooks/useModoOscuro";
 
 const soloLetras = (valor: string) =>
   /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor);
@@ -30,6 +31,7 @@ const soloNumeros = (valor: string) =>
   /^[0-9]*$/.test(valor);
 
 export default function InformacionPersonal() {
+  const { isDark } = useDarkMode();
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     lastName: "",
@@ -141,7 +143,7 @@ export default function InformacionPersonal() {
   if (loading) {
     return (
       <ClientLayout>
-        <div className="flex items-center justify-center h-screen text-gray-600">
+        <div className="flex items-center justify-center h-screen text-gray-600 text-gray-600 dark:text-gray-400">
           Cargando información personal...
         </div>
       </ClientLayout>
@@ -150,9 +152,9 @@ export default function InformacionPersonal() {
 
   return (
     <ClientLayout showFilterButton={false}>
-      <div className="w-full min-h-screen bg-[#F8F8F8] px-6 py-8 max-w-7xl mx-auto">
+      <div className="w-full min-h-screen bg-[#F8F8F8] dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-6  py-8 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Información personal</h1>
+          <h1 className="text-3xl font-bold dark:text-gray-100 mb-2">Información personal</h1>
           <p className="text-gray-600">Administra tus datos personales y tus puntos acumulados.</p>
         </div>
 
@@ -167,7 +169,7 @@ export default function InformacionPersonal() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-xl">Actualizar información personal</CardTitle>
               </CardHeader>
@@ -177,7 +179,7 @@ export default function InformacionPersonal() {
 
                   {/* Nombre */}
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="fullName" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <User className="w-4 h-4" /> Nombre completo
                     </Label>
                     <Input
@@ -193,7 +195,7 @@ export default function InformacionPersonal() {
 
                   {/* Apellido paterno */}
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="lastName" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <User className="w-4 h-4" /> Apellido paterno
                     </Label>
                     <Input
@@ -209,7 +211,7 @@ export default function InformacionPersonal() {
 
                   {/* Apellido materno */}
                   <div className="space-y-2">
-                    <Label htmlFor="motherLastName" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="motherLastName" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <User className="w-4 h-4" /> Apellido materno
                     </Label>
                     <Input
@@ -225,7 +227,7 @@ export default function InformacionPersonal() {
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="email" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <Mail className="w-4 h-4" /> Correo electrónico
                     </Label>
                     <Input
@@ -240,7 +242,7 @@ export default function InformacionPersonal() {
 
                   {/* DNI */}
                   <div className="space-y-2">
-                    <Label htmlFor="dni" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="dni" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <FileText className="w-4 h-4" /> DNI
                     </Label>
                     <Input
@@ -257,7 +259,7 @@ export default function InformacionPersonal() {
 
                   {/* Teléfono */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2 text-gray-700">
+                    <Label htmlFor="phone" className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                       <Phone className="w-4 h-4" /> Número de teléfono
                     </Label>
                     <Input
@@ -282,7 +284,7 @@ export default function InformacionPersonal() {
             </Card>
 
             {/* Tarjetas guardadas */}
-            <Card className="shadow-sm">
+            <Card className="shadow-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-xl">Tarjetas guardadas</CardTitle>
                 <CardDescription>Cuentas con estas tarjetas para futuras compras.</CardDescription>
@@ -294,7 +296,7 @@ export default function InformacionPersonal() {
                       key={card.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
                         <div
                           className={`w-12 h-8 bg-gradient-to-r rounded flex items-center justify-center ${
                             TipoDeTarjeta(card.numeroTarjeta) === "Visa"
@@ -322,7 +324,7 @@ export default function InformacionPersonal() {
                             setSelectedCardId(card.id!);
                             setShowDeleteAlert(true);
                           }}
-                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          className="border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -338,7 +340,7 @@ export default function InformacionPersonal() {
 
           {/* Puntos */}
           <div>
-            <Card className="shadow-sm bg-gradient-to-br from-[#D59B2C] to-[#C08A25] text-white">
+            <Card className="shadow-sm bg-gradient-to-br from-[#D59B2C] to-[#C08A25] text-white dark:text-white">
               <CardHeader>
                 <CardTitle className="text-xl text-white flex items-center gap-2">
                   <Star className="w-5 h-5" /> Puntos acumulados
@@ -355,7 +357,7 @@ export default function InformacionPersonal() {
 
       {/* Modal de eliminar */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent className="dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar tarjeta?</AlertDialogTitle>
             <AlertDialogDescription>
