@@ -31,7 +31,6 @@ const soloNumeros = (valor: string) =>
   /^[0-9]*$/.test(valor);
 
 export default function InformacionPersonal() {
-  const { isDark } = useDarkMode();
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     lastName: "",
