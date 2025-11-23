@@ -112,7 +112,7 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
             {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
 
             <section className="w-full max-w-7xl flex flex-col gap-8 p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 transition-colors">
+                <h2 id="proximos-eventos" className="text-4xl font-semibold text-gray-800 dark:text-gray-200 transition-colors ml-20">
                     {hasActiveFilters ? "Resultados de búsqueda" : "Próximos eventos"}
                 </h2>
                 <EventList events={events} /> 
