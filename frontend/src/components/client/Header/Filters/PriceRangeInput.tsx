@@ -223,7 +223,7 @@ export const PriceRangeInput: React.FC<PriceRangeInputProps> = ({ value, onChang
   const isClearDisabled = isRangeEmpty(minValue, maxValue);
     
     return (
-        <div className="mb-6">
+        <div className="mb-6 min-w-0">
             <h3 className="text-lg font-medium mb-2 flex justify-between items-center">
                 <span>Rango de precios</span>
         

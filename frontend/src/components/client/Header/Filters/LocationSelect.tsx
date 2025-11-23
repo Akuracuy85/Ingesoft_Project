@@ -96,11 +96,12 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
 
 
     return (
-        <div className="mb-6">
+        <div className="mb-6 min-w-0">
             <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Ubicación</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
                 {/* Departamento */}
+                <div className="min-w-0">
                 <CustomDropdown
                     options={withTodos(departamentoOptions)} 
                     value={departamento || ""}
@@ -108,8 +109,10 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                         onChange({ departamento: id || null, provincia: null, distrito: null });
                     }}
                 />
+                </div>
 
                 {/* Provincia */}
+                <div className="min-w-0">
                 <CustomDropdown
                     options={withTodos(provincias)} 
                     value={provincia || ""}
@@ -118,8 +121,10 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                     }}
                     disabled={!departamento || provincias.length === 0} 
                 />
+                </div>
 
                 {/* Distrito */}
+                <div className="min-w-0">
                 <CustomDropdown
                     options={withTodos(distritos)} 
                     value={distrito || ""}
@@ -128,6 +133,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                     }}
                     disabled={!provincia || distritos.length === 0}
                 />
+                </div>
             </div>
         </div>
     );

@@ -39,8 +39,8 @@ export const DateRangePicker = ({ value, onChange }: DateRangePickerProps) => {
 
     const isClearDisabled = !start && !end;
 
-    return (
-        <div className="mb-6">
+    return (
+        <div className="mb-6 min-w-0">
             <h3 className="text-lg font-medium mb-2 flex justify-between items-center">
                 <span>Rango de Fechas</span>
                 

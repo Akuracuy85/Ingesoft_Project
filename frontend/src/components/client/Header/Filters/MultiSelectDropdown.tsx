@@ -70,7 +70,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
   return (
     // 🛑 RENDERIZADO: Aplicar estilos de deshabilitado si 'disabled' es true
-    <div className={`mb-6 relative multi-dropdown ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={dropdownRef}>
+    <div className={`mb-6 relative multi-dropdown ${disabled ? 'opacity-50 cursor-not-allowed' : ''} min-w-0`} ref={dropdownRef}>
       <h3 className="text-lg font-medium mb-2 dark:text-gray-200">{label}</h3>
 
       {/* Selector visible */}
@@ -80,7 +80,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         onClick={() => !disabled && setOpen(!open)}
       >
         {/* Contenido seleccionado: Muestra NOMBRES */}
-        <div className="flex flex-wrap gap-2 flex-1">
+  <div className="flex flex-wrap gap-2 flex-1 min-w-0">
           {selectedIds.length === 0 && (
             <span className="text-gray-400">Selecciona...</span>
           )}

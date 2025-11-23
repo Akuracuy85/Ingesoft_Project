@@ -34,7 +34,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
   }, []);
 
   return (
-    <div className="relative group" ref={dropdownRef}>
+    <div className="relative group min-w-0" ref={dropdownRef}>
       
       {/* Selector visible */}
       <div
@@ -82,7 +82,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
                   setOpen(false);
                 }}
               >
-                {opt.nombre}
+                <span className="break-words">{opt.nombre}</span>
               </div>
             ))
           )}
