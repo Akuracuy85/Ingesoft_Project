@@ -38,6 +38,9 @@ import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
 
+const TIPO_TERMINOS_USO = "TerminosUso";
+const TIPO_DOCUMENTO_RESPALDO = "DocumentoRespaldo";
+
 export type FiltrosUbicacion = Record<string, Record<string, string[]>>;
 export class EventoService {
   private static instance: EventoService;
@@ -128,7 +131,7 @@ export class EventoService {
       }));
     } catch (error) {
       throw new CustomError(
-        "Error al obtener el detalle de los eventos",
+        "Error al obtener el detalle de los eventos: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
@@ -411,6 +414,13 @@ export class EventoService {
       throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
     }
 
+    if (evento.organizador.id !== organizadorId) {
+      throw new CustomError(
+        "No autorizado para gestionar este evento",
+        StatusCodes.FORBIDDEN
+      );
+    }
+
     return evento;
   }
 
@@ -598,8 +608,11 @@ export class EventoService {
       return;
     }
 
+    if (terminosDto) {
+      this.validarTerminosPdf(terminosDto);
+    }
+
     if (!terminosDto) {
-      // Null explícito significa eliminar los términos actuales.
       if (evento.terminosUso?.id) {
         await this.eliminarDocumentoEnAlmacenamiento(evento.terminosUso.url);
         await this.eventoRepository.eliminarDocumentoPorId(
@@ -613,26 +626,57 @@ export class EventoService {
     const carpetaS3 = `eventos/${evento.id}/terminos`;
 
     if (evento.terminosUso) {
+      evento.terminosUso.tipo = TIPO_TERMINOS_USO;
+      evento.terminosUso.evento = evento;
       await this.prepararDocumentoParaGuardar(
         evento.terminosUso,
         terminosDto,
         carpetaS3,
-        evento.terminosUso.url
+        evento.terminosUso.url,
+        true
       );
       await this.eventoRepository.guardarDocumento(evento.terminosUso);
       return;
     }
 
     const documento = new Documento();
+    documento.tipo = TIPO_TERMINOS_USO;
+    documento.evento = evento;
     await this.prepararDocumentoParaGuardar(
       documento,
       terminosDto,
-      carpetaS3
+      carpetaS3,
+      null,
+      true
     );
     const documentoGuardado = await this.eventoRepository.guardarDocumento(
       documento
     );
     evento.terminosUso = documentoGuardado;
+  }
+
+  private validarTerminosPdf(dto: DocumentoDto) {
+    const nombre = dto.nombreArchivo?.trim().toLowerCase();
+    const tipo = dto.tipo?.trim().toLowerCase();
+    const tamano = Number(dto.tamano);
+
+    // Tamaño máximo 10MB
+    const MAX_BYTES = 10 * 1024 * 1024;
+    if (Number.isFinite(tamano) && tamano > MAX_BYTES) {
+      throw new CustomError(
+        "El archivo de términos excede el tamaño máximo de 10MB",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const esPdfPorMime = tipo === "application/pdf";
+    const esPdfPorNombre = nombre?.endsWith(".pdf");
+    if (!esPdfPorMime && !esPdfPorNombre) {
+      throw new CustomError(
+        "Solo se permite subir documentos PDF como términos de uso",
+        StatusCodes.BAD_REQUEST
+      );
+    }
   }
 
   private async sincronizarDocumentosRespaldo(
@@ -650,11 +694,14 @@ export class EventoService {
     for (const docDto of documentosDto) {
       if (docDto.id && documentosPorId.has(docDto.id)) {
         const documento = documentosPorId.get(docDto.id)!;
+        documento.tipo = TIPO_DOCUMENTO_RESPALDO;
+        documento.evento = evento;
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
           `eventos/${evento.id}/documentos`,
-          documento.url
+          documento.url,
+          false
         );
         documento.evento = evento;
         idsRecibidos.add(docDto.id);
@@ -707,7 +754,8 @@ export class EventoService {
     documento: Documento,
     dto: DocumentoDto,
     carpetaS3: string,
-    urlAnterior?: string | null
+    urlAnterior?: string | null,
+    esTerminos?: boolean
   ) {
     documento.nombreArchivo = dto.nombreArchivo.trim();
 
@@ -750,11 +798,11 @@ export class EventoService {
     }
 
     documento.tamano = tamanoFinal;
-    documento.tipo = this.normalizarTipoDocumento(
-      dto.tipo,
-      tipoDesdeCarga,
-      documento.tipo
-    );
+    const mime = this.normalizarTipoDocumento(dto.tipo, tipoDesdeCarga, documento.contentType);
+    if (mime) {
+      documento.contentType = mime;
+      }
+    // No modificar documento.tipo aquí (tipo lógico ya establecido antes)
     documento.url = url!;
   }
 

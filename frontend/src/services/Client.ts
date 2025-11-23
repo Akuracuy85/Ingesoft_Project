@@ -147,7 +147,6 @@ export default class HttpClient {
     );
   }
 
-  // Métodos HTTP (son correctos)
   async get<T = any>(url: string = '', config?: AxiosRequestConfig): Promise<T> {
     const res = await this.client.get<ApiResponse<T>>(url, config);
     return res.data as T;

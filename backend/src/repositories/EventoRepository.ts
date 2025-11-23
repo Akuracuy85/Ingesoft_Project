@@ -315,6 +315,8 @@ export class EventoRepository {
         }, // Necesario para 'zonasDisponibles'
         artista: true, // Necesario para mapear 'artistName'
         cola: true,
+        documentosRespaldo: true,
+        terminosUso: true,
       },
     });
   }

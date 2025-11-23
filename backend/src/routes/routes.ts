@@ -8,6 +8,7 @@ import colaRoutes from "./Cola.routes";
 import categoriaRoutes from "./Categoria.routes";
 import artistaRoutes from "./Artista.routes";
 import accionRoutes from "./Accion.routes";
+import genericRouter from "./Generic.routes";
 
 const uniteRouter = express.Router();
 
@@ -27,6 +28,7 @@ uniteRouter.use("/acciones", accionRoutes)
 uniteRouter.use("/cola", colaRoutes)
 uniteRouter.use("/categoria", categoriaRoutes)
 uniteRouter.use("/artista", artistaRoutes)
+uniteRouter.use("/generic", genericRouter)
 
 
 export default uniteRouter;

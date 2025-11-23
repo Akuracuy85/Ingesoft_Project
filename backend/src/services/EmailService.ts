@@ -7,7 +7,7 @@ import fs from "fs";
 import Handlebars from "handlebars";
 import { OrdenCompra } from "../models/OrdenCompra";
 import { GenerarQRDeEntrada } from "../utils/QR";
-import { FormatearFecha } from "../utils/StringUtils";
+import { FormatearFecha } from "../utils/FechaUtils";
 import { EventoService } from "./EventoService";
 
 export class EmailService {

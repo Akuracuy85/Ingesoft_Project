@@ -8,6 +8,7 @@ export type AdminMenuItem =
   | "Gestión de eventos"
   | "Usuarios"
   | "Reportes"
+  | "Terminos y Condiciones"
   | "Configuración";
 
 interface AdminLayoutProps {

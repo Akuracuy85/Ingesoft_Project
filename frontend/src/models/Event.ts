@@ -12,6 +12,14 @@ export interface Organizador {
   RazonSocial?: string;
 }
 
+export interface BackendDocumentoDto { 
+  id?: number;
+  nombreArchivo: string;
+  tipo: string;
+  tamano: number;
+  url: string;
+}
+
 export interface Event {
   id: number;
   title: string;
@@ -37,7 +45,7 @@ export interface Event {
   cola?: Cola;
   estado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO";
   organizador: Organizador;
-  documento: string;
+  documentos: BackendDocumentoDto[];
   fechaFinPreventa?: string | null; // NUEVO: fin preventa global YYYY-MM-DD
   fechaInicioPreventa?: string | null; // NUEVO: inicio preventa global YYYY-MM-DD
 }
