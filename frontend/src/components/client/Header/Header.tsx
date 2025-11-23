@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           bg-white/90 dark:bg-gray-900/90
           backdrop-blur-md shadow-md
           flex items-center justify-between
-          z-50 transition-colors
+          z-50
         "
       >
         {/* LOGO */}

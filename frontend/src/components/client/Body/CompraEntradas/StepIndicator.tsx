@@ -24,7 +24,7 @@ const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean
         <div className="flex items-center">
             {/* Círculo */}
             <div
-                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-base transition-colors duration-300 ${circleClass}`}
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-base ${circleClass}`}
             >
                 {isCompleted ? (
                     '✓' // O icono de check

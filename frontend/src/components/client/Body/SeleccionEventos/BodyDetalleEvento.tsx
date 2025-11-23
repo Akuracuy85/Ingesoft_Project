@@ -193,7 +193,7 @@ export const BodyDetalleEvento: React.FC = () => {
 
 
       {/* ===== MAPA + TABLA DE TARIFAS ===== */}
-      <div className="bg-[#fff4ea] dark:bg-[#0F1424] px-4 md:px-12 pt-10 pb-16 transition-colors">
+      <div className="bg-[#fff4ea] dark:bg-[#0F1424] px-4 md:px-12 pt-10 pb-16">
 
         <section className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-24">
 
@@ -253,7 +253,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   zonas.map((zona) => (
                     <tr
                       key={zona.id}
-                      className="hover:bg-orange-100 dark:hover:bg-gray-700 transition-colors"
+                      className="hover:bg-orange-100 dark:hover:bg-gray-700"
                     >
                       <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-900 dark:text-gray-100 font-medium">
                         {zona.nombre}
@@ -328,7 +328,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   disabled={disabled}
                   className={`
                     px-10 py-4 rounded-md text-lg font-semibold
-                    transition-colors 
+                    
                     ${disabled ? "cursor-not-allowed" : "cursor-pointer"}
                     ${
                       disabled

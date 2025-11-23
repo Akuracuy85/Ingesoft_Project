@@ -47,8 +47,8 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
           </button>
           <div
             className={`
-              text-2xl font-semibold px-6 py-2 rounded-full transition-colors duration-300
-              ${minutos >= 3
+                text-2xl font-semibold px-6 py-2 rounded-full
+                ${minutos >= 3
                 ? "bg-green-100 text-green-700"
                 : minutos >= 1
                 ? "bg-yellow-100 text-yellow-700"

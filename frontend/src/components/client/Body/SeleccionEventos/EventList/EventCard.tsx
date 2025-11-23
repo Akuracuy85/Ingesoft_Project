@@ -39,7 +39,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           "
         />
 
-        <div className="p-2.5 flex flex-col gap-1 text-black dark:text-white transition-colors duration-300 ease-in-out">
+        <div className="p-2.5 flex flex-col gap-1 text-black dark:text-white">
           <p className="font-semibold text-sm line-clamp-2">{title}</p>
           <p className="text-sm line-clamp-1">{date}</p>
           <p className="text-sm line-clamp-1">{provinciaDistrito}</p>

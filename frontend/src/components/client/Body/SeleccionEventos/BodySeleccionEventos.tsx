@@ -72,15 +72,13 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
             return (
                 <main className="flex flex-col w-full items-center justify-start 
                     bg-white dark:bg-gray-900 
-                    text-black dark:text-white 
-                    transition-colors">
+                    text-black dark:text-white ">
                     {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
                     
                     <div className="w-full max-w-6xl flex justify-center items-center p-6 h-96">
                         <div className="text-center p-8 rounded-lg 
                             border border-[#F6BA26]/30 dark:border-[#C37723]/40
-                            bg-[#F6BA26]/10 dark:bg-[#C37723]/20
-                            transition-colors">
+                            bg-[#F6BA26]/10 dark:bg-[#C37723]/20">
                             <h3 className="text-2xl font-bold text-[#C37723] mb-2">
                                 ¡No hay resultados!
                             </h3>
@@ -104,15 +102,12 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
     }
 
     return (
-        <main className="flex flex-col w-full items-center justify-start 
-            bg-white dark:bg-gray-900 
-            text-black dark:text-white 
-            transition-colors">
-            
+        <main className="flex flex-col w-full items-center justify-start bg-white dark:bg-gray-900 text-black dark:text-white">
+
             {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
 
             <section className="w-full max-w-7xl flex flex-col gap-8 p-6">
-                <h2 id="proximos-eventos" className="text-4xl font-semibold text-gray-800 dark:text-gray-200 transition-colors ml-20">
+                <h2 id="proximos-eventos" className="text-4xl font-semibold text-gray-800 dark:text-gray-200 ml-20">
                     {hasActiveFilters ? "Resultados de búsqueda" : "Próximos eventos"}
                 </h2>
                 <EventList events={events} /> 
