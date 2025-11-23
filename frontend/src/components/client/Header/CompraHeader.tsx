@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../compo
 import { ArrowLeftIcon, CircleQuestionMarkIcon, Moon, Sun } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
 interface CompraHeaderProps {
   minutos: number;
   segundos: number;

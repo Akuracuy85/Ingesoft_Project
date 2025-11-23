@@ -195,13 +195,6 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
 
         {/* Info inferior */}
         <div className="mt-4 text-center text-xs text-gray-500">
-          <p>
-            Infórmate sobre el tratamiento de tus datos personales{" "}
-            <a href="#" className="text-amber-600 font-semibold">
-              aquí
-            </a>
-          </p>
-
           <div className="flex justify-center gap-3 mt-2 opacity-80">
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" className="h-5" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" className="h-5" />
