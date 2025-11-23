@@ -80,14 +80,14 @@ export class ColaController {
   ingresarUsuarioACola = async (req: Request, res: Response) => {
     try {
       const userId = req.userId;
-      const eventoId = parseInt(req.params.eventoId);
-      if (isNaN(eventoId) || eventoId <= 0) {
+      const colaId = parseInt(req.params.colaId);
+      if (isNaN(colaId) || colaId <= 0) {
         return res.status(StatusCodes.BAD_REQUEST).json({
           success: false,
           message: "ID de evento inválido.",
         });
       }
-      await this.colaService.ingresarUsuarioACola(userId, eventoId);
+      await this.colaService.ingresarUsuarioACola(userId, colaId);
 
       res.status(StatusCodes.OK).json({
         success: true,

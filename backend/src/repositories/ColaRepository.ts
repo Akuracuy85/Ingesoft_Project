@@ -66,11 +66,12 @@ export class ColaRepository {
     return await this.colaRepository.save(nuevaCola);
   }
 
-  async ingresarUsuarioACola(userId: number, eventoId: number): Promise<TurnoCola> {
+  async ingresarUsuarioACola(userId: number, colaId: number): Promise<TurnoCola> {
     const colaEvento = await this.colaRepository.findOne({
-      where: { evento: { id: eventoId } },
+      where: { id: colaId },
       select: ["id"],
     });
+
     if (!colaEvento) {
       throw new Error("Cola para el evento no encontrada.");
     }

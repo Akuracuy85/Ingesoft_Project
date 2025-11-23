@@ -9,7 +9,7 @@ colaRoutes.post("/crear/:eventoId", sessionMiddleware.VerificarToken, autorMiddl
 
 colaRoutes.get("/verificar/:colaId", sessionMiddleware.VerificarToken, colaController.obtenerPosicion);
 
-colaRoutes.post("/ingresar/:eventoId", sessionMiddleware.VerificarToken, colaController.ingresarUsuarioACola);
+colaRoutes.post("/ingresar/:colaId", sessionMiddleware.VerificarToken, colaController.ingresarUsuarioACola);
 
 colaRoutes.post("/heartbeat/:colaId", sessionMiddleware.VerificarToken, colaController.actualizarHeartbeat);
 

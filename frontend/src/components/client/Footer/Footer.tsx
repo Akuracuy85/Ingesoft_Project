@@ -1,3 +1,4 @@
+import { GenericService } from '@/services/GenericService';
 import Book from '../../../assets/Book.svg';
 
 export const Footer = () => {
@@ -7,7 +8,7 @@ export const Footer = () => {
         <div className="flex items-center justify-between">
           <div className="text-6xl font-semibold">Unite</div>
           <div className="text-base flex items-center">
-            <a href='https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf' target="_blank" rel="noopener noreferrer">
+            <a href={GenericService.TYC_LINK} target="_blank" rel="noopener noreferrer">
               <img src={Book} alt="Book" className="w-[72px] h-[72px] mr-2 inline-block" />
               Términos y condiciones
             </a>
