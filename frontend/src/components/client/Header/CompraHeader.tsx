@@ -1,7 +1,8 @@
 // src/components/Header.tsx (FINAL CON RESETEO DE LOGO)
+import { useDarkMode } from "@/hooks/useModoOscuro";
 import { Button } from "../../../components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
-import { ArrowLeftIcon, CircleQuestionMarkIcon } from "lucide-react";
+import { ArrowLeftIcon, CircleQuestionMarkIcon, Moon, Sun } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -16,7 +17,7 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
   const navigate = useNavigate();
   const location = useLocation();
   const {evento} = location.state;
-  console.log(evento)
+  const { isDark, toggleDarkMode } = useDarkMode();
 
   return (
     <>
@@ -27,19 +28,38 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
             <p>Volver a la pagina del evento</p>
           </div>
         </button>
-        <div
-          className={`
-            text-2xl font-semibold px-6 py-2 rounded-full transition-colors duration-300
-            ${minutos >= 3
-              ? "bg-green-100 text-green-700"
-              : minutos >= 1
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
-            }
-            `}
-            >
-          Tiempo restante: {String(minutos).padStart(2, "0")}:
-          {String(segundos).padStart(2, "0")}
+        <div className="flex w-100 justify-around">
+          <button
+            onClick={toggleDarkMode}
+            className="
+              p-2 rounded-full w-12 h-12
+              bg-gray-200 dark:bg-gray-700
+              hover:scale-110 transition 
+              flex items-center justify-center
+              cursor-pointer
+            "
+            title="Cambiar tema"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5 text-yellow-300" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-800" />
+            )}
+          </button>
+          <div
+            className={`
+              text-2xl font-semibold px-6 py-2 rounded-full transition-colors duration-300
+              ${minutos >= 3
+                ? "bg-green-100 text-green-700"
+                : minutos >= 1
+                ? "bg-yellow-100 text-yellow-700"
+                : "bg-red-100 text-red-700"
+              }
+              `}
+              >
+            Tiempo restante: {String(minutos).padStart(2, "0")}:
+            {String(segundos).padStart(2, "0")}
+          </div>
         </div>
       </header>
       <Dialog open={showValidationModal} onOpenChange={setShowValidationModal}>

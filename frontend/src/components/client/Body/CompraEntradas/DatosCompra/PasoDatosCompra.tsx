@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ColaService from "@/services/ColaService";
 import NotificationService from "@/services/NotificationService";
 import SelectorPago from "./SelectorPagos";
+import type { Event } from "@/models/Event";
 
 interface DatosCompraProps {
   eventoId: number;
@@ -41,7 +42,8 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const [dniValues, setDniValues] = useState<Record<string, string>>({});
   const [dniErrors, setDniErrors] = useState<Record<string, string>>({});
   const [conadisCodes, setConadisCodes] = useState<Record<string, string>>({});
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+  const [uniteTermsAccepted, setUniteTermsAccepted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [showElegirTipoPagoModal, setShowElegirTipoPagoModal] = useState<boolean>(false);
@@ -97,8 +99,14 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!termsAccepted) {
-      NotificationService.warning("Debes aceptar los términos y condiciones");
+    if (!uniteTermsAccepted) {
+      NotificationService.warning("Debes aceptar los términos y condiciones de Unite");
+      return;
+    }
+
+    const evento: Event = location.state.evento;
+    if(evento?.terminosUso && !termsAccepted) {
+      NotificationService.warning("Debes aceptar los términos y condiciones del evento");
       return;
     }
 
@@ -215,6 +223,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             handleDniChange={handleDniChange}
             handleConadisChange={handleConadisChange}
             setTermsAccepted={setTermsAccepted}
+            setUniteTermsAccepted={setUniteTermsAccepted}
             allAttendees={allAttendees}
             conadisAttendees={conadisAttendees}
             summaryItems={summaryItems}
@@ -223,6 +232,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
             duplicateDnis={duplicateDnis}
             conadisCodes={conadisCodes}
             termsAccepted={termsAccepted}
+            uniteTermsAccepted={uniteTermsAccepted}
             isLoading={isLoading}
             isUsingPoints={isUsingPoints}
           />

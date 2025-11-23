@@ -24,6 +24,6 @@ export class Zona {
   @JoinColumn()
   tarifaPreventa?: Tarifa | null;
 
-  @ManyToOne(() => Evento, (evento) => evento.zonas)
+  @ManyToOne(() => Evento, (evento) => evento.zonas, { onDelete: "CASCADE" })
   evento: Evento;
 }

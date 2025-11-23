@@ -55,7 +55,7 @@ export class UsuarioController {
 
   editarUsuario = async (req: Request, res: Response) => {
     try {
-      await this.usuarioService.editarUsuario(Number(req.params.id), req.body);
+      await this.usuarioService.editarUsuario(Number(req.params.id), req.body, req.author);
       res.status(StatusCodes.OK).json({
         success: true,
       });

@@ -118,11 +118,11 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
   // 🆕 --- NUEVOS CÁLCULOS DE LÍMITE DE ENTRADAS ---
   const ticketsComprados = 4 - maxTickets; // Entradas ya compradas
   const maxAlcanzado = maxTickets === 0;   // Límite alcanzado
-
+  console.log(eventDetails)
   return (
     <>
       <img
-        src={Encabezado}
+        src={eventDetails.imageLugar ?? Encabezado}
         alt="Encabezado del Evento"
         className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
       />

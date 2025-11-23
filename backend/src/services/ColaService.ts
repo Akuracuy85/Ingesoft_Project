@@ -19,11 +19,13 @@ export class ColaService {
 
   public async obtenerPosicion(userId: number, colaId: number): Promise<number> {
 
-    const infoTurno = await this.colaRepository.obtenerPosicion(
-      userId,
-      colaId
-    );
-    if (infoTurno === null || infoTurno === undefined) {
+    let infoTurno = undefined;
+    try {
+      infoTurno = await this.colaRepository.obtenerPosicion(
+        userId,
+        colaId
+      );
+    } catch(e) {
       throw new CustomError("No se encontró un turno activo para este evento.", StatusCodes.NOT_FOUND);
     }
 
@@ -54,9 +56,9 @@ export class ColaService {
     }
   }
 
-  public async ingresarUsuarioACola(userId: number, eventoId: number): Promise<void> {
+  public async ingresarUsuarioACola(userId: number, colaId: number): Promise<void> {
     try {
-      await this.colaRepository.ingresarUsuarioACola(userId, eventoId);
+      await this.colaRepository.ingresarUsuarioACola(userId, colaId);
     } catch (error) {
       throw new CustomError("Error al ingresar el usuario a la cola.", StatusCodes.INTERNAL_SERVER_ERROR);
     }

@@ -200,7 +200,7 @@ export const BodyDetalleEvento: React.FC = () => {
           {/* Imagen del mapa */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={mapaAsientos}
+              src={evento?.imageLugar ?? mapaAsientos}
               alt="Lugar del Evento"
               className="
                 w-full max-w-md rounded-lg object-contain 
@@ -328,7 +328,8 @@ export const BodyDetalleEvento: React.FC = () => {
                   disabled={disabled}
                   className={`
                     px-10 py-4 rounded-md text-lg font-semibold
-                    transition-colors cursor-pointer
+                    transition-colors 
+                    ${disabled ? "cursor-not-allowed" : "cursor-pointer"}
                     ${
                       disabled
                         ? "bg-gray-400 cursor-not-allowed text-white"

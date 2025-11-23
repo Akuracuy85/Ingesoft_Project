@@ -358,6 +358,8 @@ export class EventoRepository {
         artista: true,  // Para ver el artista principal
         zonas: true,
         cola: true,
+        terminosUso: true,
+        documentosRespaldo: true,
       },
       order: {
         fechaEvento: "DESC", // O "ASC" si prefieres ver los más próximos primero

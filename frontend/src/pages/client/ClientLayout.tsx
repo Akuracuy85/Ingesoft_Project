@@ -18,7 +18,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
   onApplyNewFilters,
 }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 transition-colors">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-[#020817]">
 
       <header className="flex top-0 left-0 w-full z-50 bg-white dark:bg-gray-800 shadow transition-colors">
         <Header

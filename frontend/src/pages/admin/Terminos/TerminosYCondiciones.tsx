@@ -8,6 +8,7 @@ import AdminLayout from "../AdminLayout"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import TerminosUniteCard from "@/components/admin/TerminosUniteCard"
+import { GenericService } from "@/services/GenericService"
 
 export default function TerminosCondiciones(): React.ReactElement {
   const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth()
@@ -41,8 +42,6 @@ export default function TerminosCondiciones(): React.ReactElement {
     )
   }
 
-  const terminosUrl = "https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf"
-
   return (
     <AdminLayout activeItem="Terminos y Condiciones">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -59,7 +58,7 @@ export default function TerminosCondiciones(): React.ReactElement {
               Haz clic en el botón para ver los términos y condiciones actuales.
             </span>
             <a
-              href={terminosUrl}
+              href={GenericService.TYC_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-[#E58E00] text-white text-sm font-medium rounded-md shadow-sm hover:bg-[#E58E00]/90 transition duration-150 ease-in-out cursor-pointer"

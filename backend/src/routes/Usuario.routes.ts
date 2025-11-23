@@ -13,7 +13,7 @@ router.get("/rol/:rol", usuarioController.obtenerPorRol);
 
 router.post("/", usuarioController.crearUsuario);
 
-router.put("/:id", usuarioController.editarUsuario);
+router.put("/:id", sessionMiddleware.VerificarToken, autorMiddleware.VerificarEsAdmin, usuarioController.editarUsuario);
 
 router.delete("/:id", usuarioController.borrar);
 

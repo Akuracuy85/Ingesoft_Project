@@ -16,7 +16,7 @@ export class Documento {
   // Puede representar el documento de términos o cualquiera de respaldo asociado a un evento.
   @ManyToOne(() => Evento, (evento) => evento.documentosRespaldo, {
     nullable: true,
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
   })
   evento?: Evento;
   @Column({ nullable: true })

@@ -124,26 +124,53 @@ export function EventDetailsModal({ event, onClose, onApprove, onReject }: Event
             </div>
           </div>
 
-          {/* Documento único */}
-          {event.documento && (
+          {/* Terminos de uso */}
+          {event.terminosUso && (
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-3 block">
-                Documento adjunto
+                Terminos y Condiciones del evento
               </label>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                 <a
-                  href={event.documento}
+                  href={event.terminosUso.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:text-primary transition-colors"
                 >
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-foreground font-medium underline-offset-4 hover:underline">
-                    Descargar documento
+                    {event.terminosUso.nombreArchivo}
                   </span>
                 </a>
                 <Badge className={getBadgeClass(event.estado)}>{event.estado}</Badge>
               </div>
+            </div>
+          )}
+
+          {/* Documentos de respaldo */}
+          {event.documentosRespaldo && event.documentosRespaldo.length > 0  && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-3 block">
+                Documentos de respaldo
+              </label>
+              {
+                event.documentosRespaldo.map( doc => 
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 hover:text-primary transition-colors"
+                    >
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-foreground font-medium underline-offset-4 hover:underline">
+                      {doc.nombreArchivo}
+                    </span>
+                  </a>
+                  <Badge className={getBadgeClass(event.estado)}>{event.estado}</Badge>
+                </div>
+                )
+              }
             </div>
           )}
 
