@@ -97,7 +97,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
 
     return (
         <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Ubicación</h3>
+            <h3 className="text-lg font-medium mb-2 dark:text-gray-200">Ubicación</h3>
             <div className="grid grid-cols-3 gap-4">
 
                 {/* Departamento */}

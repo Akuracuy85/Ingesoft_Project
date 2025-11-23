@@ -51,7 +51,7 @@ export const DateRangePicker = ({ value, onChange }: DateRangePickerProps) => {
                     className={`text-xs font-medium px-2 py-1 rounded transition 
                       ${isClearDisabled 
                           ? 'text-gray-400 cursor-not-allowed' 
-                          : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200'
+                          : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200 dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20'
                       }`}
                 >
                     Limpiar

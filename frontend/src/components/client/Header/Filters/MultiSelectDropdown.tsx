@@ -68,17 +68,17 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   }, [open]);
 
 
-  return (
-    // 🛑 RENDERIZADO: Aplicar estilos de deshabilitado si 'disabled' es true
-    <div className={`mb-6 relative multi-dropdown ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={dropdownRef}>
-      <h3 className="text-lg font-medium mb-2">{label}</h3>
+  return (
+    // 🛑 RENDERIZADO: Aplicar estilos de deshabilitado si 'disabled' es true
+    <div className={`mb-6 relative multi-dropdown ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={dropdownRef}>
+      <h3 className="text-lg font-medium mb-2 dark:text-gray-200">{label}</h3>
 
-      {/* Selector visible */}
-      <div
-        className="border border-gray-300 rounded p-2 cursor-pointer flex flex-wrap gap-2 min-h-[44px] items-center justify-between"
-        // 🛑 RENDERIZADO: Bloquear el clic si está deshabilitado
-        onClick={() => !disabled && setOpen(!open)}
-      >
+      {/* Selector visible */}
+      <div
+        className="border border-gray-300 rounded p-2 cursor-pointer flex flex-wrap gap-2 min-h-[44px] items-center justify-between dark:border-gray-600 dark:bg-gray-800"
+        // 🛑 RENDERIZADO: Bloquear el clic si está deshabilitado
+        onClick={() => !disabled && setOpen(!open)}
+      >
         {/* Contenido seleccionado: Muestra NOMBRES */}
         <div className="flex flex-wrap gap-2 flex-1">
           {selectedIds.length === 0 && (
@@ -87,7 +87,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           {selectedNames.map((name) => (
             <span
               key={name}
-              className="bg-[#F6BA26]/20 text-[#C37723] px-2 py-1 rounded-full flex items-center gap-1"
+              className="bg-[#F6BA26]/20 text-[#C37723] px-2 py-1 rounded-full flex items-center gap-1 dark:bg-[#F6BA26]/20 dark:text-[#C37723]"
             >
               {name}
               <button
@@ -107,21 +107,21 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         </div>
 
         {/* Flechita */}
-        <ChevronDown
-          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
-        />
+        <ChevronDown
+          className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+            open ? "rotate-180" : "rotate-0"
+          } dark:text-gray-300`}
+        />
       </div>
 
       {/* Dropdown con checkboxes */}
       {open && (
-        <div className="absolute mt-2 w-full border border-gray-300 bg-white rounded shadow-lg max-h-48 overflow-y-auto z-10">
-          {options.map((option) => (
-            <label
-              key={option.id}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-            >
+        <div className="absolute mt-2 w-full border border-gray-300 bg-white rounded shadow-lg max-h-48 overflow-y-auto z-10 dark:bg-gray-800 dark:border-gray-600">
+          {options.map((option) => (
+            <label
+              key={option.id}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-700"
+            >
               <input
                 type="checkbox"
                 checked={selectedIds.includes(option.id)}

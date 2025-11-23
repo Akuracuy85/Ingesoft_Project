@@ -148,17 +148,17 @@ export const FilterModal = ({
         );
     }
     
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 relative select-none">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-black"
-          >
-            ✕
-          </button>
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-60 flex justify-center items-center z-50">
+                <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 relative select-none dark:bg-gray-900 dark:text-gray-200">
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white"
+                    >
+                        ✕
+                    </button>
 
-          <h2 className="text-xl font-semibold mb-4">Filtros</h2>
+                    <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">Filtros</h2>
 
           {/* Controles de filtro... */}
           <PriceRangeInput value={filters.priceRange} onChange={handlePriceChange} />
@@ -173,31 +173,31 @@ export const FilterModal = ({
             />
           <DateRangePicker value={filters.dateRange} onChange={handleDateChange} />
 
-          <div className="flex justify-between mt-6 border-t pt-4">
-                {/* BOTÓN DE LIMPIAR (ESTILO NARANJA) */}
-                <button
-                    onClick={handleClear}
-                    className="text-sm font-medium border border-orange-700 bg-orange-100 text-orange-800 px-4 py-2 rounded hover:bg-orange-200 transition"
-                >
-                    Limpiar Filtros
-                </button>
-                
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="text-sm font-medium text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
-                    >
-                        Cancelar
-                    </button>
-                    {/* BOTÓN DE ACEPTAR */}
+          <div className="flex justify-between mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+                {/* BOTÓN DE LIMPIAR (ESTILO NARANJA) */}
+                <button
+                    onClick={handleClear}
+                    className="text-sm font-medium border border-orange-700 bg-orange-100 text-orange-800 px-4 py-2 rounded hover:bg-orange-200 transition dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20"
+                >
+                    Limpiar Filtros
+                </button>
+                
+                <div className="flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="text-sm font-medium text-gray-700 px-4 py-2 rounded hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                        Cancelar
+                    </button>
+                    {/* BOTÓN DE ACEPTAR */}
             <button
                 onClick={handleApply}
                 className="px-6 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
             >
                 Aceptar
             </button>
-                </div>
-          </div>
+                </div>
+          </div>
         </div>
         
       </div>
