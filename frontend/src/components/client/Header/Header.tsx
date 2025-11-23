@@ -99,12 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
           {showFilterButton && (
             <button
               onClick={toggleFilters}
-              className="
-                flex items-center gap-2 px-4 py-2 
-                bg-indigo-600 rounded-md text-white 
-                hover:bg-indigo-700 transition
-                cursor-pointer
-              "
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
             >
               <img
                 className="w-5 h-5"
@@ -128,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="
                   flex items-center gap-2
                   text-gray-700 dark:text-gray-200
-                  hover:text-indigo-600 dark:hover:text-indigo-400
+                  hover:text-[#C37723] dark:hover:text-[#C37723]
                   transition
                 "
               >
@@ -158,22 +153,14 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <Link
                 to="/login"
-                className="
-                  px-4 py-2 bg-indigo-600 rounded-md
-                  text-white font-medium text-sm
-                  hover:bg-indigo-700 transition
-                "
+                className="px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
               >
                 Iniciar sesión
               </Link>
 
               <Link
                 to="/registro"
-                className="
-                  px-4 py-2 bg-indigo-600 rounded-md
-                  text-white font-medium text-sm
-                  hover:bg-indigo-700 transition
-                "
+                className="px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
               >
                 Registrarse
               </Link>

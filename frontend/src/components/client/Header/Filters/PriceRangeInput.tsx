@@ -52,9 +52,9 @@ interface PriceInputProps {
 }
 
 const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, handleBlur, min, max }) => (
-  <div className="relative flex-1">
-    <span className="absolute left-3 top-2 text-gray-500">{CURRENCY_SYMBOL}</span>
-    <input
+    <div className="relative flex-1">
+        <span className="absolute left-3 top-2 text-gray-500 dark:text-gray-300">{CURRENCY_SYMBOL}</span>
+        <input
       type="text" 
       placeholder="0.00"
       value={value}
@@ -105,8 +105,8 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, h
           setValue(num.toFixed(2));
         }
       }}
-      className={`w-full pl-10 border border-gray-300 rounded p-2 
-        ${value === "" || parseFloat(value.replace(/,/g, '.') || '0') === 0 ? "text-gray-400" : "text-black"}`}
+            className={`w-full pl-10 border border-gray-300 rounded p-2 dark:border-gray-600 dark:bg-gray-800 
+                ${value === "" || parseFloat(value.replace(/,/g, '.') || '0') === 0 ? "text-gray-400 dark:text-gray-400" : "text-black dark:text-white"}`}
     />
   </div>
 );
@@ -222,23 +222,23 @@ export const PriceRangeInput: React.FC<PriceRangeInputProps> = ({ value, onChang
     
   const isClearDisabled = isRangeEmpty(minValue, maxValue);
     
-  return (
-    <div className="mb-6">
-      <h3 className="text-lg font-medium mb-2 flex justify-between items-center">
-        <span>Rango de precios</span>
-        
-        <button
-            onClick={handleClearPrice}
-            disabled={isClearDisabled}
-            className={`text-xs font-medium px-2 py-1 rounded transition 
-              ${isClearDisabled 
-                  ? 'text-gray-400 cursor-not-allowed' 
-                  : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200'
-              }`}
-        >
-            Limpiar
-        </button>
-      </h3>
+    return (
+        <div className="mb-6 min-w-0">
+            <h3 className="text-lg font-medium mb-2 flex justify-between items-center">
+                <span>Rango de precios</span>
+        
+                <button
+                        onClick={handleClearPrice}
+                        disabled={isClearDisabled}
+                        className={`text-xs font-medium px-2 py-1 rounded transition 
+                            ${isClearDisabled 
+                                    ? 'text-gray-400 cursor-not-allowed' 
+                                    : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200 dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20'
+                            }`}
+                >
+                        Limpiar
+                </button>
+            </h3>
       
       <div className="flex gap-4">
         <PriceInput

@@ -78,16 +78,16 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
                     
                     <div className="w-full max-w-6xl flex justify-center items-center p-6 h-96">
                         <div className="text-center p-8 rounded-lg 
-                            border border-indigo-200 dark:border-indigo-700
-                            bg-indigo-50 dark:bg-indigo-900/40
+                            border border-[#F6BA26]/30 dark:border-[#C37723]/40
+                            bg-[#F6BA26]/10 dark:bg-[#C37723]/20
                             transition-colors">
-                            <h3 className="text-2xl font-bold text-indigo-800 mb-2">
+                            <h3 className="text-2xl font-bold text-[#C37723] mb-2">
                                 ¡No hay resultados!
                             </h3>
-                            <p className="text-indigo-600">
+                            <p className="text-[#C37723]">
                                 No se encontraron eventos que coincidan con tus filtros.
                             </p>
-                            <p className="text-sm text-indigo-500 mt-2">
+                            <p className="text-sm text-[#C37723] mt-2">
                                 Intenta limpiar o ajustar tus criterios de búsqueda.
                             </p>
                         </div>

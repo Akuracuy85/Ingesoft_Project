@@ -39,8 +39,8 @@ export const DateRangePicker = ({ value, onChange }: DateRangePickerProps) => {
 
     const isClearDisabled = !start && !end;
 
-    return (
-        <div className="mb-6">
+    return (
+        <div className="mb-6 min-w-0">
             <h3 className="text-lg font-medium mb-2 flex justify-between items-center">
                 <span>Rango de Fechas</span>
                 
@@ -51,7 +51,7 @@ export const DateRangePicker = ({ value, onChange }: DateRangePickerProps) => {
                     className={`text-xs font-medium px-2 py-1 rounded transition 
                       ${isClearDisabled 
                           ? 'text-gray-400 cursor-not-allowed' 
-                          : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200'
+                          : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200 dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20'
                       }`}
                 >
                     Limpiar

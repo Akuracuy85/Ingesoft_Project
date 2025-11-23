@@ -9,12 +9,12 @@ const ButtonInput = React.forwardRef(
       type="button"
       onClick={onClick}
       ref={ref}
-      className="flex items-center justify-between w-full border border-gray-300 rounded-lg p-2 text-gray-700 cursor-pointer bg-white hover:bg-gray-50 shadow-sm transition"
+      className="flex items-center justify-between w-full border border-gray-300 rounded-lg p-2 text-gray-700 cursor-pointer bg-white hover:bg-gray-50 shadow-sm transition dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
     >
       <span>{value || "DD/MM/AAAA"}</span>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 text-gray-500"
+        className="h-5 w-5 text-gray-500 dark:text-gray-300"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -44,23 +44,23 @@ const CalendarHeader = ({
   }, [monthDate]);
 
   return (
-    <div className="flex items-center justify-between px-2 py-2 bg-gray-100 border-b border-gray-200 rounded-t-xl">
+    <div className="flex items-center justify-between px-2 py-2 bg-gray-100 border-b border-gray-200 rounded-t-xl dark:bg-gray-800 dark:border-gray-700">
       <button
         onClick={decreaseMonth}
         disabled={prevMonthButtonDisabled}
-        className="text-gray-600 hover:text-gray-800 px-3"
+        className="text-gray-600 hover:text-gray-800 px-3 dark:text-gray-300 dark:hover:text-white"
       >
         {"<"}
       </button>
 
-      <div className="text-gray-700 font-medium text-center flex-1">
+      <div className="text-gray-700 font-medium text-center flex-1 dark:text-gray-200">
         {monthDate.toLocaleString("es-ES", { month: "long", year: "numeric" })}
       </div>
 
       <button
         onClick={increaseMonth}
         disabled={nextMonthButtonDisabled}
-        className="text-gray-600 hover:text-gray-800 px-3"
+        className="text-gray-600 hover:text-gray-800 px-3 dark:text-gray-300 dark:hover:text-white"
       >
         {">"}
       </button>
@@ -86,7 +86,7 @@ export const DatePickerField = ({
   const pickerRef = useRef<DatePicker>(null!);
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 min-w-0">
       <label className="text-sm text-gray-600 mb-1">{label}</label>
       <DatePicker
         ref={pickerRef}

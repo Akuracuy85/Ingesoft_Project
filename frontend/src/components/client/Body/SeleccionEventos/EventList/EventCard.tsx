@@ -14,7 +14,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const provinciaDistrito = `${provincia}, ${distrito}`;
 
   return (
-    <Link to={`${event.id}/detalle`}>
+    <Link to={`${event.id}/detalle`} className="cursor-pointer select-none">
       <div
         className="
           flex flex-col
