@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo  } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { generarColorDesdeTipo } from "@/utils/generarColorDesdeTipo"
@@ -29,6 +29,9 @@ export function ReporteAcciones() {
   const [actionType, setActionType] = useState("all")
   const [showExportNotification, setShowExportNotification] = useState(false)
 
+  const [paginaActual, setPaginaActual] = useState(1)
+  const itemsPorPagina = 10
+
   const handleExport = () => {
     setShowExportNotification(true)
     setTimeout(() => setShowExportNotification(false), 3000)
@@ -37,11 +40,18 @@ export function ReporteAcciones() {
   const handleChangeTipo = (tipo: string) => {
     setActionType(tipo)
     actualizarFiltros({ tipo: tipo === "all" ? undefined : tipo })
+    setPaginaActual(1)
   }
 
-  const filteredData = acciones
+  const totalPaginas = Math.ceil(acciones.length / itemsPorPagina)
 
-  const actionDistribution = acciones.reduce(
+  const filteredData = acciones.slice(
+    (paginaActual - 1) * itemsPorPagina,
+    paginaActual * itemsPorPagina
+  )
+
+  const actionDistribution = useMemo(() => {
+  return acciones.reduce(
     (acc: { name: string; value: number; color: string }[], a) => {
       const existing = acc.find((x) => x.name === a.tipo)
 
@@ -58,6 +68,8 @@ export function ReporteAcciones() {
     },
     []
   )
+}, [acciones])
+
 
   return (
     <Card className="p-6">
@@ -76,11 +88,13 @@ export function ReporteAcciones() {
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
 
-            {/* CAMBIO: al cambiar fecha se aplica como filtro real */}
             <Input
               type="date"
               className="w-[180px]"
-              onChange={(e) => actualizarFiltros({ fechaInicio: e.target.value })}
+              onChange={(e) => {
+                actualizarFiltros({ fechaInicio: e.target.value })
+                setPaginaActual(1)
+              }}
             />
           </div>
 
@@ -109,10 +123,9 @@ export function ReporteAcciones() {
       </div>
 
       {isLoading && <p className="text-sm text-muted-foreground mb-4">Cargando acciones...</p>}
-
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-      {/* Notificación exportación */}
+      {/* Notificación export */}
       {showExportNotification && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
           Archivo exportado correctamente
@@ -145,7 +158,6 @@ export function ReporteAcciones() {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.id} className="border-b border-border hover:bg-muted/50">
-                {/* CAMBIO: mapeo real del backend */}
                 <td className="py-3 px-4 text-sm text-foreground">
                   {new Date(item.fechaHora).toLocaleString()}
                 </td>
@@ -167,11 +179,36 @@ export function ReporteAcciones() {
             ))}
           </tbody>
         </table>
+
+        {/* 🔥 PAGINACIÓN */}
+        <div className="flex justify-between items-center mt-4">
+          <Button
+            variant="outline"
+            disabled={paginaActual === 1}
+            onClick={() => setPaginaActual(paginaActual - 1)}
+          >
+            Anterior
+          </Button>
+
+          <p className="text-sm text-muted-foreground">
+            Página {paginaActual} de {totalPaginas || 1}
+          </p>
+
+          <Button
+            variant="outline"
+            disabled={paginaActual === totalPaginas || totalPaginas === 0}
+            onClick={() => setPaginaActual(paginaActual + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
       </div>
 
       {/* Pie Chart */}
       <div className="border-t border-border pt-6">
-        <h3 className="text-sm font-medium text-foreground mb-4">Distribución de acciones por tipo</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">
+          Distribución de acciones por tipo
+        </h3>
 
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
@@ -196,5 +233,3 @@ export function ReporteAcciones() {
     </Card>
   )
 }
-
-
