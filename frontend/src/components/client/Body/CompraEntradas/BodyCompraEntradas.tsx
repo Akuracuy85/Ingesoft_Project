@@ -105,7 +105,7 @@ export const BodyCompraEntradas: React.FC = () => {
   // --- Loading/Error ---
   if (isLoading || isLoadingPoints || isLoadingTicketsPoseidos) {
     return (
-      <div className="text-center py-20 text-xl font-medium text-gray-700">
+      <div className="text-center py-20 text-xl font-medium text-gray-700 dark:text-gray-200">
         Cargando datos del evento, tus puntos y tus entradas...
       </div>
     );
@@ -113,7 +113,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="text-center py-20 text-xl font-medium text-red-600">
+      <div className="text-center py-20 text-xl font-medium text-red-600 dark:text-red-500">
         Error al cargar el evento.{" "}
         {error instanceof Error ? error.message : "Error desconocido."}
       </div>
@@ -122,7 +122,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   if (!eventDetails) {
     return (
-      <div className="text-center py-20 text-xl font-medium text-gray-500">
+      <div className="text-center py-20 text-xl font-medium text-gray-500 dark:text-gray-200">
         El evento con ID {id} no fue encontrado o no está disponible para compra.
       </div>
     );
@@ -132,7 +132,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   // --- Renderizado ---
   return (
-    <div className="w-full flex flex-col items-center bg-gray-50 px-8 py-6">
+    <div className="w-full flex flex-col items-center bg-white px-8 py-6 text-black dark:bg-gray-900 dark:text-white">
       <StepIndicator currentStep={currentStep} steps={steps} />
 
       {currentStep === 0 && (

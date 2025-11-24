@@ -21,18 +21,18 @@ const PagoYape: React.FC<{ monto: number; onClose: () => void; onConfirm: () => 
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-sm p-8 relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-sm p-8 relative dark:bg-gray-800 dark:text-gray-100">
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
 
         <img src={LogoUnite} className="mb-4 w-32 mx-auto" />
 
-        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center dark:text-gray-100">
           Ingresa tu celular Yape
         </h2>
 
@@ -45,7 +45,7 @@ const PagoYape: React.FC<{ monto: number; onClose: () => void; onConfirm: () => 
           className="mb-4"
         />
 
-        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center dark:text-gray-100">
           Código de aprobación
         </h2>
 

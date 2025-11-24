@@ -127,7 +127,7 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
         className="w-[400px] h-[500px] rounded-lg shadow-sm object-cover"
       />
 
-      <h1 className="text-2xl font-semibold text-gray-800 my-4">
+      <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 my-4">
         Compra tus entradas para {eventDetails.title}
       </h1>
 
@@ -180,7 +180,7 @@ export const PasoTickets: React.FC<PasoTicketsProps> = ({
 
       {isSummaryVisible && (
         <div className="w-full flex flex-col items-center mt-10">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
             Tu Selección ({totalSelectedTickets} entradas)
           </h2>
           <SelectionSummaryTable
