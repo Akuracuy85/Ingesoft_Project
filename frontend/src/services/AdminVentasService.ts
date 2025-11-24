@@ -1,22 +1,36 @@
 import HttpClient from "./Client";
-import type { AccionResponse } from "@/models/Accion";
+import type { AdminVenta } from "@/models/Venta";
+
+export interface FiltroVentas {
+  fechaInicio?: string;
+  fechaFin?: string;
+  nombreEvento?: string;
+  nombreOrganizador?: string;
+}
 
 class AdminVentasService extends HttpClient {
   constructor() {
-    super("/admin/listar");
+    super("/evento/admin/listar");
   }
 
-  async obtenerAcciones(params?: {
-    fechaInicio?: string;
-    fechaFin?: string;
-    tipo?: string;
-    autorId?: number;
-  }): Promise<AccionResponse> {
+  async listarEventosAdmin(params?: FiltroVentas): Promise<AdminVenta[]> {
     try {
-      const response = await super.get<AccionResponse>("/", { params });
-      return response;
+      const response = await super.get<{
+        success: boolean;
+        count: number;
+        eventos: any[];
+      }>("/", { params });
+
+      return response.eventos.map((evt) => ({
+        id: evt.id,
+        nombreEvento: evt.nombre,
+        fechaEvento: evt.fechaEvento,
+        entradasVendidas: evt.entradasVendidas,
+        gananciaTotal: evt.gananciaTotal,
+        organizadorNombre: `${evt.organizador.nombre} ${evt.organizador.apellidoPaterno}`,
+      }));
     } catch (error) {
-      console.error("Error obteniendo acciones internas:", error);
+      console.error("Error obteniendo ventas:", error);
       throw error;
     }
   }
