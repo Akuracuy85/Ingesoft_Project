@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           bg-white/90 dark:bg-gray-900/90
           backdrop-blur-md shadow-md
           flex items-center justify-between
-          z-50 transition-colors
+          z-50
         "
       >
         {/* LOGO */}
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
             {isDark ? (
               <Sun className="h-5 w-5 text-yellow-300" />
             ) : (
-              <Moon className="h-5 w-5 text-gray-800" />
+              <Moon className="h-5 w-5 text-gray-800 dark:text-gray-100" />
             )}
           </button>
 

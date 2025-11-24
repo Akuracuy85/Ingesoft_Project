@@ -38,19 +38,19 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   return (
     <div className="sticky top-10">
       {/* Resumen de Compra */}
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 border-b pb-2">
           Resumen
         </h3>
         <div className="space-y-2">
           {summaryItems.map((item) => (
-            <div key={item.zona} className="flex justify-between text-gray-700">
+            <div key={item.zona} className="flex justify-between text-gray-700 dark:text-gray-200">
               <span className="capitalize">{item.zona.toLowerCase()}</span>
               <span className="font-medium">S/ {item.subtotal.toFixed(2)}</span>
             </div>
           ))}
         </div>
-        <div className="flex justify-between text-gray-900 font-bold text-lg mt-4 pt-4 border-t-2">
+        <div className="flex justify-between text-gray-900 font-bold text-lg mt-4 pt-4 border-t-2 dark:text-gray-100">
           <span>Total:</span>
           <span>S/ {totalGeneral.toFixed(2)}</span>
         </div>
@@ -62,12 +62,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <div className="mt-6">
           <div className="flex gap-4 items-end">
             {/* Tarjeta 1 */}
-            <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end min-h-[160px]">
+            <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end min-h-[160px] dark:bg-gray-700 dark:text-gray-100">
               <div className="flex flex-col justify-end flex-grow">
-                <p className="text-sm text-gray-600">Puntos utilizados*</p>
+                <p className="text-sm text-gray-600 dark:text-gray-200">Puntos utilizados*</p>
                 <p className="text-3xl font-bold text-yellow-700 mt-1">{pointsImpact}</p>
               </div>
-              <p className="text-sm text-gray-600 mt-2 leading-none">puntos</p>
+              <p className="text-sm text-gray-600 dark:text-gray-200 mt-2 leading-none">puntos</p>
             </div>
 
             {/* Tarjeta 2 */}
@@ -80,19 +80,19 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 mt-2 text-center">{notaGasto}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-200 mt-2 text-center">{notaGasto}</p>
         </div>
       ) : (
         // 🟢 ACUMULAR PUNTOS (NORMAL)
         <div className="mt-6">
           <div className="flex gap-4 items-end">
             {/* Tarjeta 1 */}
-            <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end h-[135px]">
+            <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end h-[135px] dark:bg-gray-700 dark:text-gray-100">
               <div className="flex flex-col justify-end flex-grow">
-                <p className="text-sm text-gray-600">Puntos acumulados*</p>
+                <p className="text-sm text-gray-600 dark:text-gray-200">Puntos acumulados*</p>
                 <p className="text-3xl font-bold text-yellow-700 mt-1">{pointsImpact}</p>
               </div>
-              <p className="text-sm text-gray-600 mt-2 leading-none">puntos</p>
+              <p className="text-sm text-gray-600 dark:text-gray-200 mt-2 leading-none">puntos</p>
             </div>
 
             {/* Tarjeta 2 */}
@@ -105,7 +105,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 mt-2 text-center">{notaGanancia}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-200 mt-2 text-center">{notaGanancia}</p>
         </div>
       )}
     </div>
