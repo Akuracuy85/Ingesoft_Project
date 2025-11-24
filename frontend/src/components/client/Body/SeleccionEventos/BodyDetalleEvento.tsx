@@ -9,6 +9,7 @@ import type { Tarifa } from "@/models/Tarifa";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationService from "@/services/NotificationService";
 import PerfilService from "@/services/PerfilService";
+import Loading from "@/components/common/Loading";
 
 interface ArtistaDetalle {
   id: number;
@@ -63,11 +64,12 @@ export const BodyDetalleEvento: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-lg dark:text-gray-200">
-        Cargando evento...
+      <div className="min-h-screen flex justify-center items-center bg-white dark:bg-gray-900">
+        <Loading height="h-64" className="w-full max-w-4xl" />
       </div>
     );
   }
+
 
   if (error || !evento) {
     return (
@@ -161,8 +163,10 @@ export const BodyDetalleEvento: React.FC = () => {
           })`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70 dark:to-black/80" />
-
+        <div className="absolute inset-0
+                bg-gradient-to-b
+                from-black/20 via-black/10 to-transparent
+                dark:from-black/60 dark:via-black/30 dark:to-transparent" />
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
             <h1 className="text-6xl md:text-8xl font-extrabold">{evento.nombre}</h1>
@@ -187,10 +191,6 @@ export const BodyDetalleEvento: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Separador entre Sección 1 y Sección 2 */}
-      <div className="h-8 bg-gradient-to-b from-black/30 to-[#fff4ea] dark:from-black/30 dark:to-[#0F1424]" />
-
 
       {/* ===== MAPA + TABLA DE TARIFAS ===== */}
       <div className="bg-[#fff4ea] dark:bg-[#0F1424] px-4 md:px-12 pt-10 pb-16">
@@ -287,11 +287,7 @@ export const BodyDetalleEvento: React.FC = () => {
           </div>
 
         </section>
-      </div>
-      
-      {/* Separador entre Sección 2 y Sección 3 */}
-      <div className="h-8 bg-gradient-to-b from-[#fff4ea] to-white dark:from-[#151526] dark:to-gray-900" />
-                  
+      </div>       
 
       {/* ===== SECCIÓN COMPRA ===== */}
       <div className="bg-white dark:bg-gray-900 px-4 md:px-12 py-16">

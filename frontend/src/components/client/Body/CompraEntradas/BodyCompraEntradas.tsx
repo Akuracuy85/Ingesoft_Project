@@ -3,6 +3,8 @@ import { useParams, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../../hooks/useAuth";
 
+
+
 import EventoService from "../../../../services/EventoService";
 import type { EventDetailsForPurchase } from "../../../../services/EventoService";
 import PerfilService from "../../../../services/PerfilService";
@@ -18,6 +20,7 @@ import type { ZonePurchaseDetail } from "../../../../types/ZonePurchaseDetail";
 import type { Step } from "../../../../types/Step";
 
 import { calcularPuntos } from "../../../../utils/points";
+import Loading from "@/components/common/Loading";
 
 const steps: Step[] = [
   { title: "TICKETS", number: 1 },
@@ -105,8 +108,8 @@ export const BodyCompraEntradas: React.FC = () => {
   // --- Loading/Error ---
   if (isLoading || isLoadingPoints || isLoadingTicketsPoseidos) {
     return (
-      <div className="text-center py-20 text-xl font-medium text-gray-700 dark:text-gray-200">
-        Cargando datos del evento, tus puntos y tus entradas...
+      <div className="w-full flex justify-center items-center py-20">
+        <Loading height="h-40" className="w-full max-w-4xl" />
       </div>
     );
   }
