@@ -114,4 +114,10 @@ router.get("/filtros/ubicaciones", eventoController.obtenerFiltrosUbicacion);
 
 router.get("/publicados", eventoController.listarPublicados);
 
+router.get(
+  "/:id/documentos",
+  sessionMiddleware.VerificarToken,
+  eventoController.obtenerDocumentosRespaldo
+);
+
 export default router;

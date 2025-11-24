@@ -424,6 +424,15 @@ export class EventoService {
     return evento;
   }
 
+  public async obtenerEventoDetallePropietario(eventoId: number, organizadorId: number): Promise<Evento> {
+    await this.obtenerOrganizador(organizadorId);
+    const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
+    if (!evento || evento.organizador.id !== organizadorId) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+    return evento;
+  }
+
   private async aplicarActualizacion(
     evento: Evento,
     data: ActualizarEventoDto
@@ -708,12 +717,14 @@ export class EventoService {
         idsRecibidos.add(docDto.id);
       } else {
         const documento = new Documento();
+        // Asignamos el tipo lógico antes de preparar (faltaba y podía quedar undefined)
+        documento.tipo = TIPO_DOCUMENTO_RESPALDO;
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
           `${evento.id}/documentos`
         );
-        documento.evento = evento;
+        documento.evento = evento; // Garantiza asociación con el evento (eventoId)
         nuevos.push(documento);
       }
     }
@@ -1310,6 +1321,4 @@ export class EventoService {
   }
 
 }
-
-export const eventoService = EventoService.getInstance();
 
