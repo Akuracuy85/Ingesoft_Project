@@ -80,7 +80,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
 
                   return (
                     <div key={attendee.id}>
-                      <label htmlFor={`dni-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor={`dni-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                         {attendee.label}
                       </label>
                       <input
@@ -93,7 +93,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
                         onChange={(e) => handleDniChange(attendee.id, e.target.value)}
                         placeholder={`Ingrese DNI de ${DNI_LENGTH} dígitos`}
                         className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none
-                          ${hasError || isDuplicate ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-yellow-700 focus:border-yellow-700'}`}
+                          ${hasError || isDuplicate ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-500 dark:focus:ring-red-500 dark:focus:border-red-500' : 'border-gray-300 focus:ring-yellow-700 focus:border-yellow-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'}`}
                         required
                       />
                       {hasError && <p className="mt-1 text-sm text-red-600">{dniErrors[attendee.id]}</p>}
@@ -119,7 +119,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
           <div className="space-y-3">
             {conadisAttendees.map(attendee => (
               <div key={attendee.id}>
-                <label htmlFor={`conadis-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor={`conadis-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                   {attendee.label}
                 </label>
                 <input
@@ -128,7 +128,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
                   value={conadisCodes[attendee.id] || ""}
                   onChange={(e) => handleConadisChange(attendee.id, e.target.value)}
                   placeholder="Ingrese código"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-700 focus:border-yellow-700"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-700 focus:border-yellow-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
             ))}
@@ -146,9 +146,9 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
               type="checkbox"
               checked={uniteTermsAccepted}
               onChange={(e) => setUniteTermsAccepted(e.target.checked)}
-              className="h-4 w-4 text-yellow-700 border-gray-300 rounded focus:ring-yellow-600"
+              className="h-4 w-4 text-yellow-700 border-gray-300 rounded focus:ring-yellow-600 dark:border-gray-600"
               />
-            <label htmlFor="unite_terms" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="unite_terms" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
               Declaro que he leído y acepto los <a  href={GenericService.TYC_LINK} target="_blank" rel="noopener noreferrer" className='text-[#D08700]'>términos y condiciones de Unite</a>.
             </label>
           </div>
@@ -161,9 +161,9 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
                 type="checkbox"
                 checked={termsAccepted}
                 onChange={(e) => setTermsAccepted(e.target.checked)}
-                className="h-4 w-4 text-yellow-700 border-gray-300 rounded focus:ring-yellow-600"
+                className="h-4 w-4 text-yellow-700 border-gray-300 rounded focus:ring-yellow-600 dark:border-gray-600"
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                 Declaro que he leído y acepto los <a  href={evento.terminosUso.url} target="_blank" rel="noopener noreferrer" className='text-[#D08700]'>términos y condiciones del evento</a>.
               </label>
             </div>

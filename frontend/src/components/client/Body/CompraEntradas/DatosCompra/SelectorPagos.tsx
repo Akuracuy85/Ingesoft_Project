@@ -52,16 +52,16 @@ const SelectorPago: React.FC<SelectorPagoProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-transparent backdrop-blur-sm">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm relative">
+      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm relative dark:bg-gray-800 dark:text-gray-100">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
 
         <img src={LogoUnite} alt="Logo" className="mb-4 w-32 mx-auto" />
-        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 text-center dark:text-gray-100">
           Elige un medio de pago:
         </h2>
 

@@ -132,7 +132,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   // --- Renderizado ---
   return (
-    <div className="w-full flex flex-col items-center bg-gray-50 px-8 py-6">
+    <div className="w-full flex flex-col items-center bg-gray-50 px-8 py-6 dark:bg-gray-900">
       <StepIndicator currentStep={currentStep} steps={steps} />
 
       {currentStep === 0 && (

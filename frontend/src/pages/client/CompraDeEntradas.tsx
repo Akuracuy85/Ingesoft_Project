@@ -4,6 +4,7 @@ import ColaService from "@/services/ColaService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/client/Footer/Footer";
 import { CompraHeader } from "@/components/client/Header/CompraHeader";
+import { Header } from "@/components/client/Header/Header";
 
 export const CompraDeEntradas = () => {
   const location = useLocation();
@@ -74,9 +75,11 @@ export const CompraDeEntradas = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="mb-5">
-        <CompraHeader minutos={minutos} segundos={parseInt(segundos)} />
+      <div>
+        <Header />
       </div>
+      <div className="h-[102px]" aria-hidden />
+      <CompraHeader minutos={minutos} segundos={parseInt(segundos)} />
       <main>
         <BodyCompraEntradas />
       </main>

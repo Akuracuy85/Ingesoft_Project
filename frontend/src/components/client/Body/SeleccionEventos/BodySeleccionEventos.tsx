@@ -62,7 +62,7 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
     if (error) {
         return (
             <main className="flex justify-center items-center w-full h-96">
-                <p className="text-red-500">Error al cargar los datos: {error}</p>
+                <p className="text-red-500 dark:text-red-400">Error al cargar los datos: {error}</p>
             </main>
         );
     }
@@ -96,7 +96,7 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
         
         return (
             <main className="flex justify-center items-center w-full h-96">
-                <p className="text-gray-500">No hay eventos disponibles en este momento.</p>
+                <p className="text-gray-500 dark:text-gray-400">No hay eventos disponibles en este momento.</p>
             </main>
         );
     }

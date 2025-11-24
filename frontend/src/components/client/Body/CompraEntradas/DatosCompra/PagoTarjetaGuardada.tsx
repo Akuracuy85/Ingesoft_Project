@@ -36,7 +36,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
         {/* Botón cerrar */}
         <button
           onClick={onClose}
@@ -55,10 +55,12 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
         <div className="space-y-4 max-h-75 overflow-y-auto">
           {tarjetas.length > 0 ? (
             tarjetas.map((card) => (
-              <Card
+                <Card
                 key={card.id}
                 className={`cursor-pointer border ${
-                  selectedCardId === card.id ? "border-blue-500" : "border-gray-300"
+                  selectedCardId === card.id
+                    ? "border-blue-500 dark:border-blue-400"
+                    : "border-gray-300 dark:border-gray-600"
                 }`}
                 onClick={() => setSelectedCardId(card.id!)}
               >

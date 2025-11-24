@@ -33,8 +33,8 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
   const canAccept = isSynced && !exceedsPoints;
 
   return (
-    <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow">
-      <div className="grid grid-cols-9 bg-gray-100 font-semibold text-gray-700">
+    <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+      <div className="grid grid-cols-9 bg-gray-100 font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-100">
         <div className="py-2 px-4 text-center col-span-3">Zona</div>
         <div className="py-2 px-4 text-center col-span-1">Cant.</div>
         <div className="py-2 px-4 text-center col-span-3">Subtotal</div>
@@ -63,7 +63,7 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
         </div>
       ))}
 
-      <div className="grid grid-cols-9 border-t-2 border-gray-300 bg-gray-50 font-bold text-gray-800">
+      <div className="grid grid-cols-9 border-t-2 border-gray-300 bg-gray-50 font-bold text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
         <div className="py-3 px-4 text-right col-span-4">TOTAL</div>
         <div className="py-3 px-4 text-center col-span-3">
           S/ {totalGeneral.toFixed(2)}
@@ -71,7 +71,7 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
         <div className="col-span-2" />
       </div>
 
-      <div className="p-3 text-right text-sm border-t border-gray-200 bg-gray-50">
+      <div className="p-3 text-right text-sm border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700">
         {isUsingPointsFlow ? (
           <span
             className={`font-medium ${
