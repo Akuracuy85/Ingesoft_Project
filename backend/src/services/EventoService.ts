@@ -449,7 +449,7 @@ export class EventoService {
 
     const nuevoEstado = this.obtenerEstadoValido(data.estado);
     this.validarTransicionEstado(evento.estado as EstadoEvento, nuevoEstado);
-    // Obtener artista (faltaba y causaba ReferenceError)
+    const nuevaFechaEvento = this.combinarFechaHora(data.fecha, data.hora);
     const artista = await this.obtenerArtistaValido(data.artistaId);
     // Validar y asignar fechaInicioPreventa/fechaFinPreventa
     if (data.fechaInicioPreventa !== undefined) {
@@ -460,7 +460,7 @@ export class EventoService {
         if (Number.isNaN(fi.getTime())) {
           throw new CustomError("La fecha inicio de preventa no es válida", StatusCodes.BAD_REQUEST);
         }
-        if (fi.getTime() > fechaEvento.getTime()) {
+        if (fi.getTime() > nuevaFechaEvento.getTime()) {
           throw new CustomError("La fecha inicio de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
         }
         evento.fechaInicioPreventa = fi;
@@ -474,7 +474,7 @@ export class EventoService {
         if (Number.isNaN(ff.getTime())) {
           throw new CustomError("La fecha fin de preventa no es válida", StatusCodes.BAD_REQUEST);
         }
-        if (ff.getTime() > fechaEvento.getTime()) {
+        if (ff.getTime() > nuevaFechaEvento.getTime()) {
           throw new CustomError("La fecha fin de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
         }
         if (evento.fechaInicioPreventa && ff.getTime() < evento.fechaInicioPreventa.getTime()) {
@@ -487,7 +487,7 @@ export class EventoService {
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
     evento.estado = nuevoEstado;
-    evento.fechaEvento = fechaEvento;
+    evento.fechaEvento = nuevaFechaEvento;
     evento.lugar = data.lugar.trim();
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
