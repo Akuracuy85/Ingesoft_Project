@@ -1,4 +1,5 @@
 // src/components/Header.tsx (FINAL CON RESETEO DE LOGO)
+import ColaService from "@/services/ColaService";
 import { Button } from "../../../components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
 import { ArrowLeftIcon, CircleQuestionMarkIcon } from "lucide-react";
@@ -57,8 +58,14 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
             </div>
             <Button
               onClick={() => {
-                setShowValidationModal(false)
-                navigate("/eventos/" + evento.id + "/detalle")
+                setShowValidationModal(false);
+                try{
+                  ColaService.eliminarTurno(evento.cola.id);
+                } catch(e){
+                  console.error(e);
+                } finally{
+                  navigate("/eventos/" + evento.id + "/detalle");
+                }
               }}
               className="w-full bg-[#D59B2C] hover:bg-[#C08A25] text-white cursor-pointer"
             >
