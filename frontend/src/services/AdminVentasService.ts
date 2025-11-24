@@ -1,5 +1,5 @@
 import HttpClient from "./Client";
-import type { AdminVenta } from "@/models/Venta";
+import type { AdminVenta } from "@/types/Venta";
 
 export interface FiltroVentas {
   fechaInicio?: string;
