@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,54 +13,33 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-const salesData = [
-  { name: "Concierto Rock", ventas: 42500 },
-  { name: "Festival Jazz", ventas: 28000 },
-  { name: "Noche de Salsa", ventas: 15600 },
-]
-
-const tableData = [
-  {
-    id: 1,
-    evento: "Concierto Rock 2025",
-    entradas: 850,
-    ingresos: 42500,
-    fecha: "15/03/25",
-    organizador: "Juan Pérez",
-  },
-  {
-    id: 2,
-    evento: "Festival de Jazz",
-    entradas: 560,
-    ingresos: 28000,
-    fecha: "20/04/25",
-    organizador: "María García",
-  },
-  {
-    id: 3,
-    evento: "Noche de Salsa",
-    entradas: 312,
-    ingresos: 15600,
-    fecha: "10/05/25",
-    organizador: "Carlos López",
-  },
-]
+import { useVentas } from "@/hooks/useVentas"
 
 export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showExportNotification, setShowExportNotification] = useState(false)
 
-  const handleExport = (/*format: string*/) => {
-    setShowExportNotification(true)
+  const { ventas, loading, listarVentas } = useVentas()
 
+  useEffect(() => {
+    listarVentas()
+  }, [])
+
+  const handleExport = () => {
+    setShowExportNotification(true)
     setTimeout(() => setShowExportNotification(false), 3000)
   }
 
-  const filteredData = tableData.filter(
+  const filteredData = ventas.filter(
     (item) =>
-      item.evento.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.organizador.toLowerCase().includes(searchQuery.toLowerCase())
+      item.nombreEvento.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.organizadorNombre.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const salesData = ventas.map((v) => ({
+    name: v.nombreEvento,
+    ventas: v.gananciaTotal,
+  }))
 
   return (
     <Card className="p-6">
@@ -92,11 +71,11 @@ export function ReporteVentas() {
 
           {/* Exportaciones */}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => handleExport(/*"CSV"*/)} className="gap-2">
+            <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
               Exportar CSV
             </Button>
-            <Button variant="outline" onClick={() => handleExport(/*"PDF"*/)} className="gap-2">
+            <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
               Exportar PDF
             </Button>
@@ -111,25 +90,29 @@ export function ReporteVentas() {
         </div>
       )}
 
-      {/* Gráfico */}
-      <div className="mb-6">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={salesData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="name" stroke="#6b7280" />
-            <YAxis stroke="#6b7280" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "6px",
-              }}
-              formatter={(value: number) => `S/ ${value.toLocaleString()}`}
-            />
-            <Bar dataKey="ventas" fill="#D59B2C" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {/* Loading graph */}
+      {loading ? (
+        <p className="text-sm text-muted-foreground mb-6">Cargando ventas...</p>
+      ) : (
+        <div className="mb-6">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={salesData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="name" stroke="#6b7280" />
+              <YAxis stroke="#6b7280" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "6px",
+                }}
+                formatter={(value: number) => `S/ ${value.toLocaleString()}`}
+              />
+              <Bar dataKey="ventas" fill="#D59B2C" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* Tabla */}
       <div className="overflow-x-auto">
@@ -158,29 +141,37 @@ export function ReporteVentas() {
             {filteredData.map((item) => (
               <tr key={item.id} className="border-b border-border hover:bg-muted/50">
                 <td className="py-3 px-4 text-sm font-medium text-foreground">
-                  {item.evento}
+                  {item.nombreEvento}
                 </td>
                 <td className="py-3 px-4 text-sm text-foreground">
-                  {item.entradas.toLocaleString()}
+                  {item.entradasVendidas.toLocaleString()}
                 </td>
                 <td className="py-3 px-4 text-sm text-foreground">
-                  S/ {item.ingresos.toLocaleString()}
+                  S/ {item.gananciaTotal.toLocaleString()}
                 </td>
                 <td className="py-3 px-4 text-sm text-foreground">
-                  {item.fecha}
+                  {item.fechaEvento.split("T")[0]}
                 </td>
                 <td className="py-3 px-4 text-sm text-foreground">
-                  {item.organizador}
+                  {item.organizadorNombre}
                 </td>
               </tr>
             ))}
+
+            {!loading && filteredData.length === 0 && (
+              <tr>
+                <td className="py-4 text-center text-muted-foreground" colSpan={5}>
+                  No se encontraron resultados
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="mt-4 text-right">
         <p className="text-xs text-muted-foreground">
-          Actualizado el 05/10/2025 a las 10:30 a.m.
+          Actualizado automáticamente
         </p>
       </div>
     </Card>

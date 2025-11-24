@@ -2,7 +2,7 @@ import { useState } from "react";
 import { adminVentasService, type FiltroVentas } from "@/services/AdminVentasService";
 import type { AdminVenta } from "@/models/Venta";
 
-export function useAdminVentas() {
+export function useVentas() {
   const [ventas, setVentas] = useState<AdminVenta[]>([]);
   const [loading, setLoading] = useState(false);
 
