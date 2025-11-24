@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, Moon, Sun } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -8,6 +8,7 @@ import NotificationService from "@/services/NotificationService";
 import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
 import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 import { useDarkMode } from "@/hooks/useModoOscuro";
+import { GenericService } from "@/services/GenericService";
 
 
 export const RegistroOrganizador = () => {
@@ -114,8 +115,8 @@ export const RegistroOrganizador = () => {
   };
 
   // VALIDACIONES
-const inputClass = (valid = true) =>
-  `w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-700 
+  const inputClass = (valid = true) =>
+    `w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-700 
    text-gray-900 dark:text-gray-100 border 
    ${valid ? "border-gray-300 dark:border-gray-600" : "border-red-500"} 
    focus:ring-2 focus:ring-orange-500 outline-none`;
@@ -381,9 +382,15 @@ const inputClass = (valid = true) =>
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               className="mr-2"
             />
-            <span className="text-sm">
-              Acepto los Términos y Condiciones y la Política de Privacidad de UNITE.
-            </span>
+            <div>
+              <span className="text-gray-700 text-sm dark:text-gray-300 font-medium mb-2">
+                Acepto los {" "}
+                <a href={GenericService.TYC_LINK} target="_blank" rel="noopener noreferrer" className='text-[#D08700]'>
+                  Términos y Condiciones
+                </a>
+                {" "} y la Política de Privacidad de UNITE.
+              </span>
+            </div>
           </div>
 
           {/* Botón */}
@@ -403,46 +410,46 @@ const inputClass = (valid = true) =>
 
       {/* POPUP */}
       {showPopup && (
-  <div
-    className="
+        <div
+          className="
       fixed inset-0 flex items-center justify-center
       bg-black/50 dark:bg-black/70
       backdrop-blur-sm
       z-50 transition-colors
     "
-  >
-    <div
-      className="
+        >
+          <div
+            className="
         bg-white dark:bg-gray-800
         text-gray-900 dark:text-gray-100
         rounded-2xl shadow-lg p-8
         text-center max-w-md w-[90%]
         transition-colors
       "
-    >
-      <h3 className="text-2xl font-semibold mb-4">
-        Registro exitoso
-      </h3>
+          >
+            <h3 className="text-2xl font-semibold mb-4">
+              Registro exitoso
+            </h3>
 
-      <p className="mb-6">
-        Tu cuenta de organizador ha sido creada correctamente.
-      </p>
+            <p className="mb-6">
+              Tu cuenta de organizador ha sido creada correctamente.
+            </p>
 
-      <button
-        onClick={() => navigate('/login')}
-        className="
+            <button
+              onClick={() => navigate('/login')}
+              className="
           w-full
           bg-[#e58c00] hover:bg-[#cc7b00]
           text-white font-semibold
           py-3 rounded-full
           transition-all
         "
-      >
-        VOLVER AL INICIO
-      </button>
-    </div>
-  </div>
-)}
+            >
+              VOLVER AL INICIO
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

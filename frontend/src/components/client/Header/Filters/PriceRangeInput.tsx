@@ -140,22 +140,26 @@ export const PriceRangeInput: React.FC<PriceRangeInputProps> = ({ value, onChang
   
   // --- Handlers de UI ---
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.classList.remove("text-gray-400");
-    e.currentTarget.classList.add("text-black");
-  };
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+        e.currentTarget.classList.remove("text-gray-400");
+        e.currentTarget.classList.remove("dark:text-gray-400");
+        e.currentTarget.classList.add("text-black");
+        e.currentTarget.classList.add("dark:text-white");
+    };
 
   // Handler principal de Blur (compartido por min y max)
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>, setter: (v: string) => void, min: number, max?: number) => {
     const numVal = parseFloat(e.currentTarget.value.replace(/,/g, '.') || '0');
     
     // Condición para limpiar a valor por defecto (si es vacío o menor al mínimo)
-    if (!e.currentTarget.value || numVal < min) {
-      e.currentTarget.classList.remove("text-black");
-      e.currentTarget.classList.add("text-gray-400");
-      setter(""); 
-      return;
-    }
+        if (!e.currentTarget.value || numVal < min) {
+            e.currentTarget.classList.remove("text-black");
+            e.currentTarget.classList.remove("dark:text-white");
+            e.currentTarget.classList.add("text-gray-400");
+            e.currentTarget.classList.add("dark:text-gray-400");
+            setter(""); 
+            return;
+        }
     
     let num = parseFloat(e.currentTarget.value.replace(/,/g, '.'));
     if (isNaN(num)) return;
@@ -231,8 +235,8 @@ export const PriceRangeInput: React.FC<PriceRangeInputProps> = ({ value, onChang
                         onClick={handleClearPrice}
                         disabled={isClearDisabled}
                         className={`text-xs font-medium px-2 py-1 rounded transition 
-                            ${isClearDisabled 
-                                    ? 'text-gray-400 cursor-not-allowed' 
+                                ${isClearDisabled 
+                                    ? 'text-gray-400 dark:text-gray-400 cursor-not-allowed' 
                                     : 'text-orange-800 bg-orange-100 border border-orange-700 hover:bg-orange-200 dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20'
                             }`}
                 >

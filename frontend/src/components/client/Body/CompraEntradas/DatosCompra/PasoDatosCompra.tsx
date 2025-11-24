@@ -197,7 +197,7 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium mb-6"
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium mb-6"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

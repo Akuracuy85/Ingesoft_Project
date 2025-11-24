@@ -59,11 +59,11 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-md p-8 relative border border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
@@ -71,7 +71,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         {/* Logo y encabezado */}
         <div className="text-center mb-6">
           <img src={LogoUnite} alt="Logo Unite" className="h-14 mx-auto mb-4" />
-          <p className="text-gray-700 text-sm leading-tight">
+          <p className="text-gray-700 text-sm leading-tight dark:text-gray-200">
             <strong>Recuerda activar las compras por internet</strong>
             <br />con tu banco
           </p>
@@ -81,7 +81,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         <div className="space-y-3">
           {/* Número de tarjeta */}
           <div className="relative">
-            <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <input
               name="tarjeta"
               placeholder="Número de tarjeta"
@@ -92,14 +92,14 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                   tarjeta: e.target.value.replace(/\D/g, "").slice(0, 16),
                 })
               }
-              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             />
           </div>
 
           {/* MM/AA y CVV */}
           <div className="flex gap-2">
             <div className="relative w-1/2">
-              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
               <input
                 name="fecha"
                 placeholder="MM/AA"
@@ -112,11 +112,11 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                   setForm({ ...form, fecha: value });
                 }}
                 maxLength={5}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
             <div className="relative w-1/2">
-              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
               <input
                 name="cvv"
                 placeholder="CVV"
@@ -127,7 +127,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                     cvv: e.target.value.replace(/\D/g, "").slice(0, 3),
                   })
                 }
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
           </div>
@@ -135,23 +135,23 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           {/* Nombre y Apellido */}
           <div className="flex gap-2">
             <div className="relative w-1/2">
-              <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
               <input
                 name="nombre"
                 placeholder="Nombre"
                 value={form.nombre}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
             <div className="relative w-1/2">
-              <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
               <input
                 name="apellido"
                 placeholder="Apellido"
                 value={form.apellido}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
           </div>
@@ -163,23 +163,23 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
               id="rememberCard"
               checked={rememberCard}
               onChange={() => setRememberCard(!rememberCard)}
-              className="h-4 w-4 border border-gray-300 pl-9 py-2 text-sm"
+              className="h-4 w-4 border border-gray-300 pl-9 py-2 text-sm dark:border-gray-600"
             />
-            <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700 ">
+            <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700 dark:text-gray-200">
               Recordar tarjeta 
             </label>
           </div>
 
           {/* Email */}
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <input
               name="email"
               placeholder="Email"
               type="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             />
           </div>
         </div>
@@ -188,13 +188,13 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         <button
           onClick={handlePay}
           disabled={isPaying}
-          className="mt-6 w-full bg-[#c87b00] text-white font-semibold rounded-md py-2 text-lg hover:bg-[#b36d00] transition disabled:opacity-60"
+          className="mt-6 w-full bg-[#c87b00] text-white font-semibold rounded-md py-2 text-lg hover:bg-[#b36d00] transition disabled:opacity-60 cursor-pointer"
         >
           {isPaying ? "Procesando..." : `Pagar S/${total.toFixed(2)}`}
         </button>
 
         {/* Info inferior */}
-        <div className="mt-4 text-center text-xs text-gray-500">
+        <div className="mt-4 text-center text-xs text-gray-500 dark:text-gray-200">
           <div className="flex justify-center gap-3 mt-2 opacity-80">
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" className="h-5" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" className="h-5" />

@@ -38,7 +38,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
       
       {/* Selector visible */}
       <div
-        className={`flex items-center justify-between border rounded px-3 py-2 cursor-pointer transition-colors ${
+        className={`flex items-center justify-between border rounded px-3 py-2 cursor-pointer ${
           disabled
             ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400"
             : `border-gray-300 bg-white hover:border-[#C37723] dark:border-gray-600 dark:hover:border-[#C37723] dark:bg-gray-800`
@@ -69,7 +69,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
       {open && !disabled && (
         <div className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto dark:bg-gray-800 dark:border-gray-600">
           {options.length === 0 ? (
-            <div className="px-3 py-2 text-gray-400 text-sm">Sin opciones</div>
+            <div className="px-3 py-2 text-gray-400 dark:text-gray-300 text-sm">Sin opciones</div>
           ) : (
             options.map((opt) => (
               <div
