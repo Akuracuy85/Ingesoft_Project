@@ -5,13 +5,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../compo
 import { ArrowLeftIcon, CircleQuestionMarkIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useCompraGuard } from "@/context/CompraGuardContext";
+
+
 interface CompraHeaderProps {
   minutos: number;
   segundos: number;
 }
 
 export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos }) => {
-
+  const { setIsCompraActive } = useCompraGuard(); // 🔹 acceso al contexto
   const [showValidationModal, setShowValidationModal] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,6 +67,7 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
                 } catch(e){
                   console.error(e);
                 } finally{
+                  setIsCompraActive(false); // 🔹 Desactivar la compra al salir
                   navigate("/eventos/" + evento.id + "/detalle");
                 }
               }}
