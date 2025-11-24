@@ -10,6 +10,7 @@ import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 import { Moon, Sun } from "lucide-react";
 import { useDarkMode } from "@/hooks/useModoOscuro";
 import React from "react";
+import { GenericService } from "@/services/GenericService";
 
 export const Registro = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -417,16 +418,22 @@ export const Registro = () => {
           </div>
 
           {/* Términos */}
-          <div className="flex items-center mb-6">
+          <div className="flex flex-row items-center mb-6">
             <input
               type="checkbox"
               checked={aceptaTerminos}
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               className="mr-2"
             />
-            <span className="text-gray-700 text-sm dark:text-gray-300 font-medium mb-2">
-              Acepto los Términos y Condiciones y la Política de Privacidad de UNITE.
-            </span>
+            <div>
+              <span className="text-gray-700 text-sm dark:text-gray-300 font-medium mb-2">
+                Acepto los {" "} 
+                <a href={GenericService.TYC_LINK} target="_blank" rel="noopener noreferrer" className='text-[#D08700]'>
+                  Términos y Condiciones
+                </a>
+                {" "} y la Política de Privacidad de UNITE.
+              </span>
+            </div>
           </div>
 
           {/* Botón registrar */}
