@@ -21,7 +21,7 @@ export default function ColaVirtual() {
   const { evento, tipoTarifa } = location.state || {}
 
   useEffect(() => {
-    setIsCompraActive(true);
+    setIsCompraActive(true, evento.cola.id);
     const fetchTurno = async () => {
       try {
         const turno = await ColaService.obtenerPosicion(evento.cola.id)
