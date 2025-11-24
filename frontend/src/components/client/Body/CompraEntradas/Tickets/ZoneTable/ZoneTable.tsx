@@ -24,8 +24,8 @@ const ZoneTable: React.FC<ZoneTableProps> = ({
   purchaseType, // 🔹 se recibe desde el componente padre
 }) => {
   return (
-    <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow">
-      <div className="grid grid-cols-3 bg-gray-100 font-semibold text-gray-700">
+    <div className="w-full max-w-md bg-white rounded-lg border border-gray-300 overflow-hidden shadow dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+      <div className="grid grid-cols-3 bg-gray-100 font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-100">
         <div className="py-2 text-center">Zona</div>
         <div className="py-2 text-center">Precio</div>
         <div className="py-2 text-center">Cantidad</div>

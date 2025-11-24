@@ -59,8 +59,8 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
     <form onSubmit={handleSubmit} className="flex-1">
 
       {/* --- Sección 1: DNI de Asistentes --- */}
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
           ① Identificación de Asistentes
         </h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -109,8 +109,8 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
 
       {/* --- Sección 2: Códigos CONADIS --- */}
       {conadisAttendees.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mt-6 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
             ② Identificación de asistentes con CONADIS
           </h3>
           <p className="text-sm text-gray-600 mb-4">

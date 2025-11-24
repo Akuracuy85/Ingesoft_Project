@@ -40,15 +40,15 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
 
         {/* Encabezado */}
         <div className="text-center mb-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Elige una tarjeta guardada</h2>
-          <p className="text-sm text-gray-600">Selecciona una tarjeta para realizar el pago.</p>
+          <h2 className="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">Elige una tarjeta guardada</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Selecciona una tarjeta para realizar el pago.</p>
         </div>
 
         {/* Tarjetas guardadas */}
@@ -65,7 +65,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
                 onClick={() => setSelectedCardId(card.id!)}
               >
                 <CardHeader>
-                  <CardTitle className="text-sm font-semibold text-gray-800">
+                  <CardTitle className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                     {TipoDeTarjeta(card.numeroTarjeta)}
                   </CardTitle>
                 </CardHeader>
@@ -80,8 +80,8 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
                     <CreditCard className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">{FormatearTarjeta(card.numeroTarjeta)}</p>
-                    <p className="text-xs text-gray-500">Expira: {card.mesExp}/{card.anExp}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{FormatearTarjeta(card.numeroTarjeta)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Expira: {card.mesExp}/{card.anExp}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -103,7 +103,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
           <Button
             disabled={isPaying}
             onClick={onNuevaTarjeta}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 cursor-pointer"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 cursor-pointer dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100"
           >
             Usar una nueva tarjeta
           </Button>

@@ -18,11 +18,11 @@ export const CompraHeader: React.FC<CompraHeaderProps> = ({ minutos, segundos })
 
   return (
     <>
-      <header className="sticky top-[102px] w-full h-[76px] px-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md flex items-center justify-between z-40">
+      <header className="sticky top-[102px] w-full h-[76px] px-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md flex items-center justify-between z-50">
         <button onClick={() => setShowValidationModal(true)} className="cursor-pointer">
           <div className="flex flex-row">
             <ArrowLeftIcon className="h-6 w-6 text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white mx-3" />
-            <p>Volver a la pagina del evento</p>
+            <p className="text-gray-700 dark:text-gray-200">Volver a la pagina del evento</p>
           </div>
         </button>
         <div className="flex w-100 justify-around">

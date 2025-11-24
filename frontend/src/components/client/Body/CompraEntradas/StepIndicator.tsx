@@ -15,10 +15,10 @@ const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean
 }) => {
     // Determinar el estilo
     const circleClass = isCompleted
-        ? "bg-black text-white" // Completado (puede ser un checkmark)
+        ? "bg-black text-white dark:bg-yellow-500 dark:text-white" // Completado
         : isActive
-        ? "border-2 border-black bg-white text-black" // Activo
-        : "border-2 border-gray-400 bg-white text-gray-500"; // Inactivo
+        ? "border-2 border-black bg-white text-black dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" // Activo
+        : "border-2 border-gray-400 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"; // Inactivo
 
     return (
         <div className="flex items-center">
@@ -35,12 +35,15 @@ const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean
 
             {/* Línea y Título */}
             <div className="flex flex-col ml-2 flex-1 min-w-0">
-                <div className={`font-medium text-lg mb-1 ${isActive || isCompleted ? "text-black" : "text-gray-700"}`}>
+                <div className={`font-medium text-lg mb-1 ${isActive || isCompleted ? "text-black dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}>
                     {step.title}
                 </div>
                 {/* La línea conectora solo si NO es el último paso */}
                 {!isLast && (
-                    <div className="h-1 w-full mt-1" style={{ backgroundColor: isCompleted ? 'black' : '#D1D5DB' }}></div>
+                    (() => {
+                        const connectorClass = isCompleted ? 'h-1 w-full mt-1 bg-black dark:bg-yellow-500' : 'h-1 w-full mt-1 bg-gray-300 dark:bg-gray-700';
+                        return <div className={connectorClass}></div>;
+                    })()
                 )}
             </div>
         </div>

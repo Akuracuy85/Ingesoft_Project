@@ -74,7 +74,7 @@ export const CompraDeEntradas = () => {
   const segundos = (tiempoRestante % 60).toString().padStart(2, "0");
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <div>
         <Header />
       </div>
