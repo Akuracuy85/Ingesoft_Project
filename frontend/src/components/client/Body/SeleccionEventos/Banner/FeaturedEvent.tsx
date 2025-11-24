@@ -128,7 +128,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
               key={idx}
               src={ev.image}
               alt={ev.title}
-              className="w-full h-full object-cover flex-shrink-0"
+              className="w-full h-full flex-shrink-0 featured-image"
             />
           ))}
         </div>

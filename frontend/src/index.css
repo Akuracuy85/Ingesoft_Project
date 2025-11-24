@@ -140,3 +140,16 @@
     caret-color: transparent !important;
   }
 }
+
+
+@keyframes moveImageVertical {
+  0%   { object-position: top; }
+  50%  { object-position: bottom; }
+  100% { object-position: top; }
+}
+
+.featured-image {
+  object-fit: cover; /* ya lo tienes */
+  animation: moveImageVertical 30s infinite linear;
+}
+
