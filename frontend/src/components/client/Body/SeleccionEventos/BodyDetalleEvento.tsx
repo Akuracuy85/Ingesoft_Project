@@ -64,9 +64,9 @@ export const BodyDetalleEvento: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-white dark:bg-gray-900">
-        <Loading height="h-64" className="w-full max-w-4xl" />
-      </div>
+      <>
+        <Loading fullScreen />
+      </>
     );
   }
 

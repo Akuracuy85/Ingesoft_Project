@@ -108,9 +108,9 @@ export const BodyCompraEntradas: React.FC = () => {
   // --- Loading/Error ---
   if (isLoading || isLoadingPoints || isLoadingTicketsPoseidos) {
     return (
-      <div className="w-full flex justify-center items-center py-20">
-        <Loading height="h-40" className="w-full max-w-4xl" />
-      </div>
+      <>
+        <Loading fullScreen />
+      </>
     );
   }
 

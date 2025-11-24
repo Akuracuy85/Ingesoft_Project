@@ -54,9 +54,8 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
 
     if (isLoading) {
         return (
-            <main className="flex justify-center items-center w-full h-96">
-                {/* Skeleton de carga */}
-                <Loading height="h-48" className="w-full max-w-4xl" />
+            <main>
+                <Loading fullScreen />
             </main>
         );
     }
