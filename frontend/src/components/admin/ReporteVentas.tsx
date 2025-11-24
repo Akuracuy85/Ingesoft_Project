@@ -29,6 +29,27 @@ export function ReporteVentas() {
 
   const { ventas, loading, listarVentas } = useVentas()
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || payload.length === 0) return null;
+
+    return (
+      <div
+        className="
+        p-3 rounded-md border
+        bg-white text-foreground
+        shadow-sm
+        dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100
+      "
+      >
+        <p className="font-medium">{label}</p>
+        <p className="text-sm text-[#D59B2C]">
+          ventas : S/ {payload[0].value.toLocaleString()}
+        </p>
+      </div>
+    );
+  };
+
+
   useEffect(() => {
     listarVentas()
   }, [])
@@ -185,14 +206,7 @@ export function ReporteVentas() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="name" stroke="#6b7280" />
               <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "6px",
-                }}
-                formatter={(value: number) => `S/ ${value.toLocaleString()}`}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="ventas" fill="#D59B2C" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
