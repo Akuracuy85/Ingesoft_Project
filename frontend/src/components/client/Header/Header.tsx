@@ -1,9 +1,12 @@
 // src/components/Header.tsx
-import { useState, useCallback } from "react";
+import { useContext, useState, useCallback } from "react";
 import { FilterModal } from "./FilterModal";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { User, LogOut, Sun, Moon } from "lucide-react";
+import CompraGuardContext from "@/context/CompraGuardContext"; // contexto que indica si está en cola/compra
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import { Button } from "../../ui/button";
 
 // Filtros
 import { useFilters } from "../../../context/FilterContext";
@@ -27,7 +30,28 @@ export const Header: React.FC<HeaderProps> = ({
   onApplyNewFilters,
 }) => {
 
+  const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
+
+  // CompraGuard
+  const compraGuard = useContext(CompraGuardContext);
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  const requestExit = (navigateFn: () => void) => {
+    compraGuard.setPendingNavigation(() => navigateFn);
+    setShowExitModal(true);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
+
+    // 🔹 Desactivar la compra al confirmar
+    compraGuard.setIsCompraActive(false);
+    if (compraGuard.pendingNavigation) {
+      compraGuard.pendingNavigation();
+      compraGuard.setPendingNavigation(null);
+    }
+  };
 
   const { isLoggedIn, user, logout, isLoading } = useAuth();
   const { setFilters, resetFilters } = useFilters();
@@ -41,10 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handleApplyFilters = useCallback(
     (filters: FiltersType) => {
       setFilters(filters);
-
-      if (onApplyNewFilters) {
-        onApplyNewFilters(filters);
-      }
+      if (onApplyNewFilters) onApplyNewFilters(filters);
     },
     [setFilters, onApplyNewFilters]
   );
@@ -65,7 +86,17 @@ export const Header: React.FC<HeaderProps> = ({
       >
         {/* LOGO */}
         <div className="flex items-center">
-          <Link to="/" onClick={resetFilters}>
+          <Link
+            to="/"
+            onClick={(e) => {
+              if (compraGuard.isCompraActive) {
+                e.preventDefault();
+                requestExit(() => resetFilters());
+              } else {
+                resetFilters();
+              }
+            }}
+          >
             <img
               className="w-[175px] h-[78px] object-contain transition-opacity duration-300"
               alt="Logo Unite"
@@ -76,7 +107,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* BOTONES DERECHA */}
         <div className="flex items-center justify-end flex-1 gap-4">
-
           {/* Botón Dark Mode */}
           <button
             onClick={toggleDarkMode}
@@ -102,10 +132,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={toggleFilters}
               className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
             >
-                  <ListaIcon className="w-5 h-5" />
+              <ListaIcon className="w-5 h-5" />
               <span className="font-medium text-sm">Filtros</span>
             </button>
           )}
+
           {/* Loading skeleton */}
           {isLoading ? (
             <div className="flex gap-4">
@@ -123,16 +154,27 @@ export const Header: React.FC<HeaderProps> = ({
                   hover:text-[#C37723] dark:hover:text-[#C37723]
                   transition
                 "
+                onClick={(e) => {
+                  if (compraGuard.isCompraActive) {
+                    e.preventDefault();
+                    requestExit(() => navigate("/perfil"));
+                  }
+                }}
               >
                 <User className="h-5 w-5" />
-                <span className="font-medium text-sm">
-                  Hola, {user?.nombre}
-                </span>
+                <span className="font-medium text-sm">Hola, {user?.nombre}</span>
               </Link>
 
               {/* Logout */}
               <button
-                onClick={handleLogout}
+                onClick={(e) => {
+                  if (compraGuard.isCompraActive) {
+                    e.preventDefault();
+                    requestExit(() => handleLogout());
+                  } else {
+                    handleLogout();
+                  }
+                }}
                 className="
                   flex items-center gap-2 px-4 py-2
                   bg-gray-100 dark:bg-gray-700
@@ -165,6 +207,24 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </header>
+
+      {/* MODAL DE SALIDA CompraGuard */}
+      <Dialog open={showExitModal} onOpenChange={setShowExitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salir de compra</DialogTitle>
+          </DialogHeader>
+          <div className="py-6 text-center">
+            <p>¿Seguro que deseas salir de la compra? Perderás tu puesto en la cola.</p>
+          </div>
+          <Button
+            onClick={handleConfirmExit}
+            className="w-full bg-[#D59B2C] hover:bg-[#C08A25] text-white"
+          >
+            Entendido
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* MODAL DE FILTROS */}
       {showFilterButton && showFilters && (

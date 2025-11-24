@@ -74,20 +74,19 @@ export const CompraDeEntradas = () => {
   const segundos = (tiempoRestante % 60).toString().padStart(2, "0");
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <div>
-        <Header />
+      <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+        <div>
+          <Header />
+        </div>
+        <div className="h-[102px]" aria-hidden />
+        <CompraHeader minutos={minutos} segundos={parseInt(segundos)} />
+        <main>
+          <BodyCompraEntradas />
+        </main>
+        <footer className="w-full">
+          <Footer />
+        </footer>
       </div>
-      <div className="h-[102px]" aria-hidden />
-      <CompraHeader minutos={minutos} segundos={parseInt(segundos)} />
-      <main>
-        <BodyCompraEntradas />
-      </main>
-      <footer className="w-full">
-        <Footer />
-      </footer>
-    </div>
-
   );
 };
 
