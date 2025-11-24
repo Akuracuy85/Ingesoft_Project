@@ -139,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
                   rounded-md text-gray-700 dark:text-gray-200
                   font-medium text-sm
                   hover:bg-gray-200 dark:hover:bg-gray-600
-                  transition
+                  transition cursor-pointer
                 "
               >
                 <LogOut className="h-4 w-4" />

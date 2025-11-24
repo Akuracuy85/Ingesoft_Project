@@ -173,7 +173,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
         <button
           type="submit"
           disabled={(!uniteTermsAccepted || (evento.terminosUso && !termsAccepted)) || isLoading || Object.keys(dniErrors).length > 0}
-          className="w-full bg-yellow-700 text-white px-6 py-3 rounded-lg shadow font-semibold hover:bg-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+          className="w-full bg-yellow-700 text-white px-6 py-3 rounded-lg shadow font-semibold hover:bg-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 cursor-pointer"
         >
           {isLoading ? "Procesando la Orden..." : `Confirmar Compra (${isUsingPoints ? 'Gastar Puntos' : 'Acumular Puntos'})`}
         </button>

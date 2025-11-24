@@ -103,7 +103,7 @@ const SelectorPago: React.FC<SelectorPagoProps> = ({
         <button
           onClick={handleContinue}
           disabled={!selectedPaymentMethod}
-          className="bg-purple-600 hover:bg-purple-700 text-white w-full mt-4 py-2 rounded-md disabled:opacity-50"
+          className="bg-purple-600 hover:bg-purple-700 text-white w-full mt-4 py-2 rounded-md disabled:opacity-50 cursor-pointer"
         >
           Continuar
         </button>

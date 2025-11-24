@@ -188,7 +188,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         <button
           onClick={handlePay}
           disabled={isPaying}
-          className="mt-6 w-full bg-[#c87b00] text-white font-semibold rounded-md py-2 text-lg hover:bg-[#b36d00] transition disabled:opacity-60"
+          className="mt-6 w-full bg-[#c87b00] text-white font-semibold rounded-md py-2 text-lg hover:bg-[#b36d00] transition disabled:opacity-60 cursor-pointer"
         >
           {isPaying ? "Procesando..." : `Pagar S/${total.toFixed(2)}`}
         </button>
