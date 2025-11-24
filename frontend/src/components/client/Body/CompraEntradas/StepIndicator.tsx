@@ -18,7 +18,7 @@ const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean
         ? "bg-black text-white dark:bg-yellow-500 dark:text-white" // Completado
         : isActive
         ? "border-2 border-black bg-white text-black dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" // Activo
-        : "border-2 border-gray-400 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"; // Inactivo
+        : "border-2 border-gray-400 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"; // Inactivo
 
     return (
         <div className="flex items-center">
@@ -35,7 +35,7 @@ const SingleStep: React.FC<{ step: Step; isActive: boolean; isCompleted: boolean
 
             {/* Línea y Título */}
             <div className="flex flex-col ml-2 flex-1 min-w-0">
-                <div className={`font-medium text-lg mb-1 ${isActive || isCompleted ? "text-black dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}>
+                <div className={`font-medium text-lg mb-1 ${isActive || isCompleted ? "text-black dark:text-gray-100" : "text-gray-700 dark:text-gray-200"}`}>
                     {step.title}
                 </div>
                 {/* La línea conectora solo si NO es el último paso */}

@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
             {isDark ? (
               <Sun className="h-5 w-5 text-yellow-300" />
             ) : (
-              <Moon className="h-5 w-5 text-gray-800" />
+              <Moon className="h-5 w-5 text-gray-800 dark:text-gray-100" />
             )}
           </button>
 

@@ -44,7 +44,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         </h3>
         <div className="space-y-2">
           {summaryItems.map((item) => (
-            <div key={item.zona} className="flex justify-between text-gray-700 dark:text-gray-300">
+            <div key={item.zona} className="flex justify-between text-gray-700 dark:text-gray-200">
               <span className="capitalize">{item.zona.toLowerCase()}</span>
               <span className="font-medium">S/ {item.subtotal.toFixed(2)}</span>
             </div>
@@ -64,10 +64,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             {/* Tarjeta 1 */}
             <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end min-h-[160px] dark:bg-gray-700 dark:text-gray-100">
               <div className="flex flex-col justify-end flex-grow">
-                <p className="text-sm text-gray-600">Puntos utilizados*</p>
+                <p className="text-sm text-gray-600 dark:text-gray-200">Puntos utilizados*</p>
                 <p className="text-3xl font-bold text-yellow-700 mt-1">{pointsImpact}</p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-none">puntos</p>
+              <p className="text-sm text-gray-600 dark:text-gray-200 mt-2 leading-none">puntos</p>
             </div>
 
             {/* Tarjeta 2 */}
@@ -80,7 +80,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">{notaGasto}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-200 mt-2 text-center">{notaGasto}</p>
         </div>
       ) : (
         // 🟢 ACUMULAR PUNTOS (NORMAL)
@@ -89,10 +89,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             {/* Tarjeta 1 */}
             <div className="flex-1 bg-gray-100 rounded-lg shadow-sm text-center p-6 flex flex-col items-center justify-end h-[135px] dark:bg-gray-700 dark:text-gray-100">
               <div className="flex flex-col justify-end flex-grow">
-                <p className="text-sm text-gray-600">Puntos acumulados*</p>
+                <p className="text-sm text-gray-600 dark:text-gray-200">Puntos acumulados*</p>
                 <p className="text-3xl font-bold text-yellow-700 mt-1">{pointsImpact}</p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-none">puntos</p>
+              <p className="text-sm text-gray-600 dark:text-gray-200 mt-2 leading-none">puntos</p>
             </div>
 
             {/* Tarjeta 2 */}
@@ -105,7 +105,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">{notaGanancia}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-200 mt-2 text-center">{notaGanancia}</p>
         </div>
       )}
     </div>

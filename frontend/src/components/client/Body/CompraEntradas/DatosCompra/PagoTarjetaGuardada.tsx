@@ -40,7 +40,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
@@ -48,7 +48,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
         {/* Encabezado */}
         <div className="text-center mb-6">
           <h2 className="text-lg font-bold text-gray-800 mb-4 dark:text-gray-100">Elige una tarjeta guardada</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Selecciona una tarjeta para realizar el pago.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-200">Selecciona una tarjeta para realizar el pago.</p>
         </div>
 
         {/* Tarjetas guardadas */}
@@ -80,14 +80,14 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
                     <CreditCard className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{FormatearTarjeta(card.numeroTarjeta)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Expira: {card.mesExp}/{card.anExp}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-200">{FormatearTarjeta(card.numeroTarjeta)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-200">Expira: {card.mesExp}/{card.anExp}</p>
                   </div>
                 </CardContent>
               </Card>
             ))
           ) : (
-            <p className="text-sm text-gray-500">No tienes tarjetas guardadas.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-200">No tienes tarjetas guardadas.</p>
           )}
         </div>
 

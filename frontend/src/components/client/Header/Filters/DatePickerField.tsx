@@ -87,7 +87,7 @@ export const DatePickerField = ({
 
   return (
     <div className="flex flex-col flex-1 min-w-0">
-      <label className="text-sm text-gray-600 mb-1">{label}</label>
+      <label className="text-sm text-gray-600 dark:text-gray-300 mb-1">{label}</label>
       <DatePicker
         ref={pickerRef}
         selected={value}

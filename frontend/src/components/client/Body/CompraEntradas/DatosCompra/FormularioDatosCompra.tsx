@@ -63,14 +63,14 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
           ① Identificación de Asistentes
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-400 dark:text-gray-300 mb-4">
           Coloque los números de identificación (DNI de 8 dígitos) de las personas que asistirán al evento:
         </p>
 
         <div className="space-y-4">
           {summaryItems.map(zoneItem => (
             <div key={zoneItem.zona}>
-              <h4 className="text-md font-semibold text-gray-700 mb-2 border-b pb-1 capitalize">
+              <h4 className="text-md font-semibold text-gray-700 dark:text-gray-200 mb-2 border-b pb-1 capitalize">
                 {zoneItem.zona.toLowerCase()}
               </h4>
               <div className="space-y-3 pl-2">
@@ -113,7 +113,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
             ② Identificación de asistentes con CONADIS
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Coloque los códigos de CONADIS de las personas que asistirán al evento:
           </p>
           <div className="space-y-3">

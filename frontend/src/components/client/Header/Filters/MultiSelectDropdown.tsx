@@ -81,9 +81,9 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       >
         {/* Contenido seleccionado: Muestra NOMBRES */}
   <div className="flex flex-wrap gap-2 flex-1 min-w-0">
-          {selectedIds.length === 0 && (
-            <span className="text-gray-400">Selecciona...</span>
-          )}
+          {selectedIds.length === 0 && (
+            <span className="text-gray-400 dark:text-gray-300">Selecciona...</span>
+          )}
           {selectedNames.map((name) => (
             <span
               key={name}

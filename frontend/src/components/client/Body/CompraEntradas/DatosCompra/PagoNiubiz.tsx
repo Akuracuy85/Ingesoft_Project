@@ -63,7 +63,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
         >
           ×
         </button>
@@ -194,7 +194,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
         </button>
 
         {/* Info inferior */}
-        <div className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+        <div className="mt-4 text-center text-xs text-gray-500 dark:text-gray-200">
           <div className="flex justify-center gap-3 mt-2 opacity-80">
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" className="h-5" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" className="h-5" />

@@ -122,7 +122,7 @@ export const BodyCompraEntradas: React.FC = () => {
 
   if (!eventDetails) {
     return (
-      <div className="text-center py-20 text-xl font-medium text-gray-500 dark:text-gray-300">
+      <div className="text-center py-20 text-xl font-medium text-gray-500 dark:text-gray-200">
         El evento con ID {id} no fue encontrado o no está disponible para compra.
       </div>
     );
