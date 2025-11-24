@@ -189,6 +189,7 @@ export class EventoService {
     const organizador = await this.obtenerOrganizador(organizadorId);
     const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
+    this.validarEstadoCreacion(estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
     // Validar fechaFinPreventa si viene
     let fechaFinPreventa: Date | null = null;
@@ -386,11 +387,18 @@ export class EventoService {
         StatusCodes.BAD_REQUEST
       );
     }
-    return this.actualizarEventoParcial(
-      eventoId,
-      { estado: data.estado },
-      organizadorId
-    );
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    const nuevoEstado = this.obtenerEstadoValido(data.estado);
+    this.validarTransicionEstado(evento.estado as EstadoEvento, nuevoEstado);
+    evento.estado = nuevoEstado;
+    try {
+      return await this.eventoRepository.guardarEvento(evento);
+    } catch (error) {
+      throw new CustomError(
+        "Error al actualizar el estado del evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   private async actualizarEventoParcial(
@@ -439,8 +447,8 @@ export class EventoService {
   ): Promise<Evento> {
     this.validarDatosObligatorios(data);
 
-    const estado = this.obtenerEstadoValido(data.estado);
-    const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
+    const nuevoEstado = this.obtenerEstadoValido(data.estado);
+    this.validarTransicionEstado(evento.estado as EstadoEvento, nuevoEstado);
     // Obtener artista (faltaba y causaba ReferenceError)
     const artista = await this.obtenerArtistaValido(data.artistaId);
     // Validar y asignar fechaInicioPreventa/fechaFinPreventa
@@ -478,7 +486,7 @@ export class EventoService {
 
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
-    evento.estado = estado;
+    evento.estado = nuevoEstado;
     evento.fechaEvento = fechaEvento;
     evento.lugar = data.lugar.trim();
     evento.departamento = data.departamento.trim();
@@ -1320,5 +1328,46 @@ export class EventoService {
     }
   }
 
-}
+  private validarEstadoCreacion(estado: EstadoEvento) {
+    if (![EstadoEvento.BORRADOR, EstadoEvento.PENDIENTE_APROBACION].includes(estado)) {
+      throw new CustomError(
+        "Solo puedes crear eventos en estado BORRADOR o PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+  }
 
+  private validarTransicionEstado(actual: EstadoEvento, nuevo: EstadoEvento) {
+    if (actual === nuevo) return; // permitir permanecer
+    switch (actual) {
+      case EstadoEvento.BORRADOR:
+      case EstadoEvento.PENDIENTE_APROBACION:
+        if (![EstadoEvento.BORRADOR, EstadoEvento.PENDIENTE_APROBACION].includes(nuevo)) {
+          throw new CustomError(
+            "Transición de estado no permitida. Solo puedes alternar entre BORRADOR y PENDIENTE_APROBACION",
+            StatusCodes.BAD_REQUEST
+          );
+        }
+        return;
+      case EstadoEvento.PUBLICADO:
+        if (nuevo !== EstadoEvento.CANCELADO) {
+          throw new CustomError(
+            "Un evento PUBLICADO solo puede pasar a CANCELADO",
+            StatusCodes.BAD_REQUEST
+          );
+        }
+        return;
+      case EstadoEvento.CANCELADO:
+        throw new CustomError(
+          "No puedes cambiar el estado de un evento CANCELADO",
+          StatusCodes.BAD_REQUEST
+        );
+      default:
+        throw new CustomError(
+          "Estado actual desconocido para transición",
+          StatusCodes.BAD_REQUEST
+        );
+    }
+  }
+
+}
