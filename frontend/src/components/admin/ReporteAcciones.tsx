@@ -180,7 +180,7 @@ export function ReporteAcciones() {
           </tbody>
         </table>
 
-        {/* 🔥 PAGINACIÓN */}
+        {/* PAGINACIÓN */}
         <div className="flex justify-between items-center mt-4">
           <Button
             variant="outline"
