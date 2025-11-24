@@ -1,4 +1,4 @@
-import { CustomError } from "@/types/CustomError";
+import { CustomError } from "../types/CustomError";
 import { S3Service } from "./S3Service";
 import { StatusCodes } from "http-status-codes";
 

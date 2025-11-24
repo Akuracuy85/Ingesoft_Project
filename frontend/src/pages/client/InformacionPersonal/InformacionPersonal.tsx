@@ -19,7 +19,6 @@ import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-re
 import PerfilService from "../../../services/PerfilService";
 import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import type { Tarjeta } from "@/models/Tarjeta";
-import { useDarkMode } from "@/hooks/useModoOscuro";
 
 const soloLetras = (valor: string) =>
   /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor);
