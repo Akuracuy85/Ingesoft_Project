@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Download, Search, Calendar } from "lucide-react"
+import { Download, Search, Calendar, X } from "lucide-react"
 import {
   BarChart,
   Bar,
@@ -17,7 +17,15 @@ import { useVentas } from "@/hooks/useVentas"
 
 export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+
   const [showExportNotification, setShowExportNotification] = useState(false)
+
+  const [fechaInicio, setFechaInicio] = useState("")
+  const [fechaFin, setFechaFin] = useState("")
+
+  const [paginaActual, setPaginaActual] = useState(1)
+  const itemsPorPagina = 10
 
   const { ventas, loading, listarVentas } = useVentas()
 
@@ -25,16 +33,68 @@ export function ReporteVentas() {
     listarVentas()
   }, [])
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [searchQuery])
+
+  useEffect(() => {
+    const query = debouncedQuery.trim()
+
+    if (query === "") {
+      listarVentas({
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined
+      })
+      setPaginaActual(1)
+      return
+    }
+
+    listarVentas({
+      nombreEvento: query,
+      nombreOrganizador: query,
+      fechaInicio: fechaInicio || undefined,
+      fechaFin: fechaFin || undefined
+    })
+
+    setPaginaActual(1)
+  }, [debouncedQuery])
+
+  useEffect(() => {
+    if (fechaInicio && fechaFin) {
+      listarVentas({
+        fechaInicio,
+        fechaFin,
+        nombreEvento: debouncedQuery || undefined,
+        nombreOrganizador: debouncedQuery || undefined
+      })
+      setPaginaActual(1)
+    }
+  }, [fechaInicio, fechaFin])
+
   const handleExport = () => {
     setShowExportNotification(true)
     setTimeout(() => setShowExportNotification(false), 3000)
   }
 
-  const filteredData = ventas.filter(
-    (item) =>
-      item.nombreEvento.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.organizadorNombre.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const limpiarFiltros = () => {
+    setFechaInicio("")
+    setFechaFin("")
+    setSearchQuery("")
+    setDebouncedQuery("")
+    setPaginaActual(1)
+    listarVentas({})
+  }
+
+  const totalPaginas = Math.ceil(ventas.length / itemsPorPagina)
+
+  const paginaDatos = useMemo(() => {
+    const inicio = (paginaActual - 1) * itemsPorPagina
+    return ventas.slice(inicio, inicio + itemsPorPagina)
+  }, [paginaActual, ventas])
 
   const salesData = ventas.map((v) => ({
     name: v.nombreEvento,
@@ -53,23 +113,50 @@ export function ReporteVentas() {
           {/* Fechas */}
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Input type="date" className="flex-1" />
+
+            <Input
+              type="date"
+              value={fechaInicio}
+              onChange={(e) => setFechaInicio(e.target.value)}
+              className="flex-1"
+            />
+
             <span className="text-muted-foreground">-</span>
-            <Input type="date" className="flex-1" />
+
+            <Input
+              type="date"
+              value={fechaFin}
+              onChange={(e) => setFechaFin(e.target.value)}
+              className="flex-1"
+            />
           </div>
 
           {/* Buscador */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
             <Input
-              placeholder="Buscar por evento o organizador"
+              placeholder="Buscar por evento u organizador"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setPaginaActual(1)
+              }}
               className="pl-9"
             />
           </div>
 
-          {/* Exportaciones */}
+          {/* Botón limpiar */}
+          <Button
+            variant="destructive"
+            className="gap-2"
+            onClick={limpiarFiltros}
+          >
+            <X className="w-4 h-4" />
+            Limpiar filtros
+          </Button>
+
+          {/* Export */}
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
@@ -83,17 +170,15 @@ export function ReporteVentas() {
         </div>
       </div>
 
-      {/* Notificación de exportación */}
+      {/* Notificación export */}
       {showExportNotification && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
           Archivo exportado correctamente
         </div>
       )}
 
-      {/* Loading graph */}
-      {loading ? (
-        <p className="text-sm text-muted-foreground mb-6">Cargando ventas...</p>
-      ) : (
+      {/* Gráfico */}
+      {!loading && (
         <div className="mb-6">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={salesData}>
@@ -138,7 +223,7 @@ export function ReporteVentas() {
           </thead>
 
           <tbody>
-            {filteredData.map((item) => (
+            {paginaDatos.map((item) => (
               <tr key={item.id} className="border-b border-border hover:bg-muted/50">
                 <td className="py-3 px-4 text-sm font-medium text-foreground">
                   {item.nombreEvento}
@@ -158,7 +243,7 @@ export function ReporteVentas() {
               </tr>
             ))}
 
-            {!loading && filteredData.length === 0 && (
+            {!loading && paginaDatos.length === 0 && (
               <tr>
                 <td className="py-4 text-center text-muted-foreground" colSpan={5}>
                   No se encontraron resultados
@@ -169,10 +254,27 @@ export function ReporteVentas() {
         </table>
       </div>
 
-      <div className="mt-4 text-right">
-        <p className="text-xs text-muted-foreground">
-          Actualizado automáticamente
+      {/* ✔️ Paginación */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          variant="outline"
+          disabled={paginaActual === 1}
+          onClick={() => setPaginaActual(paginaActual - 1)}
+        >
+          Anterior
+        </Button>
+
+        <p className="text-sm text-muted-foreground">
+          Página {paginaActual} de {totalPaginas || 1}
         </p>
+
+        <Button
+          variant="outline"
+          disabled={paginaActual === totalPaginas || totalPaginas === 0}
+          onClick={() => setPaginaActual(paginaActual + 1)}
+        >
+          Siguiente
+        </Button>
       </div>
     </Card>
   )
