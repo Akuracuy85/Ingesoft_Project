@@ -4,8 +4,9 @@ import React from "react";
 import { FeaturedEvent } from "./Banner/FeaturedEvent"; // Asegúrate de ajustar esta ruta
 import { EventList } from "./EventList/EventList"; // Asegúrate de ajustar esta ruta
 import { type Event } from '@/models/Event'; 
-import { type FiltersType } from "../../../../types/FiltersType"; 
+import { type FiltersType } from "../../../../types/FiltersType";
 import Loading from "@/components/common/Loading";
+import AnimatedLines from "./AnimatedLines";
 
 // INTERFAZ: Recibe todos los datos necesarios del padre
 interface BodySeleccionEventosProps {
@@ -103,16 +104,24 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
     }
 
     return (
-        <main className="flex flex-col w-full items-center justify-start bg-white dark:bg-gray-900 text-black dark:text-white">
+    <>
+        <main
+            className="relative flex flex-col w-full items-center justify-start 
+                        bg-white dark:bg-gray-900 text-black dark:text-white"
+            >
+            <AnimatedLines />
 
             {shouldShowFeaturedBanner && <FeaturedEvent events={featuredEvents} />}
 
-            <section className="w-full max-w-7xl flex flex-col gap-8 p-6">
-                <h2 id="proximos-eventos" className="text-4xl font-semibold text-gray-800 dark:text-gray-200 ml-20">
-                    {hasActiveFilters ? "Resultados de búsqueda" : "Próximos eventos"}
+            <section className="relative z-[1] w-full max-w-7xl flex flex-col gap-8 p-6">
+                <h2 className="text-4xl font-semibold text-gray-800 dark:text-gray-200 ml-20">
+                {hasActiveFilters ? "Resultados de búsqueda" : "Próximos eventos"}
                 </h2>
-                <EventList events={events} /> 
+
+                <EventList events={events} />
             </section>
-        </main>
-    );
+            </main>
+                </>
+                );
+
 };
