@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import { GenericService } from "../services/GenericService";
-import { HandleResponseError } from "@/utils/Errors";
+import { HandleResponseError } from "../utils/Errors";
 import { Request, Response } from "express";
 
 export class GenericController {

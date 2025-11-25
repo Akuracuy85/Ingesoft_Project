@@ -149,7 +149,9 @@ export default function InformacionPersonal() {
 
   return (
     <ClientLayout showFilterButton={false}>
-      <div className="w-full min-h-screen bg-[#F8F8F8] dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-6  py-8 max-w-7xl mx-auto">
+      <div className="w-full min-h-screen bg-[#F8F8F8] dark:bg-gray-900 text-gray-900 dark:text-gray-100 
+px-10 lg:px-20 py-12 max-w-[1600px] mx-auto">
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold dark:text-gray-100 mb-2">Información personal</h1>
           <p className="text-gray-600">Administra tus datos personales y tus puntos acumulados.</p>

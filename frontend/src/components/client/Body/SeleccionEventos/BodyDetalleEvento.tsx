@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotificationService from "@/services/NotificationService";
 import PerfilService from "@/services/PerfilService";
 import Loading from "@/components/common/Loading";
+import CompraService from "@/services/CompraService";
 
 interface ArtistaDetalle {
   id: number;
@@ -131,6 +132,12 @@ export const BodyDetalleEvento: React.FC = () => {
         );
         return;
       }
+    }
+
+    const cantidad = await CompraService.getCantidadEntradasPorEvento(Number(id));
+    if((cantidad ?? 0) >= 4) {
+      NotificationService.warning("Parece que ya tienes 4 entradas para este evento");
+      return;
     }
 
     navigate(`/cola`, { state: { evento, tipoTarifa: tipo } });

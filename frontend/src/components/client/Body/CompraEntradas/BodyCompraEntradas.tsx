@@ -35,12 +35,10 @@ export const BodyCompraEntradas: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectionSummary, setSelectionSummary] = useState<SummaryItem[]>([]);
 
-  // --- Tipo de tarifa ---
   const tipoTarifa: "Normal" | "Preventa" = location.state?.tipoTarifa || "Normal";
   const isUsingPointsFlow = tipoTarifa === "Preventa";
   const purchaseType: "normal" | "preferencial" = isUsingPointsFlow ? "preferencial" : "normal";
 
-  // --- Consulta cantidad de entradas ---
   const { data: ticketsPoseidos = 0, isLoading: isLoadingTicketsPoseidos } = useQuery<number>({
     queryKey: ["ticketsPoseidos", id],
     queryFn: async () => {

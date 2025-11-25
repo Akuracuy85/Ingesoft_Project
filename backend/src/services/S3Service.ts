@@ -2,7 +2,7 @@ import { PutObjectCommand, DeleteObjectCommand, S3Client } from "@aws-sdk/client
 import { randomUUID } from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { CustomError } from "../types/CustomError";
-import { ObtenerEnvObligatorio } from "@/utils/EnvUtils";
+import { ObtenerEnvObligatorio } from "../utils/EnvUtils";
 
 interface UploadOptions {
   base64: string;
