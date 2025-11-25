@@ -4,7 +4,8 @@ import React from "react";
 import { FeaturedEvent } from "./Banner/FeaturedEvent"; // Asegúrate de ajustar esta ruta
 import { EventList } from "./EventList/EventList"; // Asegúrate de ajustar esta ruta
 import { type Event } from '@/models/Event'; 
-import { type FiltersType } from "../../../../types/FiltersType"; 
+import { type FiltersType } from "../../../../types/FiltersType";
+import Loading from "@/components/common/Loading";
 import AnimatedLines from "./AnimatedLines";
 
 // INTERFAZ: Recibe todos los datos necesarios del padre
@@ -54,8 +55,8 @@ export const BodySeleccionEventos: React.FC<BodySeleccionEventosProps> = ({
 
     if (isLoading) {
         return (
-            <main className="flex justify-center items-center w-full h-96">
-                <p>Cargando los próximos eventos...</p>
+            <main>
+                <Loading fullScreen />
             </main>
         );
     }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Search, Plus, AlertTriangle } from "lucide-react";
+import Loading from '@/components/common/Loading';
 import AdminLayout from "../AdminLayout";
 
 import UserTable from "../../../components/admin/UserTable";
@@ -24,11 +25,7 @@ export default function AdminUsuarios(): React.ReactElement {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg">
-        Cargando autenticación...
-      </div>
-    );
+    return <Loading fullScreen message={"Cargando autenticación..."} />;
   }
 
   if (!isLoggedIn) {
@@ -175,9 +172,9 @@ export default function AdminUsuarios(): React.ReactElement {
         {/* Tabla */}
         <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
           {usersQuery.isLoading ? (
-            <p className="text-center text-muted-foreground py-10">
-              Cargando usuarios...
-            </p>
+            <div className="text-center py-10">
+              <Loading />
+            </div>
           ) : (
             <UserTable
               users={filteredUsers}

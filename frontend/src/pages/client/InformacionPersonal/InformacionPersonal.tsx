@@ -17,6 +17,7 @@ import {
 } from "../../../components/ui/alert-dialog";
 import { User, Mail, CreditCard, Phone, FileText, Trash2, Star } from "lucide-react";
 import PerfilService from "../../../services/PerfilService";
+import Loading from '@/components/common/Loading';
 import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import type { Tarjeta } from "@/models/Tarjeta";
 
@@ -141,9 +142,7 @@ export default function InformacionPersonal() {
   if (loading) {
     return (
       <ClientLayout>
-        <div className="flex items-center justify-center h-screen text-gray-600 text-gray-600 dark:text-gray-400">
-          Cargando información personal...
-        </div>
+        <Loading fullScreen message={"Cargando información personal..."} />
       </ClientLayout>
     );
   }
