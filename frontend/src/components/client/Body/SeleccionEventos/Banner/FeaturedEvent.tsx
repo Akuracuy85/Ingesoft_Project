@@ -109,7 +109,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
 
   return (
     <section
-      className="group relative w-full h-[280px] md:h-[400px] lg:h-[420px] overflow-hidden rounded-lg shadow-md"
+      className="group relative w-full h-[280px] md:h-[400px] lg:h-[420px] overflow-hidden shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

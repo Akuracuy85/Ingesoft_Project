@@ -3,6 +3,7 @@ import { Navigate, Link } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import type { Rol } from "@/models/User"
 import { AlertTriangle } from "lucide-react"
+import Loading from '@/components/common/Loading'
 
 import AdminLayout from "../AdminLayout"
 import { ReporteVentas } from "@/components/admin/ReporteVentas"
@@ -12,11 +13,7 @@ export default function AdminReportes(): React.ReactElement {
   const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth()
   const REQUIRED_ROLE: Rol = "ADMINISTRADOR"
   if (isAuthLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg">
-        Cargando autenticación...
-      </div>
-    )
+    return <Loading fullScreen message={"Cargando autenticación..."} />
   }
 
   if (!isLoggedIn) {

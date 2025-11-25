@@ -3,6 +3,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { Rol } from "@/models/User";
 import { Search, Loader2, AlertTriangle } from "lucide-react"
+import Loading from '@/components/common/Loading'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import AdminLayout from "../AdminLayout"
@@ -26,11 +27,7 @@ export default function AdminEventos(): React.ReactElement {
 
 
   if (isAuthLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg">
-        Cargando autenticación...
-      </div>
-    )
+    return <Loading fullScreen message={"Cargando autenticación..."} />
   }
 
   if (!isLoggedIn) {
@@ -113,8 +110,7 @@ export default function AdminEventos(): React.ReactElement {
         <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
           {isLoading ? (
             <div className="py-12 text-center flex justify-center items-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <p className="text-muted-foreground">Cargando eventos...</p>
+              <Loading />
             </div>
           ) : (
             <EventsTable
