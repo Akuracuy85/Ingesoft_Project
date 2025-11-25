@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { Rol } from "@/models/User";
-import { Search, Loader2, AlertTriangle } from "lucide-react"
+import { Search, AlertTriangle } from "lucide-react"
 import Loading from '@/components/common/Loading'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"

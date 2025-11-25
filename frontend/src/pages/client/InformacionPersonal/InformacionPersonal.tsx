@@ -20,7 +20,6 @@ import PerfilService from "../../../services/PerfilService";
 import Loading from '@/components/common/Loading';
 import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import type { Tarjeta } from "@/models/Tarjeta";
-import { useDarkMode } from "@/hooks/useModoOscuro";
 
 const soloLetras = (valor: string) =>
   /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor);
