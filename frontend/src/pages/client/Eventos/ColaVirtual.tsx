@@ -7,6 +7,7 @@ import { Card } from "../../../components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog"
 import { Clock, CheckCircle2 } from "lucide-react"
 import ColaService from "@/services/ColaService"
+import Loading from '@/components/common/Loading'
 import { useCompraGuard } from "@/context/CompraGuardContext"; // 🔹 importa el hook
 
 export default function ColaVirtual() {
@@ -83,11 +84,7 @@ export default function ColaVirtual() {
   if (loading || !turno) {
     return (
       <ClientLayout>
-        <div className="min-h-screen flex justify-center items-center bg-white dark:bg-[#020817] transition-colors duration-300">
-          <p className="text-muted-foreground animate-pulse">
-            Cargando tu posición en la cola...
-          </p>
-        </div>
+        <Loading fullScreen message={"Cargando tu posición en la cola..."} />
       </ClientLayout>
     )
   }

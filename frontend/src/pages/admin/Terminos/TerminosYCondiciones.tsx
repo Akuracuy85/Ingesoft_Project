@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import type { Rol } from "@/models/User"
 import { AlertTriangle } from "lucide-react"
+import Loading from '@/components/common/Loading'
 
 import AdminLayout from "../AdminLayout"
 
@@ -16,11 +17,7 @@ export default function TerminosCondiciones(): React.ReactElement {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   if (isAuthLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg">
-        Cargando autenticación...
-      </div>
-    )
+    return <Loading fullScreen message={"Cargando autenticación..."} />
   }
 
   if (!isLoggedIn) {
