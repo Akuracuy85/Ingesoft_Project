@@ -27,8 +27,8 @@ interface EventEntity {
   provincia: string;
   distrito: string;
   lugar: string;
-  imagenBanner: BinaryData;
-  imagenLugar: BinaryData;
+  imagenBanner: string;
+  imagenLugar: string;
   mimeType?: string;
   artista: ArtistEntity;
 }
@@ -83,9 +83,6 @@ export class EventMapper {
     });
 
     const place = entity.lugar;
-    const mimeType = entity.mimeType || 'image/jpeg';
-    const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
-    const imagePlaceBase64 = bufferToBase64(entity.imagenLugar, mimeType);
     const zonasDto = (entity.zonas || []).map(zona => ({
       id: zona.id,
       nombre: zona.nombre,
@@ -105,8 +102,8 @@ export class EventMapper {
       provincia: entity.provincia,
       distrito: entity.distrito,
       place: place,
-      image: imageBase64,
-      imagePlace: imagePlaceBase64,
+      image: entity.imagenBanner,
+      imagePlace: entity.imagenLugar,
       artistName: entity.artista.nombre,
       category: entity.artista.categoria?.nombre,
       zonas: zonasDto,
@@ -120,15 +117,14 @@ export class EventMapper {
   static toPurchaseDTO(entity: EventEntityWithZones): EventDetailsForPurchaseDTO {
 
     const eventDate = entity.fechaEvento;
-    const mimeType = entity.mimeType || 'image/jpeg';
 
     // 1. Mapeo de Propiedades Base
     const dateString = eventDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
     const timeString = eventDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
     //const place = `${entity.distrito}, ${entity.provincia}`;
     const place = entity.lugar;
-    const imageBase64 = bufferToBase64(entity.imagenBanner, mimeType);
-    const imageLugarBase64 = bufferToBase64(entity.imagenLugar, mimeType);
+    const imageBase64 = entity.imagenBanner;
+    const imageLugarBase64 = entity.imagenLugar;
 
     // 2. Mapeo de Zonas (Transformar ZoneEntity al DTO de Zona)
     const zonasDisponibles = entity.zonas.map(zona => ({

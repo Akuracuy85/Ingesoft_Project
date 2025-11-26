@@ -1,11 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class SMSEnvio {
+export class Departamento {
   @PrimaryGeneratedColumn()
   id: number;
   @Column()
-  numeroRemitente: string;
-  @Column()
-  proveedorSMS: string;
+  nombre: string;
 }

@@ -47,6 +47,6 @@ export interface Event {
   organizador: Organizador;
   documentosRespaldo: BackendDocumentoDto[];
   terminosUso: BackendDocumentoDto;
-  fechaFinPreventa?: string | null; // NUEVO: fin preventa global YYYY-MM-DD
-  fechaInicioPreventa?: string | null; // NUEVO: inicio preventa global YYYY-MM-DD
+  fechaFinPreventa?: string | null;
+  fechaInicioPreventa?: string | null;
 }

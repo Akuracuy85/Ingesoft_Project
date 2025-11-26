@@ -63,6 +63,8 @@ export const BodyDetalleEvento: React.FC = () => {
     error: string | null;
   };
 
+  console.log(evento);
+
   if (isLoading) {
     return (
       <>

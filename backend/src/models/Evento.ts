@@ -77,11 +77,11 @@ export class Evento {
   @JoinColumn()
   terminosUso?: Documento | null;
 
-  @Column({ type: "longblob", nullable: true })
-  imagenBanner: Buffer;
+  @Column({ type: "varchar", length: 512, nullable: true })
+  imagenBanner: string;
 
-  @Column({ type: "longblob", nullable: true })
-  imagenLugar: Buffer;
+  @Column({ type: "varchar", length: 512, nullable: true })
+  imagenLugar: string;
 
   @Column({ type: "int" })
   gananciaTotal: number;

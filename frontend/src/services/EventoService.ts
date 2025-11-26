@@ -6,7 +6,6 @@ import { type ZonePurchaseDetail } from "../types/ZonePurchaseDetail";
 import { type FiltersType } from "../types/FiltersType";
 import type { PriceRangeType } from "../types/PriceRangeType";
 import { extractFecha, extractHora } from "../utils/date-utils";
-import { bufferToBase64 } from "@/utils/imagenUtils";
 
 export type EventDetailsForPurchase = Event & {
   zonasDisponibles: ZonePurchaseDetail[];
@@ -161,8 +160,8 @@ class EventoService extends HttpClient {
       place: ev.lugar || "",
       // Simplificado: si viene null -> ""
       image: ev.imagenBanner ?? "",
-      imageBanner: await bufferToBase64(ev.imagenBanner?.data) || null,
-      imageLugar: await bufferToBase64(ev.imagenLugar?.data) || null,
+      imageBanner: (ev.imagenBanner) ?? "",
+      imageLugar: (ev.imagenLugar) ?? "",
       artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
       category: ev.artista?.categoria?.nombre ?? undefined,
       zonas: ev.zonas || [],

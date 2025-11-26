@@ -36,6 +36,8 @@ import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
+import { CategoriaRepository } from "../repositories/CategoriaRepository";
+import { EmailService } from "./EmailService";
 
 const TIPO_TERMINOS_USO = "TerminosUso";
 const TIPO_DOCUMENTO_RESPALDO = "DocumentoRespaldo";
@@ -47,12 +49,14 @@ export class EventoService {
   private usuarioRepository: UsuarioRepository;
   private colaService: ColaService;
   private artistaRepository: Repository<Artista>;
+  private s3Service: S3Service;
 
   private constructor() {
     this.eventoRepository = EventoRepository.getInstance();
     this.usuarioRepository = UsuarioRepository.getInstance();
     this.colaService = ColaService.getInstance();
     this.artistaRepository = AppDataSource.getRepository(Artista);
+    this.s3Service = S3Service.getInstance();
   }
 
   public static getInstance(): EventoService {
@@ -112,12 +116,8 @@ export class EventoService {
         codigoPrivado: evento.codigoPrivado,
         gananciaTotal: evento.gananciaTotal,
         artistaId: evento.artista ? evento.artista.id : null,
-        imagenBanner: evento.imagenBanner
-          ? evento.imagenBanner.toString("base64")
-          : null,
-        imagenLugar: evento.imagenLugar
-          ? evento.imagenLugar.toString("base64")
-          : null,
+        imagenBanner: evento.imagenBanner,
+        imagenLugar: evento.imagenLugar,
         terminosUso: evento.terminosUso
           ? this.mapearDocumentoDto(evento.terminosUso)
           : null,
@@ -208,7 +208,7 @@ export class EventoService {
       }
       fechaFinPreventa = ff;
     }
-    const imagenBanner = this.convertirImagen(data.imagenPortada);
+    const imagenBanner = data.imagenPortada;
 
     try {
       return await this.eventoRepository.crearEvento({
@@ -221,8 +221,8 @@ export class EventoService {
         distrito: data.distrito.trim(),
         estado,
         fechaPublicacion: new Date(),
-        fechaFinPreventa, // NUEVO
-        fechaInicioPreventa, // NUEVO
+        fechaFinPreventa, 
+        fechaInicioPreventa, 
         aforoTotal: 0,
         entradasVendidas: 0,
         codigoPrivado: this.generarCodigoPrivado(),
@@ -470,16 +470,36 @@ export class EventoService {
     evento.lugar = data.lugar.trim();
     evento.artista = artista;
 
+    const s3Path = `eventos/${evento.id}/imagenes`;
+
     if (data.imagenPortada !== undefined) {
-      evento.imagenBanner = data.imagenPortada
-        ? this.convertirImagen(data.imagenPortada)
-        : null;
+      if (evento.imagenBanner && data.imagenPortada !== evento.imagenBanner) {
+        await this.s3Service.deleteFileByUrl(evento.imagenBanner);
+      }
+      if (data.imagenPortada) {
+        const s3Key = `${s3Path}/banner-${Date.now()}.jpeg`;
+        evento.imagenBanner = await this.s3Service.uploadBase64Image(
+          data.imagenPortada,
+          s3Key
+        );
+      } else {
+        evento.imagenBanner = null;
+      }
     }
 
     if (data.imagenLugar !== undefined) {
-      evento.imagenLugar = data.imagenLugar
-        ? this.convertirImagen(data.imagenLugar)
-        : null;
+      if (evento.imagenLugar && data.imagenLugar !== evento.imagenLugar) {
+        await this.s3Service.deleteFileByUrl(evento.imagenLugar);
+      }
+      if (data.imagenLugar) {
+        const s3Key = `${s3Path}/lugar-${Date.now()}.jpeg`;
+        evento.imagenLugar = await this.s3Service.uploadBase64Image(
+          data.imagenLugar,
+          s3Key
+        );
+      } else {
+        evento.imagenLugar = null;
+      }
     }
 
     await this.actualizarTerminosUso(evento, data.terminosUso);

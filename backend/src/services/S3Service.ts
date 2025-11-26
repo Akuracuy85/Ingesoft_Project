@@ -97,6 +97,70 @@ export class S3Service {
     };
   }
 
+  async uploadFile(
+    fileBuffer: Buffer,
+    key: string,
+    contentType: string
+  ): Promise<string> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: fileBuffer,
+      ContentType: contentType,
+    });
+
+    await this.client.send(command);
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
+  }
+
+  async uploadBase64Image(
+    base64String: string,
+    key: string
+  ): Promise<string> {
+    // Extrae el contenido Base64 puro, eliminando el prefijo (ej. "data:image/jpeg;base64,")
+    const base64Data = base64String.split(',')[1] || base64String;
+    const buffer = Buffer.from(base64Data, "base64");
+
+    // Usamos un tipo de contenido genérico para imágenes. S3 lo manejará adecuadamente.
+    const contentType = "image/jpeg";
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ContentEncoding: "base64",
+    });
+
+    await this.client.send(command);
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
+  }
+
+  async deleteFileByUrl(fileUrl: string): Promise<void> {
+    if (!fileUrl) {
+      return;
+    }
+
+    try {
+      const url = new URL(fileUrl);
+      const key = decodeURIComponent(url.pathname.substring(1));
+
+      if (!key) {
+        console.warn(`No se pudo extraer la key de la URL para eliminar: ${fileUrl}`);
+        return;
+      }
+
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+
+      await this.client.send(command);
+    } catch (error) {
+      console.error(`Falló la eliminación del archivo en S3 con URL ${fileUrl}:`, error);
+    }
+  }
+
   public async eliminarPorUrl(url?: string | null): Promise<void> {
     if (!url) return;
 
