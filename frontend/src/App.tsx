@@ -51,6 +51,8 @@ function App() {
             <Route path="/info" element={<InformacionPersonal />} />
             <Route path="/compra-exitosa" element={<CompraExitosa />} />
           </Route>
+
+           {/*<Route path="/*" element={<Login />} />*/}
           </Routes>
         </div>
       </AuthProvider>
