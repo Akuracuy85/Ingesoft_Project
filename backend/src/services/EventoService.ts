@@ -198,6 +198,7 @@ export class EventoService {
     const organizador = await this.obtenerOrganizador(organizadorId);
     const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
+    this.validarEstadoCreacion(estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
     let fechaFinPreventa: Date | null = null;
     let fechaInicioPreventa: Date | null = null;
@@ -405,11 +406,18 @@ export class EventoService {
         StatusCodes.BAD_REQUEST
       );
     }
-    return this.actualizarEventoParcial(
-      eventoId,
-      { estado: data.estado },
-      organizadorId
-    );
+    const evento = await this.obtenerEventoPropietario(eventoId, organizadorId);
+    const nuevoEstado = this.obtenerEstadoValido(data.estado);
+    this.validarTransicionEstado(evento.estado as EstadoEvento, nuevoEstado);
+    evento.estado = nuevoEstado;
+    try {
+      return await this.eventoRepository.guardarEvento(evento);
+    } catch (error) {
+      throw new CustomError(
+        "Error al actualizar el estado del evento",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   private async actualizarEventoParcial(
@@ -443,15 +451,24 @@ export class EventoService {
     return evento;
   }
 
+  public async obtenerEventoDetallePropietario(eventoId: number, organizadorId: number): Promise<Evento> {
+    await this.obtenerOrganizador(organizadorId);
+    const evento = await this.eventoRepository.obtenerEventoDetalle(eventoId);
+    if (!evento || evento.organizador.id !== organizadorId) {
+      throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+    }
+    return evento;
+  }
+
   private async aplicarActualizacion(
     evento: Evento,
     data: ActualizarEventoDto
   ): Promise<Evento> {
     this.validarDatosObligatorios(data);
 
-    const estado = this.obtenerEstadoValido(data.estado);
-    const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
-    // Obtener artista (faltaba y causaba ReferenceError)
+    const nuevoEstado = this.obtenerEstadoValido(data.estado);
+    this.validarTransicionEstado(evento.estado as EstadoEvento, nuevoEstado);
+    const nuevaFechaEvento = this.combinarFechaHora(data.fecha, data.hora);
     const artista = await this.obtenerArtistaValido(data.artistaId);
     // Validar y asignar fechaInicioPreventa/fechaFinPreventa
     if (data.fechaInicioPreventa !== undefined) {
@@ -462,7 +479,7 @@ export class EventoService {
         if (Number.isNaN(fi.getTime())) {
           throw new CustomError("La fecha inicio de preventa no es válida", StatusCodes.BAD_REQUEST);
         }
-        if (fi.getTime() > fechaEvento.getTime()) {
+        if (fi.getTime() > nuevaFechaEvento.getTime()) {
           throw new CustomError("La fecha inicio de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
         }
         evento.fechaInicioPreventa = fi;
@@ -476,7 +493,7 @@ export class EventoService {
         if (Number.isNaN(ff.getTime())) {
           throw new CustomError("La fecha fin de preventa no es válida", StatusCodes.BAD_REQUEST);
         }
-        if (ff.getTime() > fechaEvento.getTime()) {
+        if (ff.getTime() > nuevaFechaEvento.getTime()) {
           throw new CustomError("La fecha fin de preventa no puede superar la fecha del evento", StatusCodes.BAD_REQUEST);
         }
         if (evento.fechaInicioPreventa && ff.getTime() < evento.fechaInicioPreventa.getTime()) {
@@ -488,8 +505,8 @@ export class EventoService {
 
     evento.nombre = data.nombre.trim();
     evento.descripcion = data.descripcion.trim();
-    evento.estado = estado;
-    evento.fechaEvento = fechaEvento;
+    evento.estado = nuevoEstado;
+    evento.fechaEvento = nuevaFechaEvento;
     evento.lugar = data.lugar.trim();
     evento.departamento = data.departamento.trim();
     evento.provincia = data.provincia.trim();
@@ -747,12 +764,14 @@ export class EventoService {
         idsRecibidos.add(docDto.id);
       } else {
         const documento = new Documento();
+        // Asignamos el tipo lógico antes de preparar (faltaba y podía quedar undefined)
+        documento.tipo = TIPO_DOCUMENTO_RESPALDO;
         await this.prepararDocumentoParaGuardar(
           documento,
           docDto,
           `${evento.id}/documentos`
         );
-        documento.evento = evento;
+        documento.evento = evento; // Garantiza asociación con el evento (eventoId)
         nuevos.push(documento);
       }
     }
@@ -1349,7 +1368,46 @@ export class EventoService {
     }
   }
 
+  private validarEstadoCreacion(estado: EstadoEvento) {
+    if (![EstadoEvento.BORRADOR, EstadoEvento.PENDIENTE_APROBACION].includes(estado)) {
+      throw new CustomError(
+        "Solo puedes crear eventos en estado BORRADOR o PENDIENTE_APROBACION",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+  }
+
+  private validarTransicionEstado(actual: EstadoEvento, nuevo: EstadoEvento) {
+    if (actual === nuevo) return; // permitir permanecer
+    switch (actual) {
+      case EstadoEvento.BORRADOR:
+      case EstadoEvento.PENDIENTE_APROBACION:
+        if (![EstadoEvento.BORRADOR, EstadoEvento.PENDIENTE_APROBACION].includes(nuevo)) {
+          throw new CustomError(
+            "Transición de estado no permitida. Solo puedes alternar entre BORRADOR y PENDIENTE_APROBACION",
+            StatusCodes.BAD_REQUEST
+          );
+        }
+        return;
+      case EstadoEvento.PUBLICADO:
+        if (nuevo !== EstadoEvento.CANCELADO) {
+          throw new CustomError(
+            "Un evento PUBLICADO solo puede pasar a CANCELADO",
+            StatusCodes.BAD_REQUEST
+          );
+        }
+        return;
+      case EstadoEvento.CANCELADO:
+        throw new CustomError(
+          "No puedes cambiar el estado de un evento CANCELADO",
+          StatusCodes.BAD_REQUEST
+        );
+      default:
+        throw new CustomError(
+          "Estado actual desconocido para transición",
+          StatusCodes.BAD_REQUEST
+        );
+    }
+  }
+
 }
-
-export const eventoService = EventoService.getInstance();
-

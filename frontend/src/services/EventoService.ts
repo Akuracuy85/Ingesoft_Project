@@ -254,8 +254,8 @@ class EventoService extends HttpClient {
   }
 
   async getDocumentosRespaldo(eventoId: number): Promise<BackendDocumentoDto[]> {
-    const evento = await this.obtenerPorId(eventoId)
-    return evento?.documentosRespaldo || [];
+    const resp = await super.get<{ success?: boolean; documentos?: BackendDocumentoDto[] }>(`/${eventoId}/documentos`);
+    return resp.documentos || [];
   }
 
   async getEventoDetalladoOrganizadorById(eventoId: number): Promise<EventoDetalladoOrganizador | undefined> {

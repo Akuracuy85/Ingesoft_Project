@@ -510,6 +510,38 @@ listarEventosAdmin = async (req: Request, res: Response) => {
     }
     await this.emailService.SendUpdateEventEmail(evento.id);
   }
+
+  obtenerDocumentosRespaldo = async (req: Request, res: Response) => {
+    const organizadorId = req.userId;
+    const eventoId = Number(req.params.id);
+
+    if (!organizadorId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "No autorizado",
+      });
+    }
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      const detalle = await this.eventoService.obtenerEventoDetallePropietario(eventoId, organizadorId);
+      const docs = (detalle.documentosRespaldo || []).map(d => ({
+        id: d.id,
+        nombreArchivo: d.nombreArchivo,
+        tipo: d.tipo,
+        tamano: d.tamano,
+        url: d.url,
+      }));
+      res.status(StatusCodes.OK).json({ success: true, documentos: docs });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
 }
 
 function parseFiltros(query: Request['query']): IFiltrosEvento {

@@ -245,9 +245,15 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       await actualizarEvento(event.id, payload);
       onClose();
       onUpdated();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error actualizando evento:", error);
-      NotificationService.error("No se pudo actualizar el evento");
+      if (error?.response?.data?.message?.includes('Transición de estado no permitida') || error?.response?.data?.message?.includes('Solo se pueden aprobar') || error?.response?.data?.message?.includes('Solo puedes crear eventos')) {
+        NotificationService.warning(error.response.data.message);
+      } else if (error?.response?.data?.message?.includes('Un evento PUBLICADO solo puede pasar a CANCELADO') || error?.response?.data?.message?.includes('No puedes cambiar el estado de un evento CANCELADO')) {
+        NotificationService.warning(error.response.data.message);
+      } else {
+        NotificationService.error("No se pudo actualizar el evento");
+      }
     }
   };
 
@@ -522,12 +528,32 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
               className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                 estadoError ? "border-red-500" : "border-gray-300"
               }`}
+              disabled={event?.estado === 'CANCELADO'}
             >
-              <option value="Borrador">Borrador</option>
-              <option value="Publicado">Publicado</option>
-              <option value="En revisión">En revisión</option>
+              {(() => {
+                const backendEstado = event?.estado || 'BORRADOR';
+                if (backendEstado === 'BORRADOR' || backendEstado === 'PENDIENTE_APROBACION') {
+                  return [
+                    <option key="bor" value="Borrador">Borrador</option>,
+                    <option key="rev" value="En revisión">En revisión</option>
+                  ];
+                }
+                if (backendEstado === 'PUBLICADO') {
+                  return [
+                    <option key="pub" value="Publicado">Publicado</option>,
+                    <option key="can" value="Cancelado">Cancelado</option>
+                  ];
+                }
+                if (backendEstado === 'CANCELADO') {
+                  return [<option key="can" value="Cancelado">Cancelado</option>];
+                }
+                return [<option key="bor" value="Borrador">Borrador</option>];
+              })()}
             </select>
             {estadoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            {event?.estado === 'PUBLICADO' && estado === 'Cancelado' && (
+              <p className="mt-1 text-xs text-amber-600">Al guardar se cancelará el evento.</p>
+            )}
           </div>
           {/* Imagen */}
           <div>
