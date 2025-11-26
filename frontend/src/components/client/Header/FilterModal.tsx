@@ -196,13 +196,14 @@ export const FilterModal = ({
             </div>
 
             <div className="flex flex-col gap-6 min-w-0">
-              <MultiSelectDropdown label="Categoría" options={categoriaOptions} value={filters.categories} onChange={handleCategoryChange} />
+              <MultiSelectDropdown label="Categoría" options={categoriaOptions} value={filters.categories} onChange={handleCategoryChange} menuMaxHeight="20px" />
               <MultiSelectDropdown
                 label="Artista"
                 options={artistaOptions}
                 value={filters.artists}
                 onChange={handleArtistChange}
                 disabled={artistaOptions.length === 0}
+                menuMaxHeight="20px"
               />
             </div>
           </div>

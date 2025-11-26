@@ -11,6 +11,7 @@ interface CustomDropdownProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  menuMaxHeight?: string; // optional inline max-height value, e.g. '20px'
 }
 
 export const CustomDropdown: React.FC<CustomDropdownProps> = ({
@@ -18,6 +19,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
   value,
   onChange,
   disabled = false,
+  menuMaxHeight,
 }) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -67,7 +69,10 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
       {/* Dropdown estilizado */}
       {open && !disabled && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto dark:bg-gray-800 dark:border-gray-600">
+        <div
+          className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg overflow-y-auto dark:bg-gray-800 dark:border-gray-600"
+          style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+        >
           {options.length === 0 ? (
             <div className="px-3 py-2 text-gray-400 dark:text-gray-300 text-sm">Sin opciones</div>
           ) : (
