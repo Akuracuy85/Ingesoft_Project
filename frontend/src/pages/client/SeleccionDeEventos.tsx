@@ -10,7 +10,7 @@ export const SeleccionDeEventos = () => {
     isLoading, 
     error, 
     filters,
-    fetchEvents // La función clave para recargar
+    fetchEvents
   } = useEventos(); 
 
   return (

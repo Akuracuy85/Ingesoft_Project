@@ -1,5 +1,3 @@
-// src/hooks/useEventos.ts
-
 import { useState, useEffect, useCallback } from 'react';
 import EventoService from '../services/EventoService';
 import { useFilters } from '../context/FilterContext'; // Usa el contexto para obtener los filtros
@@ -8,7 +6,7 @@ import type { FiltersType } from '../types/FiltersType';
 
 export const useEventos = () => {
   // 1. Obtener los filtros actuales del Context
-  const { filters } = useFilters(); //  Esta llamada ahora funciona gracias al main.tsx
+  const { filters } = useFilters();
 
   // 2. Estado local para los datos
   const [events, setEvents] = useState<Event[]>([]);
@@ -23,7 +21,7 @@ export const useEventos = () => {
     try {
       const fetchedEvents = await EventoService.listar(currentFilters);
       setEvents(fetchedEvents);
-
+      setFeaturedEvents(fetchedEvents);
     } catch (err: any) {
       setError(err.message || 'Error al obtener eventos.');
       setEvents([]);
@@ -33,6 +31,7 @@ export const useEventos = () => {
   }, []);
 
   // 4. Función de carga de eventos destacados
+  /*
   const fetchFeaturedEvents = useCallback(async () => {
     try {
       const fetchedFeatured = await EventoService.listar();
@@ -41,20 +40,23 @@ export const useEventos = () => {
       console.warn("No se pudieron cargar eventos destacados.", err);
       setFeaturedEvents([]);
     }
-  }, []);
+  }, []);*/
 
-  // 5. EFECTO CLAVE PARA LA PERSISTENCIA Y RECARGA
-  useEffect(() => {
+  // 5. Efecto para cargar eventos destacados (solo una vez)
+  /*useEffect(() => {
     if (featuredEvents.length === 0) {
       fetchFeaturedEvents();
     }
+  }, [fetchFeaturedEvents, featuredEvents.length]);*/
 
-    // Siempre recarga eventos con los filtros actuales del contexto
-    fetchEvents(filters);
+  // 6. Efecto para recargar eventos cuando cambian los filtros
+  useEffect(() => {
+    if(filters){
+      fetchEvents(filters);
+    }
+  }, [filters, fetchEvents]);
 
-  }, [filters, fetchEvents, fetchFeaturedEvents, featuredEvents.length]);
-
-  // 6. Retornar el estado y las funciones
+  // 7. Retornar el estado y las funciones
   return {
     events,
     featuredEvents,
