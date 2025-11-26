@@ -173,6 +173,37 @@ class EventoService extends HttpClient {
     } as Event;
   }
 
+  async obtenerPorIdParaPantallaDetalle(id: number): Promise<Event> {
+    if (!id) throw new Error("Se requiere un ID válido de evento");
+    const respuesta = await super.get<{ success?: boolean; evento: BackendEventoEntity }>(`/front-body/${id}`);
+    const ev = respuesta.evento;
+    if (!ev) throw new Error("Evento no encontrado");
+    // Mapear a un objeto interno para edición (no usamos el modelo público Event porque difiere)
+    return {
+      id: ev.id,
+      title: ev.nombre,
+      description: ev.descripcion,
+      date: extractFecha(ev.fechaEvento),
+      time: extractHora(ev.fechaEvento),
+      departamento: ev.departamento || "",
+      provincia: ev.provincia || "",
+      distrito: ev.distrito || "",
+      place: ev.lugar || "",
+      // Simplificado: si viene null -> ""
+      image: ev.imagenBanner ?? "",
+      imageBanner: (ev.imagenBanner) ?? "",
+      imageLugar: (ev.imagenLugar) ?? "",
+      artist: { id: ev.artista?.id ?? 0, nombre: ev.artista?.nombre ?? "" },
+      category: ev.artista?.categoria?.nombre ?? undefined,
+      zonas: ev.zonas || [],
+      cola: ev.cola || undefined,
+      documentosRespaldo: ev.documentosRespaldo,
+      terminosUso: ev.terminosUso,
+      fechaFinPreventa: ev.fechaFinPreventa ? extractFecha(ev.fechaFinPreventa) : null,
+      fechaInicioPreventa: ev.fechaInicioPreventa ? extractFecha(ev.fechaInicioPreventa) : null,
+    } as Event;
+  }
+
   // Nuevo: listado detallado para organizador (usa GET /evento/ que devuelve obtenerEventosDetallados)
   async listarDetalladosOrganizador(): Promise<EventoDetalladoOrganizador[]> {
     const resp = await super.get<{ success?: boolean; eventos: BackendEventoEntity[] }>("/");
@@ -315,39 +346,36 @@ export type { EventoBasicoOrganizadorDTO };
 export interface CrearEventoPayload {
   nombre: string;
   descripcion: string;
-  fecha: string; // YYYY-MM-DD
-  hora: string;  // HH:mm
-  artistaId: number; // obligatorio
+  fecha: string;
+  hora: string;
+  artistaId: number;
+  // Revertido a string para coincidir con la entidad del backend
   departamento: string;
   provincia: string;
   distrito: string;
   lugar: string;
-  estado: string; // BORRADOR | PUBLICADO | PENDIENTE_APROBACION
-  imagenPortada?: string; // base64 sin prefijo (opcional)
-  fechaFinPreventa?: string; // NUEVO campo opcional YYYY-MM-DD
-  fechaInicioPreventa?: string; // NUEVO campo opcional YYYY-MM-DD
+  estado: EstadoEventoBackend;
+  imagenPortada?: string;
 }
 
 export interface ActualizarEventoPayload {
   nombre: string;
   descripcion: string;
-  fecha: string; // YYYY-MM-DD
-  hora: string; // HH:mm
-  artistaId: number;
+  fecha: string;
+  hora: string;
+  lugar: string;
+  estado: EstadoEventoBackend;
+  // Revertido a string
   departamento: string;
   provincia: string;
   distrito: string;
-  lugar: string;
-  estado: string; // BACKEND: BORRADOR | PUBLICADO | PENDIENTE_APROBACION | CANCELADO
-  imagenPortada?: string | null; // base64 sin prefijo o null para eliminar
-  terminosUso?: BackendDocumentoDto | null;
-  // NUEVO: imagen del lugar/estadio según modelo backend (imagenLugar)
-  imagenLugar?: string | null;
-  fechaFinPreventa?: string | null; // NUEVO campo opcional YYYY-MM-DD
-  fechaInicioPreventa?: string | null; // NUEVO campo opcional YYYY-MM-DD
+  artistaId: number;
+  imagenPortada?: string | null;
 }
 
-export function mapEstadoUIToBackend(estado: string): string {
+export type EstadoEventoBackend = "PUBLICADO" | "PENDIENTE_APROBACION" | "BORRADOR" | "CANCELADO";
+
+export function mapEstadoUIToBackend(estado: string): EstadoEventoBackend {
   switch (estado) {
     case "Publicado":
       return "PUBLICADO";

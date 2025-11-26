@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from "typeor
 import { Rol } from "../enums/Rol";
 
 @Entity()
-@TableInheritance({ column: { type: "varchar", name: "tipo" } })
+@TableInheritance({ column: { type: "enum", name: "rol" } })
 export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;

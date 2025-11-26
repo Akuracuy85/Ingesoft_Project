@@ -38,6 +38,7 @@ import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
 import { CategoriaRepository } from "../repositories/CategoriaRepository";
 import { EmailService } from "./EmailService";
+import { ConvertirFechaUTCaPeru } from "@/utils/FechaUtils";
 
 const TIPO_TERMINOS_USO = "TerminosUso";
 const TIPO_DOCUMENTO_RESPALDO = "DocumentoRespaldo";
@@ -66,7 +67,7 @@ export class EventoService {
     return EventoService.instance;
   }
 
-  async obtenerDatosBasicos(organizadorId: number): Promise<EventoBasicoDto[]> {
+  async obtenerDatosBasicos(organizadorId: number): Promise<EventoBasicoDto[] | any> {
     await this.obtenerOrganizador(organizadorId);
 
     // Listado resumido para tableros: únicamente nombre, fecha y estado ordenados cronológicamente.
@@ -77,7 +78,7 @@ export class EventoService {
         );
       return eventos.map(({ nombre, fechaEvento, estado }) => ({
         nombre,
-        fecha: fechaEvento,
+        fecha: ConvertirFechaUTCaPeru(fechaEvento),
         estado,
       }));
     } catch (error) {
@@ -105,12 +106,12 @@ export class EventoService {
         nombre: evento.nombre,
         descripcion: evento.descripcion,
         estado: evento.estado,
-        fechaEvento: evento.fechaEvento.toISOString(),
+        fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5),
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
         lugar: evento.lugar,
-        fechaPublicacion: evento.fechaPublicacion.toISOString(),
+        fechaPublicacion: ConvertirFechaUTCaPeru(evento.fechaPublicacion, 5),
         aforoTotal: evento.aforoTotal,
         entradasVendidas: evento.entradasVendidas,
         codigoPrivado: evento.codigoPrivado,
@@ -159,13 +160,29 @@ export class EventoService {
   /**
    * Obtiene el detalle público de un evento por identificador.
    */
-  async obtenerDetalleEvento(id: number): Promise<Evento> {
+  async obtenerDetalleEvento(id: number): Promise<any> {
     try {
       const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
-      return evento;
+      return {...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento) };
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        "Error al obtener el detalle del evento: " + error,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async obtenerDetalleEventoParaPantallaDetalle(id: number): Promise<any> {
+    try {
+      const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
+      if (!evento) {
+        throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
+      }
+      return {...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)};
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
@@ -182,7 +199,6 @@ export class EventoService {
     const artista = await this.obtenerArtistaValido(data.artistaId);
     const estado = this.obtenerEstadoValido(data.estado);
     const fechaEvento = this.combinarFechaHora(data.fecha, data.hora);
-    // Validar fechaFinPreventa si viene
     let fechaFinPreventa: Date | null = null;
     let fechaInicioPreventa: Date | null = null;
     if (data.fechaInicioPreventa) {
@@ -208,10 +224,9 @@ export class EventoService {
       }
       fechaFinPreventa = ff;
     }
-    const imagenBanner = data.imagenPortada;
 
     try {
-      return await this.eventoRepository.crearEvento({
+      const evento = await this.eventoRepository.crearEvento({
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
         fechaEvento,
@@ -226,11 +241,23 @@ export class EventoService {
         aforoTotal: 0,
         entradasVendidas: 0,
         codigoPrivado: this.generarCodigoPrivado(),
-        imagenBanner,
+        imagenBanner: null,
         gananciaTotal: 0,
         organizador,
         artista,
       });
+      
+      if (data.imagenPortada) {
+        const s3Path = `eventos/${evento.id}/imagenes`;
+        const s3Key = `${s3Path}/banner-${Date.now()}.jpeg`;
+        evento.imagenBanner = await this.s3Service.uploadBase64Image(
+          data.imagenPortada,
+          s3Key
+        );
+        await this.eventoRepository.guardarEvento(evento);
+      }
+      
+      return evento;
     } catch (error) {
       throw new CustomError(
         "Error al crear el evento",
@@ -1261,10 +1288,10 @@ export class EventoService {
     }
   }
 
-  async obtenerTodosLosEventos(): Promise<Evento[]> {
+  async obtenerTodosLosEventos(): Promise<Evento[] | any> {
     try {
       const eventos = await this.eventoRepository.obtenerTodosLosEventos();
-      return eventos;
+      return eventos.map(evento => ({...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)}));
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
@@ -1273,12 +1300,13 @@ export class EventoService {
       );
     }
   }
+
   async listarEventosAdmin(filtros: {
     fechaInicio?: string;
     fechaFin?: string;
     nombreEvento?: string;
     nombreOrganizador?: string;
-  }): Promise<Evento[]> {
+  }): Promise<Evento[] | any> {
     try {
       let fechaInicioDate: Date | undefined;
       let fechaFinDate: Date | undefined;
@@ -1310,7 +1338,7 @@ export class EventoService {
         nombreOrganizador: filtros.nombreOrganizador,
       });
 
-      return eventos;
+      return eventos.map(evento => ({...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)}));
 
     } catch (error) {
       if (error instanceof CustomError) throw error;

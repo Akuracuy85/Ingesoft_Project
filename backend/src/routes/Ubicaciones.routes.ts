@@ -5,5 +5,4 @@ const router = Router();
 
 router.get("/", ubicacionesController.listar);
 
-
 export default router;

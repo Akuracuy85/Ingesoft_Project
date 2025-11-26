@@ -34,9 +34,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const [lugar, setLugar] = useState("");
   const [estado, setEstado] = useState("Borrador");
   const [imagen, setImagen] = useState<File | null>(null);
-  const [departamento, setDepartamento] = useState("");
-  const [provincia, setProvincia] = useState("");
-  const [distrito, setDistrito] = useState("");
+  const [departamentoId, setDepartamentoId] = useState<number | null>(null);
+  const [provinciaId, setProvinciaId] = useState<number | null>(null);
+  const [distritoId, setDistritoId] = useState<number | null>(null);
   const [artistaId, setArtistaId] = useState<number | null>(null);
   // Portada actual (base64) para previsualización dentro del modal
   const [portadaBase64, setPortadaBase64] = useState<string | null>(null);
@@ -77,7 +77,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   useEffect(() => {
     if (!event) return;
     setTouchedSubmit(false);
-    // Reinicia previsualización local (no contamos con portada original aquí)
     setPortadaBase64(null);
 
     setNombre(event.nombre || event.title || "");
@@ -86,6 +85,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
     // Fecha
     if (event.fechaEvento || event.fecha || event.date) {
       const raw = event.fechaEvento ?? event.fecha ?? event.date;
+      console.log("Raw: ", raw);
       try {
         const d = new Date(raw as string);
         const isoDate = d.toISOString().split("T")[0];
@@ -116,71 +116,109 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
         setEstado("Borrador");
     }
 
-    setDepartamento(event.departamento || "");
-    setProvincia(event.provincia || "");
-    setDistrito(event.distrito || "");
+    // CORRECCIÓN: Lógica para pre-seleccionar la ubicación
+    const prefillUbicacion = async () => {
+      if (!open) return;
+      
+      const todosDepartamentos = await UbicacionService.getDepartamentos();
+      setDepartamentos(todosDepartamentos);
+
+      const depActual = todosDepartamentos.find(d => d.nombre === event.departamento);
+      if (depActual) {
+        setDepartamentoId(depActual.id as number);
+        
+        const todasProvincias = await UbicacionService.getProvincias(depActual.id as number);
+        setProvincias(todasProvincias);
+
+        const provActual = todasProvincias.find(p => p.nombre === event.provincia);
+        if (provActual) {
+          setProvinciaId(provActual.id as number);
+
+          const todosDistritos = await UbicacionService.getDistritos(depActual.id as number, provActual.id as number);
+          setDistritos(todosDistritos);
+
+          const distActual = todosDistritos.find(d => d.nombre === event.distrito);
+          if (distActual) {
+            setDistritoId(distActual.id as number);
+          } else {
+            setDistritoId(null);
+          }
+        } else {
+          setProvinciaId(null);
+          setDistritoId(null);
+        }
+      } else {
+        setDepartamentoId(null);
+        setProvinciaId(null);
+        setDistritoId(null);
+      }
+    };
+
+    if (open) {
+      prefillUbicacion();
+    }
 
     // Artista actual
     setArtistaId(event.artistaId || event.artist?.id || null);
 
     // Imagen: no podemos reconstruir File desde base64 fácilmente; se deja null
     setImagen(null);
-  }, [event]);
+  }, [event, open]);
 
-  // Carga inicial de departamentos y dependientes, y react a cambios
+  // Carga inicial de artistas (departamentos ya se cargan en el efecto de arriba)
   useEffect(() => {
     if (!open) return;
-    UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
     // Cargar artistas
     ArtistaService.getArtistas().then(setArtistas).catch(() => setArtistas([]));
   }, [open]);
 
   useEffect(() => {
     // Cargar provincias cuando cambia departamento
-    if (departamento) {
-      UbicacionService.getProvincias(departamento).then(setProvincias).catch(() => setProvincias([]));
+    if (departamentoId) {
+      UbicacionService.getProvincias(departamentoId).then(setProvincias).catch(() => setProvincias([]));
     } else {
       setProvincias([]);
-      setProvincia("");
+      setProvinciaId(null);
       setDistritos([]);
-      setDistrito("");
+      setDistritoId(null);
     }
-  }, [departamento]);
+  }, [departamentoId]);
 
   useEffect(() => {
     // Cargar distritos cuando cambia provincia
-    if (departamento && provincia) {
-      UbicacionService.getDistritos(departamento, provincia).then(setDistritos).catch(() => setDistritos([]));
+    if (departamentoId && provinciaId) {
+      UbicacionService.getDistritos(departamentoId, provinciaId).then(setDistritos).catch(() => setDistritos([]));
     } else {
       setDistritos([]);
-      setDistrito("");
+      setDistritoId(null);
     }
-  }, [departamento, provincia]);
+  }, [departamentoId, provinciaId]);
 
   if (!open || !event) return null;
 
   const handleGuardar = async () => {
     setTouchedSubmit(true);
     if (!event) return;
-    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !estado || !artistaId) {
+    if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamentoId || !provinciaId || !distritoId || !lugar.trim() || !estado || !artistaId) {
       NotificationService.warning("Por favor, completa todos los campos obligatorios antes de guardar");
       return;
     }
+
+    // AÑADIR: Traducir IDs a nombres
+    const allDepartamentos = await UbicacionService.getDepartamentos();
+    const departamentoNombre = allDepartamentos.find(d => d.id === departamentoId)?.nombre || "";
+
+    const allProvincias = await UbicacionService.getProvincias(departamentoId);
+    const provinciaNombre = allProvincias.find(p => p.id === provinciaId)?.nombre || "";
+
+    const allDistritos = await UbicacionService.getDistritos(departamentoId, provinciaId);
+    const distritoNombre = allDistritos.find(d => d.id === distritoId)?.nombre || "";
 
     // Convertir imagen si hay nueva
     let imagenPortadaBase64: string | null | undefined = undefined;
     if (imagen) {
       try {
-        imagenPortadaBase64 = await new Promise<string>((resolve, reject) => {
-          const fr = new FileReader();
-          fr.onload = () => {
-            const result = fr.result as string;
-            const commaIdx = result.indexOf(",");
-            resolve(commaIdx >= 0 ? result.substring(commaIdx + 1) : result);
-          };
-          fr.onerror = reject;
-          fr.readAsDataURL(imagen);
-        });
+        imagenPortadaBase64 = await fileToBase64(imagen);
       } catch {
         console.warn("No se pudo convertir la imagen, se enviará sin cambios.");
       }
@@ -194,12 +232,13 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
       fecha,
       hora,
       artistaId: artistaId,
-      departamento: departamento.trim(),
-      provincia: provincia.trim(),
-      distrito: distrito.trim(),
+      // CORRECCIÓN: Usar nombres en lugar de IDs
+      departamento: departamentoNombre,
+      provincia: provinciaNombre,
+      distrito: distritoNombre,
       lugar: lugar.trim(),
       estado: estadoBackend,
-      imagenPortada: imagenPortadaBase64, // undefined => no cambiar, null => eliminar, string => nueva
+      imagenPortada: imagenPortadaBase64,
     };
 
     try {
@@ -216,21 +255,28 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const handleSeleccionarPortada: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
     try {
       const file = e.target.files?.[0] || null;
-      // Limpia el input para permitir volver a seleccionar el mismo archivo
       e.target.value = "";
       setImagen(file);
       if (!file) return;
 
       if (!event) return;
-      // Validar mínimos requeridos (igual que creación)
-      if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamento || !provincia || !distrito || !lugar.trim() || !artistaId) {
+      if (!nombre.trim() || !descripcion.trim() || !fecha || !hora || !departamentoId || !provinciaId || !distritoId || !lugar.trim() || !artistaId) {
         NotificationService.warning("Completa los datos obligatorios (incluido artista) antes de actualizar la portada");
         return;
       }
 
       setSubiendoPortada(true);
 
-      // Reutilizar conversión base64
+      // AÑADIR: Traducir IDs a nombres
+      const allDepartamentos = await UbicacionService.getDepartamentos();
+      const departamentoNombre = allDepartamentos.find(d => d.id === departamentoId)?.nombre || "";
+
+      const allProvincias = await UbicacionService.getProvincias(departamentoId);
+      const provinciaNombre = allProvincias.find(p => p.id === provinciaId)?.nombre || "";
+
+      const allDistritos = await UbicacionService.getDistritos(departamentoId, provinciaId);
+      const distritoNombre = allDistritos.find(d => d.id === distritoId)?.nombre || "";
+
       const imagenPortada = await fileToBase64(file);
 
       const estadoBackend = mapEstadoUIToBackend(estado);
@@ -240,9 +286,10 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
         fecha,
         hora,
         artistaId: artistaId,
-        departamento: departamento.trim(),
-        provincia: provincia.trim(),
-        distrito: distrito.trim(),
+        // CORRECCIÓN: Usar nombres
+        departamento: departamentoNombre,
+        provincia: provinciaNombre,
+        distrito: distritoNombre,
         lugar: lugar.trim(),
         estado: estadoBackend,
         imagenPortada,
@@ -250,7 +297,6 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
 
       await actualizarEvento(event.id, payload);
 
-      // Previsualizar inmediatamente en el modal y refrescar listado externo
       setPortadaBase64(imagenPortada);
       onUpdated();
     } catch (err) {
@@ -271,9 +317,9 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
   const descripcionError = touchedSubmit && !descripcion.trim();
   const fechaError = touchedSubmit && !fecha;
   const horaError = touchedSubmit && !hora;
-  const departamentoError = touchedSubmit && !departamento;
-  const provinciaError = touchedSubmit && !provincia;
-  const distritoError = touchedSubmit && !distrito;
+  const departamentoError = touchedSubmit && !departamentoId;
+  const provinciaError = touchedSubmit && !provinciaId;
+  const distritoError = touchedSubmit && !distritoId;
   const lugarError = touchedSubmit && !lugar.trim();
   const estadoError = touchedSubmit && !estado;
   const artistaError = touchedSubmit && !artistaId;
@@ -391,15 +437,15 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
                 Departamento <span className="text-red-500">*</span>
               </label>
               <select
-                value={departamento}
-                onChange={(e) => setDepartamento(e.target.value)}
+                value={departamentoId ?? ""}
+                onChange={(e) => setDepartamentoId(e.target.value ? Number(e.target.value) : null)}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   departamentoError ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Selecciona departamento</option>
                 {departamentos.map((d) => (
-                  <option key={d.id} value={d.nombre}>
+                  <option key={d.id} value={d.id}>
                     {d.nombre}
                   </option>
                 ))}
@@ -411,16 +457,16 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
                 Provincia <span className="text-red-500">*</span>
               </label>
               <select
-                value={provincia}
-                onChange={(e) => setProvincia(e.target.value)}
-                disabled={!departamento}
+                value={provinciaId ?? ""}
+                onChange={(e) => setProvinciaId(e.target.value ? Number(e.target.value) : null)}
+                disabled={!departamentoId}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   provinciaError ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Selecciona provincia</option>
                 {provincias.map((p) => (
-                  <option key={p.id} value={p.nombre}>
+                  <option key={p.id} value={p.id}>
                     {p.nombre}
                   </option>
                 ))}
@@ -432,16 +478,16 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
                 Distrito <span className="text-red-500">*</span>
               </label>
               <select
-                value={distrito}
-                onChange={(e) => setDistrito(e.target.value)}
-                disabled={!departamento || !provincia}
+                value={distritoId ?? ""}
+                onChange={(e) => setDistritoId(e.target.value ? Number(e.target.value) : null)}
+                disabled={!departamentoId || !provinciaId}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   distritoError ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Selecciona distrito</option>
                 {distritos.map((di) => (
-                  <option key={di.id} value={di.nombre}>
+                  <option key={di.id} value={di.id}>
                     {di.nombre}
                   </option>
                 ))}

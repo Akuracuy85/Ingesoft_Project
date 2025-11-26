@@ -15,10 +15,10 @@ export interface NuevoEventoForm {
   lugar: string;
   estado: EstadoEventoUI;
   imagen: File | null;
-  // Nuevos campos de ubicación
-  departamento: string;
-  provincia: string;
-  distrito: string;
+  // Cambiado a IDs numéricos
+  departamentoId: number | null;
+  provinciaId: number | null;
+  distritoId: number | null;
   // Nuevo: artista seleccionado
   artistaId: number | null;
 }
@@ -31,9 +31,9 @@ const defaultForm: NuevoEventoForm = {
   lugar: "",
   estado: "Borrador",
   imagen: null,
-  departamento: "",
-  provincia: "",
-  distrito: "",
+  departamentoId: null,
+  provinciaId: null,
+  distritoId: null,
   artistaId: null,
 };
 
@@ -81,11 +81,11 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   };
 
   const handleDepartamentoChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedDep = e.target.value;
-    setForm((prev) => ({ ...prev, departamento: selectedDep, provincia: "", distrito: "" }));
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, departamentoId: selectedId, provinciaId: null, distritoId: null }));
     setDistritos([]);
-    if (selectedDep) {
-      const provs = await UbicacionService.getProvincias(selectedDep).catch(() => []);
+    if (selectedId) {
+      const provs = await UbicacionService.getProvincias(selectedId).catch(() => []);
       setProvincias(provs);
     } else {
       setProvincias([]);
@@ -93,17 +93,18 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   };
 
   const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedProv = e.target.value;
-    setForm((prev) => ({ ...prev, provincia: selectedProv, distrito: "" }));
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, provinciaId: selectedId, distritoId: null }));
     setDistritos([]);
-    if (selectedProv && form.departamento) {
-      const dists = await UbicacionService.getDistritos(form.departamento, selectedProv).catch(() => []);
+    if (selectedId && form.departamentoId) {
+      const dists = await UbicacionService.getDistritos(form.departamentoId, selectedId).catch(() => []);
       setDistritos(dists);
     }
   };
 
   const handleDistritoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, distrito: e.target.value }));
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, distritoId: selectedId }));
   };
 
   const handleArtistaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -128,9 +129,9 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
       !form.descripcion.trim() ||
       !form.fecha ||
       !form.hora ||
-      !form.departamento ||
-      !form.provincia ||
-      !form.distrito ||
+      !form.departamentoId ||
+      !form.provinciaId ||
+      !form.distritoId ||
       !form.lugar.trim() ||
       !form.artistaId
     ) {
@@ -147,9 +148,9 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   const descripcionError = touchedSubmit && !form.descripcion.trim();
   const fechaError = touchedSubmit && !form.fecha;
   const horaError = touchedSubmit && !form.hora;
-  const departamentoError = touchedSubmit && !form.departamento;
-  const provinciaError = touchedSubmit && !form.provincia;
-  const distritoError = touchedSubmit && !form.distrito;
+  const departamentoError = touchedSubmit && !form.departamentoId;
+  const provinciaError = touchedSubmit && !form.provinciaId;
+  const distritoError = touchedSubmit && !form.distritoId;
   const lugarError = touchedSubmit && !form.lugar.trim();
   const artistaError = touchedSubmit && !form.artistaId;
 
@@ -268,7 +269,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               </label>
               <select
                 name="departamento"
-                value={form.departamento}
+                value={form.departamentoId ?? ""}
                 onChange={handleDepartamentoChange}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   departamentoError ? "border-red-500" : "border-gray-300"
@@ -276,7 +277,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               >
                 <option value="">Selecciona departamento</option>
                 {departamentos.map((d) => (
-                  <option key={d.id} value={d.nombre}>{d.nombre}</option>
+                  <option key={d.id} value={d.id}>{d.nombre}</option>
                 ))}
               </select>
               {departamentoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -287,16 +288,16 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               </label>
               <select
                 name="provincia"
-                value={form.provincia}
+                value={form.provinciaId ?? ""}
                 onChange={handleProvinciaChange}
-                disabled={!form.departamento}
+                disabled={!form.departamentoId}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   provinciaError ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Selecciona provincia</option>
                 {provincias.map((p) => (
-                  <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
                 ))}
               </select>
               {provinciaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -307,16 +308,16 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               </label>
               <select
                 name="distrito"
-                value={form.distrito}
+                value={form.distritoId ?? ""}
                 onChange={handleDistritoChange}
-                disabled={!form.departamento || !form.provincia}
+                disabled={!form.departamentoId || !form.provinciaId}
                 className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
                   distritoError ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Selecciona distrito</option>
                 {distritos.map((di) => (
-                  <option key={di.id} value={di.nombre}>{di.nombre}</option>
+                  <option key={di.id} value={di.id}>{di.nombre}</option>
                 ))}
               </select>
               {distritoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}

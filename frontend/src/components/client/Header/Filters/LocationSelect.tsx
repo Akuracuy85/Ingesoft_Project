@@ -1,99 +1,84 @@
 // src/components/Filters/LocationSelect.tsx (SOLUCIÓN FINAL DE ERRORES)
 
-import { useState, useEffect, useMemo } from 'react'; 
+import { useState, useEffect, useMemo } from 'react';
 import { CustomDropdown } from "../../CustomDropdown";
 
 import type { LocationType } from "../../../../types/LocationType";
-import type { Option } from "../../CustomDropdown"; // El tipo Option usa { id: string, nombre: string }
+import type { Option } from "../../CustomDropdown";
 
-import MetadataService from '../../../../services/MetadataService'; 
+import MetadataService from '../../../../services/MetadataService';
 import type { LocationOption } from '../../../../services/UbicacionService';
-
 
 type LocationSelectProps = {
   value: LocationType;
   onChange: (value: LocationType) => void;
-  departamentoOptions: LocationOption[]; 
+  departamentoOptions: LocationOption[];
 };
 
 export const LocationSelect = ({ value, onChange, departamentoOptions }: LocationSelectProps) => {
     const { departamento, provincia, distrito } = value;
-    
-    // 🛑 SOLUCIÓN ERROR 1: Declarar estados primero
+
+    // Estados para almacenar las opciones de los dropdowns
     const [provincias, setProvincias] = useState<LocationOption[]>([]);
     const [distritos, setDistritos] = useState<LocationOption[]>([]);
 
-    // OBTENER OBJETOS COMPLETOS (USANDO LOS ID/NOMBRES GUARDADOS)
-    const selectedDepartamento = useMemo(() => 
-        departamentoOptions.find(d => d.id === departamento)
-    , [departamento, departamentoOptions]);
-      
-    // 🛑 CORRECCIÓN DE ERROR 1: 'provincias' se usa aquí DESPUÉS de su declaración
-    const selectedProvincia = useMemo(() => 
-        provincias.find(p => p.id === provincia)
-    , [provincia, provincias]);
-
-
-    // 🛑 SOLUCIÓN ERROR 2 & 3: Tipo 'LocationOption' no asignable a 'Option'
-    // La función mapea LocationOption[] a Option[] forzando el 'id' a string.
-    // Asumimos que CustomDropdown siempre espera { id: string, nombre: string }
+    // Función para convertir las opciones al formato que espera CustomDropdown
     const withTodos = useMemo(() => (options: LocationOption[]): Option[] => {
         const mappedOptions: Option[] = options.map(opt => ({
-            // Forzamos el ID a string, resolviendo el error de tipo.
-            id: String(opt.id), 
-            nombre: opt.nombre 
+            id: String(opt.id),
+            nombre: opt.nombre
         }));
-
         return [{ id: "", nombre: "Todos" }, ...mappedOptions];
     }, []);
 
-
-    // EFECTO 1: Carga Provincias (Solo depende del DEPARTAMENTO)
+    // EFECTO 1: Cargar Provincias cuando cambia el DEPARTAMENTO
     useEffect(() => {
-        if (!selectedDepartamento) {
+        // Si no hay un departamento seleccionado, limpiar las provincias y distritos
+        if (!departamento) {
             setProvincias([]);
             setDistritos([]);
             return;
         }
-        
-        MetadataService.getProvincias(selectedDepartamento.nombre) 
+
+        let isMounted = true;
+        // Llamar al servicio para obtener las provincias del departamento seleccionado
+        MetadataService.getProvincias(Number(departamento))
             .then(data => {
-                setProvincias(data);
-                
-                if (provincia && !data.some(p => p.id === provincia)) {
-                    onChange({ departamento, provincia: null, distrito: null }); 
+                if (isMounted) {
+                    setProvincias(data);
+                    // Si la provincia seleccionada anteriormente no está en la nueva lista, se limpia
+                    if (provincia && !data.some(p => p.id === Number(provincia))) {
+                        onChange({ ...value, provincia: null, distrito: null });
+                    }
                 }
-            })
-            .catch(err => {
-                console.error("Error al cargar provincias:", err);
-                setProvincias([]);
             });
-            
-    }, [selectedDepartamento, onChange, departamento, provincia]); 
 
+        return () => { isMounted = false; };
+    }, [departamento]); // Se ejecuta solo cuando el ID del departamento cambia
 
-    // EFECTO 2: Carga Distritos (Depende de Provincia y Departamento)
+    // EFECTO 2: Cargar Distritos cuando cambia la PROVINCIA (o el departamento)
     useEffect(() => {
-        if (!selectedProvincia || !selectedDepartamento) {
+        // Si no hay provincia o departamento, limpiar los distritos
+        if (!provincia || !departamento) {
             setDistritos([]);
             return;
         }
 
-        MetadataService.getDistritos(selectedDepartamento.nombre, selectedProvincia.nombre)
+        let isMounted = true;
+        // Llamar al servicio para obtener los distritos
+        MetadataService.getDistritos(Number(departamento), Number(provincia))
             .then(data => {
-                setDistritos(data);
-
-                if (distrito && !data.some(d => d.id === distrito)) {
-                    onChange({ departamento, provincia, distrito: null });
+                if (isMounted) {
+                    setDistritos(data);
+                    // Si el distrito seleccionado anteriormente no está en la nueva lista, se limpia
+                    if (distrito && !data.some(d => d.id === Number(distrito))) {
+                        onChange({ ...value, distrito: null });
+                    }
                 }
-            })
-            .catch(err => {
-                console.error("Error al cargar distritos:", err);
-                setDistritos([]);
             });
 
-    }, [selectedProvincia, selectedDepartamento, onChange, departamento, provincia, distrito]);
-
+        return () => { isMounted = false; };
+    }, [provincia, departamento]); // Se ejecuta cuando el ID de la provincia o departamento cambia
 
     return (
         <div className="mb-6 min-w-0">
@@ -102,37 +87,39 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
 
                 {/* Departamento */}
                 <div className="min-w-0">
-                <CustomDropdown
-                    options={withTodos(departamentoOptions)} 
-                    value={departamento || ""}
-                    onChange={(id) => {
-                        onChange({ departamento: id || null, provincia: null, distrito: null });
-                    }}
-                />
+                    <CustomDropdown
+                        options={withTodos(departamentoOptions)}
+                        value={departamento || ""}
+                        onChange={(id) => {
+                            // Al cambiar de departamento, se resetean provincia y distrito
+                            onChange({ departamento: id || null, provincia: null, distrito: null });
+                        }}
+                    />
                 </div>
 
                 {/* Provincia */}
                 <div className="min-w-0">
-                <CustomDropdown
-                    options={withTodos(provincias)} 
-                    value={provincia || ""}
-                    onChange={(id) => {
-                        onChange({ departamento, provincia: id || null, distrito: null });
-                    }}
-                    disabled={!departamento || provincias.length === 0} 
-                />
+                    <CustomDropdown
+                        options={withTodos(provincias)}
+                        value={provincia || ""}
+                        onChange={(id) => {
+                            // Al cambiar de provincia, se resetea el distrito
+                            onChange({ departamento, provincia: id || null, distrito: null });
+                        }}
+                        disabled={!departamento || provincias.length === 0}
+                    />
                 </div>
 
                 {/* Distrito */}
                 <div className="min-w-0">
-                <CustomDropdown
-                    options={withTodos(distritos)} 
-                    value={distrito || ""}
-                    onChange={(id) => {
-                        onChange({ departamento, provincia, distrito: id || null });
-                    }}
-                    disabled={!provincia || distritos.length === 0}
-                />
+                    <CustomDropdown
+                        options={withTodos(distritos)}
+                        value={distrito || ""}
+                        onChange={(id) => {
+                            onChange({ departamento, provincia, distrito: id || null });
+                        }}
+                        disabled={!provincia || distritos.length === 0}
+                    />
                 </div>
             </div>
         </div>

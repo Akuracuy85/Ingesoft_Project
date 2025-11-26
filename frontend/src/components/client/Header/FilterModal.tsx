@@ -21,20 +21,18 @@ export const FilterModal = ({
   onClose: () => void;
   onApplyFilters: (filters: FiltersType) => void;
 }) => {
-  // HOOKS
+
   const { categorias, artistas, departamentos, isLoadingMetadata } = useMetadata();
-  // OBTENER EL ESTADO GLOBAL PERSISTENTE Y LA FUNCIÓN DE LIMPIEZA
+
   const { filters: currentContextFilters, resetFilters } = useFilters();
 
-  // ESTADO LOCAL: Inicializado con el estado global persistente
   const [filters, setFilters] = useState<FiltersType>(currentContextFilters);
 
-  // EFECTO DE SINCRONIZACIÓN
+
   useEffect(() => {
     setFilters(currentContextFilters);
   }, [currentContextFilters]);
 
-  // Bloquear scroll del body mientras el modal está montado
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.classList.add('overflow-hidden');
@@ -45,17 +43,14 @@ export const FilterModal = ({
     };
   }, []);
 
-  // Prevenir zoom (ctrl+wheel, ctrl/meta + teclado, pinch) mientras el modal esté abierto
   useEffect(() => {
     const wheelHandler = (e: WheelEvent) => {
-      // Si se usa Ctrl/Cmd + wheel para zoom, prevenirlo
       if ((e.ctrlKey || e.metaKey) && e.deltaY !== 0) {
         e.preventDefault();
       }
     };
 
     const keyHandler = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + +/-/=/0 para zoom (proteger atajos comunes que no son zoom)
       if (e.ctrlKey || e.metaKey) {
         const k = e.key;
         if (k === '+' || k === '-' || k === '=' || k === '0') {
@@ -65,14 +60,12 @@ export const FilterModal = ({
     };
 
     const touchMoveHandler = (e: TouchEvent) => {
-      // Si hay más de un dedo (posible pinch), prevenir para bloquear zoom
       if (e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
     };
 
     const gestureHandler = (e: Event) => {
-      // iOS gesture events
       e.preventDefault();
     };
 
@@ -92,28 +85,22 @@ export const FilterModal = ({
     };
   }, []);
 
-  // -------------------------------------------------------------
-  // LÓGICA DE FILTRADO Y HOOKS CALCULADOS
-  // -------------------------------------------------------------
 
-  // 1. Opciones de Categoría
   const categoriaOptions: MultiOption[] = useMemo(() => categorias.map(c => ({
     id: c.id.toString(),
     nombre: c.nombre
   })), [categorias]);
 
-  // 2. Artistas Filtrados (Lógica de Cascada Estricta)
+
   const selectedCategoryIds = filters.categories;
 
   const artistasFiltrados = useMemo(() => {
     const allArtistas = Array.isArray(artistas) ? artistas : [];
 
-    // Bloqueo estricto: Si no hay categorías seleccionadas, no hay opciones.
     if (selectedCategoryIds.length === 0) {
       return [];
     }
 
-    // Muestra solo los artistas cuyas categorías están actualmente seleccionadas.
     return allArtistas.filter(artista => {
       const artistaCatId = (artista as any).categoriaId || (artista as any).categoria?.id;
 
@@ -124,27 +111,20 @@ export const FilterModal = ({
     });
   }, [artistas, selectedCategoryIds]);
 
-  // 3. Mapear Artistas Filtrados a opciones de Dropdown
   const artistaOptions: MultiOption[] = useMemo(() => artistasFiltrados.map(a => ({
     id: a.id.toString(),
     nombre: a.nombre
   })), [artistasFiltrados]);
 
 
-  // -------------------------------------------------------------
-  // HANDLERS DE CAMBIO DE FILTRO
-  // -------------------------------------------------------------
-
   const handleArtistChange = useCallback((newArtistIds: string[]) => {
     setFilters(prev => ({ ...prev, artists: newArtistIds }));
   }, []);
 
-  // HANDLER que limpia artistas al cambiar categorías.
   const handleCategoryChange = useCallback((newCategoryIds: string[]) => {
 
     const allArtistas = Array.isArray(artistas) ? artistas : [];
 
-    // 1. IDs de artista que son válidos para las NUEVAS categorías.
     const validArtistIds = allArtistas
       .filter(artista => {
         const artistaCatId = (artista as any).categoriaId || (artista as any).categoria?.id;
@@ -152,7 +132,6 @@ export const FilterModal = ({
       })
       .map(a => a.id.toString());
 
-    // 2. Actualizar categorías y limpiar artistas inválidos.
     setFilters(prev => {
 
       const artistsToKeep = prev.artists.filter(artistId =>
@@ -179,20 +158,14 @@ export const FilterModal = ({
     setFilters(prev => ({ ...prev, dateRange: val }));
   }, []);
 
-  // -------------------------------------------------------------
-  // HANDLERS DE APLICAR Y LIMPIAR EL MODAL
-  // -------------------------------------------------------------
-
-  // Handler para aplicar los filtros y cerrar
   const handleApply = () => {
     onApplyFilters(filters);
-    onClose(); // Cierra el modal
+    onClose(); 
   };
 
-  // Handler para limpiar los filtros (usa el contexto para resetear el estado global)
   const handleClear = () => {
-    resetFilters(); // Restablece el estado global (Context)
-    setFilters(initialFilters); // Restablece el estado local
+    resetFilters(); 
+    setFilters(initialFilters); 
   };
 
   // -------------------------------------------------------------

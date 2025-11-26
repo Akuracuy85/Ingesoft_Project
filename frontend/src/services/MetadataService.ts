@@ -7,8 +7,8 @@ class MetadataService {
   getCategorias = () => CategoriaService.getCategorias();
   getArtistas = () => ArtistaService.getArtistas();
   getDepartamentos = () => UbicacionService.getDepartamentos();
-  getProvincias = (departamento: string) => UbicacionService.getProvincias(departamento);
-  getDistritos = (departamento: string, provincia: string) => UbicacionService.getDistritos(departamento, provincia);
+  getProvincias = (departamentoId: number) => UbicacionService.getProvincias(departamentoId);
+  getDistritos = (departamentoId: number, provinciaId: number) => UbicacionService.getDistritos(departamentoId, provinciaId);
 }
 
 export default new MetadataService();

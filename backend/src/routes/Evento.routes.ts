@@ -5,19 +5,16 @@ import { autorMiddleware } from "../middlewares/AutorMiddleware";
 
 const router = Router();
 
-// Público: listado de eventos publicados.
 router.get("/publicados", eventoController.listarPublicados);
 
 router.get("/compra/:id", eventoController.obtenerDatosCompraPorId);
 
-// Privado (organizador): gestión de sus propios eventos.
 router.get(
   "/basicos",
   sessionMiddleware.VerificarToken,
   eventoController.obtenerDatosBasicos
 );
-// ADMIN: Listar todos los eventos REPORTES
-//http://localhost:3000/api/evento/admin/listar?nombreEvento=Rock Fusion Noche 1
+
 router.get(
   "/admin/listar",
   sessionMiddleware.VerificarToken,
@@ -39,6 +36,8 @@ router.get(
 );
 
 router.get("/:id", eventoController.obtenerPorId);
+
+router.get("/front-body/:id", eventoController.obtenerPorIdParaPantallaDetalle);
 
 router.post(
   "/",

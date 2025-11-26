@@ -13,12 +13,10 @@ export const AppDataSource = new DataSource({
   entities: [__dirname + "/../models/*{.ts,.js}"],
   migrations: [],
   subscribers: [],
-  timezone: "-05:00",
   extra: {
     connectionLimit: 15,
     waitForConnections: true,
     queueLimit: 0,
     idleTimeout: 60000,
-    acquireTimeout: 60000,
   }
 });

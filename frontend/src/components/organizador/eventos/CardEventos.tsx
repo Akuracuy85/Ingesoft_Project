@@ -4,12 +4,9 @@ import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./M
 import ModalEditarEvento from "./ModalEditarEvento";
 import ConfirmarEliminacionModal from "./ConfirmarEliminacionModal";
 import ConfiguracionEvento from "./ConfiguracionEvento";
-import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento } from "@/services/EventoService";
-// Eliminado: no forzar ubicación por defecto; se respetan valores opcionales del formulario
-
-// Moved to utils for reuse
-import { formatFecha } from "@/utils/formatFecha";
+import { listarDetalladosOrganizador, createEvent, mapEstadoUIToBackend, obtenerEventosDetallados, actualizarEvento, type CrearEventoPayload, type EstadoEventoBackend } from "@/services/EventoService";
 import NotificationService from "@/services/NotificationService";
+import UbicacionService from "@/services/UbicacionService";
 
 // Tipos locales auxiliares
 type EventoDetalladoOrganizador = {
@@ -241,8 +238,8 @@ const CardEventos: React.FC = () => {
         return;
       }
 
-      // Validaciones de ubicación y lugar (requeridos)
-      if (!data.departamento || !data.provincia || !data.distrito || !data.lugar.trim()) {
+      // CORRECCIÓN: Validar usando los IDs del formulario
+      if (!data.departamentoId || !data.provinciaId || !data.distritoId || !data.lugar.trim()) {
         NotificationService.warning("Por favor completa la ubicación (departamento, provincia, distrito) y el lugar");
         return;
       }
@@ -260,15 +257,25 @@ const CardEventos: React.FC = () => {
         }
       }
 
-      const payload = {
+      // --- TRADUCIR IDs A NOMBRES ---
+      const allDepartamentos = await UbicacionService.getDepartamentos();
+      const departamentoNombre = allDepartamentos.find(d => d.id === data.departamentoId)?.nombre || "";
+
+      const allProvincias = await UbicacionService.getProvincias(data.departamentoId);
+      const provinciaNombre = allProvincias.find(p => p.id === data.provinciaId)?.nombre || "";
+
+      const allDistritos = await UbicacionService.getDistritos(data.departamentoId, data.provinciaId);
+      const distritoNombre = allDistritos.find(d => d.id === data.distritoId)?.nombre || "";
+
+      const payload: CrearEventoPayload = {
         nombre: data.nombre.trim(),
         descripcion: data.descripcion.trim(),
-        fecha: data.fecha, // YYYY-MM-DD
-        hora: data.hora,   // HH:mm
+        fecha: data.fecha,
+        hora: data.hora,
         artistaId: data.artistaId,
-        departamento: data.departamento.trim(),
-        provincia: data.provincia.trim(),
-        distrito: data.distrito.trim(),
+        departamento: departamentoNombre,
+        provincia: provinciaNombre,
+        distrito: distritoNombre,
         lugar: data.lugar.trim(),
         estado: estadoBackend,
         imagenPortada,
@@ -281,18 +288,10 @@ const CardEventos: React.FC = () => {
         return;
       }
 
-      // Actualizar UI localmente sin recargar
-      const nuevo: EventoItem = {
-        id: resp.eventoId,
-        nombre: data.nombre,
-        fecha: formatFecha(data.fecha),
-        estado: data.estado,
-        descripcion: data.descripcion,
-        hora: data.hora,
-        lugar: data.lugar,
-        imagenNombre: data.imagen?.name || null,
-      };
-      setEventos((prev) => [nuevo, ...prev]);
+      // CORRECCIÓN: En lugar de construir manualmente, refrescar desde el backend
+      // para obtener la URL de S3 correcta
+      await loadEventos(); 
+      
       NotificationService.success("Evento creado con éxito");
       handleCloseCreate();
     } catch (e) {
@@ -379,7 +378,7 @@ const CardEventos: React.FC = () => {
         provincia,
         distrito,
         lugar,
-        estado: "CANCELADO", // solo cambiamos estado
+        estado: "CANCELADO" as EstadoEventoBackend, // solo cambiamos estado
       };
 
       const resp = await actualizarEvento(evListado.id, payload);
@@ -640,7 +639,6 @@ const CardEventos: React.FC = () => {
               <tbody className="divide-y divide-gray-200">
                 {paginatedEventos.map((ev, localIndex) => {
                   const globalIndex = (currentPage - 1) * pageSize + localIndex;
-                  // ...existing code...
                   return (
                   <tr
                     key={ev.id}
