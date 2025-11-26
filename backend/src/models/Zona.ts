@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Evento } from "./Evento";
 import { Tarifa } from "./Tarifa";
 
@@ -18,12 +18,15 @@ export class Zona {
 
   @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
   @JoinColumn()
+  @Index()
   tarifaNormal?: Tarifa | null;
 
   @OneToOne(() => Tarifa, { nullable: true, cascade: ["insert", "update"] })
   @JoinColumn()
+  @Index()
   tarifaPreventa?: Tarifa | null;
 
   @ManyToOne(() => Evento, (evento) => evento.zonas, { onDelete: "CASCADE" })
+  @Index()
   evento: Evento;
 }

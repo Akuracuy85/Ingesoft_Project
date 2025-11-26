@@ -4,6 +4,7 @@ import { EventDetailsForPurchaseDTO } from './EventDetailsForPurchaseDTO';
 import { Tarifa } from "../../models/Tarifa";
 import { TarifaDto } from "../evento/TarifaDto";
 import { bufferToBase64 } from '../../utils/ImageUtils';
+import { Evento } from '@/models/Evento';
 
 interface ArtistEntity {
   nombre: string;
@@ -31,7 +32,7 @@ interface EventEntity {
   mimeType?: string;
   artista: ArtistEntity;
 }
-interface CategoriaEntity { 
+interface CategoriaEntity {
   id: number;
   nombre: string;
 }
@@ -64,6 +65,7 @@ export class EventMapper {
       fechaFin: tarifa.fechaFin.toISOString(),
     };
   }
+  
   static toListDTO(entity: EventEntityWithZones): EventListResponseDTO {
 
     const eventDate = entity.fechaEvento;

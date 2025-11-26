@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -21,21 +22,30 @@ import { OrdenCompra } from "./OrdenCompra";
 export class Evento {
   @PrimaryGeneratedColumn()
   id: number;
+  
   @Column()
   nombre: string;
+  
   @Column()
   descripcion: string;
+  
   @Column({ type: "datetime" })
+  @Index()
   fechaEvento: Date;
+  
   @Column({type: "text"})
   lugar: string;
-  @Column({type: "text"})
+  
+  @Column({ type: "varchar", length: 100 })
+  @Index()
   departamento: string;
 
-  @Column({type: "text"})
+  @Column({type: "varchar", length: 100})
+  @Index()
   provincia: string;
 
-  @Column({type: "text"})
+  @Column({type: "varchar", length: 100})
+  @Index()
   distrito: string;
 
   @Column({ type: "enum", enum: EstadoEvento })

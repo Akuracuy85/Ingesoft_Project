@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Categoria } from "./Categoria";
 
 @Entity()
@@ -8,7 +8,8 @@ export class Artista {
   @Column()
   nombre: string;
   @ManyToOne(() => Categoria, { onDelete: "CASCADE" })
+  @Index()
   categoria: Categoria;
   @Column({ type: "int" })
-  prioridad: number;
+  prioridad?: number;
 }

@@ -6,8 +6,9 @@ import { Zona } from "../models/Zona";
 import { Acción } from "../models/Acción";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { Brackets, Repository } from "typeorm";
-  export interface IFiltrosEventoAdmin {
+import { Brackets, In, Repository } from "typeorm";
+import { EventMapper } from "@/dto/Event/EventMapper";
+export interface IFiltrosEventoAdmin {
   fechaInicio?: Date;
   fechaFin?: Date;
   nombreEvento?: string;      // Búsqueda por nombre del evento
@@ -33,6 +34,32 @@ export interface IUbicacionFiltro {
   provincia: string;
   distrito: string;
 }
+
+function mapRawEvento(raw: any): Evento {
+  return {
+    id: raw.id,
+    nombre: raw.nombre,
+    descripcion: raw.descripcion,
+    fechaEvento: raw.fechaEvento,
+    lugar: raw.lugar,
+    departamento: raw.departamento,
+    provincia: raw.provincia,
+    distrito: raw.distrito,
+    imagenBanner: raw.imagenBanner,
+    imagenLugar: raw.imagenLugar,
+    mimeType: raw.mimeType,
+    artista: {
+      id: raw.artista_id,
+      nombre: raw.artista_nombre,
+      categoria: raw.categoria_id
+        ? { id: raw.categoria_id, nombre: raw.categoria_nombre }
+        : null
+    },
+    zonas: []
+  } as any;
+}
+
+
 export class EventoRepository {
   private static instance: EventoRepository;
   private repository: Repository<Evento>;
@@ -147,104 +174,123 @@ export class EventoRepository {
    * Busca eventos publicados aplicando filtros dinámicos.
    */
   async listarEventosFiltrados(filtros: IFiltrosEvento): Promise<Evento[]> {
-    const qb = this.repository.createQueryBuilder("evento");
-    qb.distinct(true);
-    //TODO
-    // Comentado por ahora para tener todos los eventos
-    //qb.andWhere("evento.fechaEvento >= :fechaActual", { fechaActual: new Date() }); 
-    qb.andWhere("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
-    qb.leftJoinAndSelect("evento.artista", "artista").leftJoinAndSelect(
-      "artista.categoria",
-      "categoria"
-    );
-    // qb.leftJoin("evento.zonas", "zona");
-    // qb.leftJoin("zona.tarifaNormal", "tarifaNormal");
-    // qb.leftJoin("zona.tarifaPreventa", "tarifaPreventa");
+    // 1️⃣ Obtener SOLO IDs de eventos (consulta súper liviana)
+    const idQb = this.repository.createQueryBuilder("evento")
+      .select("evento.id")
+      .distinct(true)
+      .where("evento.estado = :estado", { estado: EstadoEvento.PUBLICADO });
 
+    if (filtros.departamento) idQb.andWhere("evento.departamento = :d", { d: filtros.departamento });
+    if (filtros.provincia) idQb.andWhere("evento.provincia = :p", { p: filtros.provincia });
+    if (filtros.distrito) idQb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
 
-    qb.leftJoinAndSelect("evento.zonas", "zona");
-    qb.leftJoinAndSelect("zona.tarifaNormal", "tarifaNormal");
-    qb.leftJoinAndSelect("zona.tarifaPreventa", "tarifaPreventa");
+    if (filtros.fechaInicio)
+      idQb.andWhere("evento.fechaEvento >= :fi", { fi: filtros.fechaInicio });
 
-
-    if (filtros.departamento) {
-      qb.andWhere("evento.departamento = :depto", {
-        depto: filtros.departamento,
-      });
-    }
-    if (filtros.provincia) {
-      qb.andWhere("evento.provincia = :prov", { prov: filtros.provincia });
-    }
-    if (filtros.distrito) {
-      qb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
-    }
-
-    /*if (filtros.artistaId) {
-      qb.andWhere("artista.id = :artistaId", {
-        artistaId: Number(filtros.artistaId),
-      });
-    }*/
-
-
-    if (filtros.artistaIds && filtros.artistaIds.length > 0) {
-      qb.andWhere("artista.id IN (:...artistaIds)", { artistaIds: filtros.artistaIds });
-    }
-
-    // 🛑 LÓGICA DE IDs (MÁS SIMPLE)
-    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
-      qb.andWhere("categoria.id IN (:...categoriaIds)", { categoriaIds: filtros.categoriaIds });
-    }
-
-    if (filtros.fechaInicio) {
-      qb.andWhere("evento.fechaEvento >= :fechaInicio", {
-        fechaInicio: filtros.fechaInicio,
-      });
-    }
     if (filtros.fechaFin) {
       const fechaFin = new Date(filtros.fechaFin);
       fechaFin.setDate(fechaFin.getDate() + 1);
-      qb.andWhere("evento.fechaEvento < :fechaFin", { fechaFin });
+      idQb.andWhere("evento.fechaEvento < :ff", { ff: fechaFin });
     }
 
-    const precioMin = filtros.precioMin;
-    const precioMax = filtros.precioMax;
-    const aplicarMin = typeof precioMin === "number" && !Number.isNaN(precioMin);
-    const aplicarMax = typeof precioMax === "number" && !Number.isNaN(precioMax);
+    console.log("Primera consulta");
+    let startTime = Date.now();
+    const idsRaw = await idQb.getRawMany();
+    let endTime = Date.now();
+    let elapsedTime = endTime - startTime;
+    console.log(`Elapsed time en primera consulta: ${elapsedTime} ms`);
+    console.log("Termina primera consulta");
 
-    if (aplicarMin || aplicarMax) {
-      qb.andWhere(
-        new Brackets((precioQb) => {
-          if (aplicarMin && aplicarMax) {
-            precioQb.where(
-              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio BETWEEN :precioMin AND :precioMax) OR " +
-              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio BETWEEN :precioMin AND :precioMax)"
-            );
-          } else if (aplicarMin) {
-            precioQb.where(
-              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio >= :precioMin) OR " +
-              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio >= :precioMin)"
-            );
-          } else if (aplicarMax) {
-            precioQb.where(
-              "(tarifaNormal.id IS NOT NULL AND tarifaNormal.precio <= :precioMax) OR " +
-              "(tarifaPreventa.id IS NOT NULL AND tarifaPreventa.precio <= :precioMax)"
-            );
-          }
+    const ids = idsRaw.map(r => r.evento_id);
+
+    if (!ids.length) return [];
+
+    // 2️⃣ Cargar eventos ya con artista y categoría
+    console.log("Segunda consulta");
+    startTime = Date.now();
+    const eventosRaw = await this.repository.createQueryBuilder("e")
+      .select([
+        "e.id AS id",
+        "e.nombre AS nombre",
+        "e.descripcion AS descripcion",
+        "e.fechaEvento AS fechaEvento",
+        "e.lugar AS lugar",
+        "e.departamento AS departamento",
+        "e.provincia AS provincia",
+        "e.distrito AS distrito",
+        "e.imagenBanner AS imagenBanner",
+
+        "a.id AS artista_id",
+        "a.nombre AS artista_nombre",
+
+        "c.id AS categoria_id",
+        "c.nombre AS categoria_nombre"
+      ])
+      .leftJoin("e.artista", "a")
+      .leftJoin("a.categoria", "c")
+      .where("e.id IN (:...ids)", { ids })
+      .orderBy("e.fechaEvento", "ASC")
+      .getRawMany();
+
+    const eventos = eventosRaw.map(mapRawEvento);
+    endTime = Date.now();
+    elapsedTime = endTime - startTime;
+    console.log(`Elapsed time en segunda consulta: ${elapsedTime} ms`);
+    console.log("Termina Segunda consulta");
+
+    // 3️⃣ Cargar zonas en un solo query
+    console.log("Tercera consulta");
+    startTime = Date.now();
+    const zonas = await this.zonaRepository.createQueryBuilder("z")
+      .select([
+        "z.id",
+        "z.nombre",
+        "z.eventoId",
+        "t1.precio AS normal",
+        "t2.precio AS preventa"
+      ])
+      .leftJoin("z.tarifaNormal", "t1")
+      .leftJoin("z.tarifaPreventa", "t2")
+      .where("z.eventoId IN (:...ids)", { ids })
+      .getRawMany();
+    endTime = Date.now();
+    elapsedTime = endTime - startTime;
+    console.log(`Elapsed time en tercera consulta: ${elapsedTime} ms`);
+    console.log("Termina tercera consulta");
+    
+    // 4️⃣ Agrupar zonas
+    console.log("Calculos");
+    const map = new Map<number, any[]>();
+    zonas.forEach(z => {
+      const eventId = z.eventoId;
+      if (!map.has(eventId)) map.set(eventId, []);
+      map.get(eventId)!.push(z);
+    });
+
+    eventos.forEach(e => { e.zonas = map.get(e.id) || []; });
+
+    // 5️⃣ Filtro de precios en memoria
+    if (typeof filtros.precioMin === "number" || typeof filtros.precioMax === "number") {
+      return eventos.filter(e =>
+        e.zonas.some(z => {
+          const precios = [
+            z.tarifaNormal?.precio,
+            z.tarifaPreventa?.precio
+          ].filter(p => typeof p === "number");
+
+          return precios.some(p =>
+            (filtros.precioMin != null ? p >= filtros.precioMin : true) &&
+            (filtros.precioMax != null ? p <= filtros.precioMax : true)
+          );
         })
       );
-
-      if (aplicarMin) {
-        qb.setParameter("precioMin", precioMin as number);
-      }
-      if (aplicarMax) {
-        qb.setParameter("precioMax", precioMax as number);
-      }
     }
+    console.log("Termina calculos");
 
-    qb.orderBy("evento.fechaEvento", "ASC");
-
-    return await qb.getMany();
+    return eventos;
   }
+
+
 
   async buscarPorId(id: number): Promise<Evento | null> {
     return await this.repository.findOne({
@@ -382,7 +428,7 @@ export class EventoRepository {
     ]);
 
     // 2. Uniones con otras tablas (Relaciones)
-    
+
     // Organizador: Traemos datos básicos para mostrar en la tabla
     qb.leftJoin("evento.organizador", "organizador")
       .addSelect([
@@ -410,8 +456,8 @@ export class EventoRepository {
 
     // Filtro por Nombre del Evento (parcial, sin distinguir mayúsculas)
     if (filtros.nombreEvento) {
-      qb.andWhere("evento.nombre LIKE :nombreEvento", { 
-        nombreEvento: `%${filtros.nombreEvento}%` 
+      qb.andWhere("evento.nombre LIKE :nombreEvento", {
+        nombreEvento: `%${filtros.nombreEvento}%`
       });
     }
 
@@ -420,7 +466,7 @@ export class EventoRepository {
       qb.andWhere(
         new Brackets((subQb) => {
           subQb.where("organizador.nombre LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
-               .orWhere("organizador.apellidoPaterno LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
+            .orWhere("organizador.apellidoPaterno LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
         })
       );
     }

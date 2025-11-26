@@ -34,7 +34,6 @@ import { Tarifa } from "../models/Tarifa";
 import { S3Service } from "../services/S3Service";
 import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
-import { ConvertirFechaUTCaPeru } from "../utils/FechaUtils";
 import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
 
@@ -74,7 +73,7 @@ export class EventoService {
         );
       return eventos.map(({ nombre, fechaEvento, estado }) => ({
         nombre,
-        fecha: ConvertirFechaUTCaPeru(fechaEvento),
+        fecha: fechaEvento,
         estado,
       }));
     } catch (error) {
@@ -102,7 +101,7 @@ export class EventoService {
         nombre: evento.nombre,
         descripcion: evento.descripcion,
         estado: evento.estado,
-        fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento).toISOString(), //Restando 5 horas para hacer match con perú
+        fechaEvento: evento.fechaEvento.toISOString(),
         departamento: evento.departamento,
         provincia: evento.provincia,
         distrito: evento.distrito,
@@ -142,22 +141,16 @@ export class EventoService {
    */
   async listarEventosPublicados(filtros: IFiltrosEvento): Promise<Evento[]> {
     try {
+      console.log("Comienza el listado");
       const eventos = await this.eventoRepository.listarEventosFiltrados(
         filtros
       );
-
-      /*if (!eventos.length) {
-        throw new CustomError(
-          "No se encontraron eventos que coincidan con los filtros.",
-          StatusCodes.NOT_FOUND
-        );
-      }*/
-
+      console.log("Termina el listado");
       return eventos;
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
-        "Error al obtener el listado de eventos",
+        "Error al obtener el listado de eventos: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
@@ -169,7 +162,6 @@ export class EventoService {
   async obtenerDetalleEvento(id: number): Promise<Evento> {
     try {
       const evento = await this.eventoRepository.buscarPorIdParaCompra(id);
-      evento.fechaEvento = ConvertirFechaUTCaPeru(evento.fechaEvento); //Restamos 5 horas para que esté en hora de perú
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
@@ -628,7 +620,7 @@ export class EventoService {
     if (evento.terminosUso) {
       evento.terminosUso.tipo = TIPO_TERMINOS_USO;
       evento.terminosUso.evento = evento;
-      
+
       await this.prepararDocumentoParaGuardar(
         evento.terminosUso,
         terminosDto,
@@ -802,7 +794,7 @@ export class EventoService {
     const mime = this.normalizarTipoDocumento(dto.tipo, tipoDesdeCarga, documento.contentType);
     if (mime) {
       documento.contentType = mime;
-      }
+    }
     // No modificar documento.tipo aquí (tipo lógico ya establecido antes)
     documento.url = url!;
   }
@@ -1151,9 +1143,9 @@ export class EventoService {
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
-    
+
     try {
-        await this.colaService.crearCola(guardado.id);
+      await this.colaService.crearCola(guardado.id);
     } catch (colaErr) {
       throw new CustomError(
         "No se pudo crear la cola para el evento aprobado:",
