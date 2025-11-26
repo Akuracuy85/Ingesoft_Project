@@ -198,13 +198,8 @@ export const FilterModal = ({
   // -------------------------------------------------------------
   // RENDERIZADO
   // -------------------------------------------------------------
-  if (isLoadingMetadata) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="text-white text-lg">Cargando opciones de filtro...</div>
-      </div>
-    );
-  }
+  if (isLoadingMetadata) return null;
+
 
   return (
     <div className="fixed inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">

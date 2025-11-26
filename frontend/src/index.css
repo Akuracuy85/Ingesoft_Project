@@ -153,3 +153,7 @@
   animation: moveImageVertical 30s infinite linear;
 }
 
+/* Evita que la página se mueva al aparecer/desaparecer el scrollbar */
+html {
+  scrollbar-gutter: stable;
+}
