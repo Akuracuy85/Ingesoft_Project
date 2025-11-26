@@ -26,6 +26,7 @@ export const useEventoDetalle = (id: number | string | undefined) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("Aver")
     if (!id) return;
 
     const fetchEventoDetalle = async () => {
@@ -33,7 +34,7 @@ export const useEventoDetalle = (id: number | string | undefined) => {
         setIsLoading(true);
         setError(null);
 
-        const data = (await EventoService.obtenerPorId(
+        const data = (await EventoService.obtenerPorIdParaPantallaDetalle(
           Number(id)
         )) as BackendEventoRaw;
 
@@ -52,12 +53,13 @@ export const useEventoDetalle = (id: number | string | undefined) => {
             const [, y, m, d, hh, mm] = match;
 
             // Fecha larga
-            const fechaObj = new Date(`${y}-${m}-${d}T00:00:00`);
+            const fechaObj = new Date(Number(y), Number(m) - 1, Number(d));
             dateDMY = fechaObj.toLocaleDateString("es-PE", {
               day: "numeric",
               month: "long",
               year: "numeric",
             });
+            console.log("Fecha formateada:", dateDMY);
 
             // El backend ya envía la hora correcta en horario Perú.
             let hNum = parseInt(hh, 10);

@@ -79,6 +79,27 @@ export class EventoController {
     }
   };
 
+  obtenerPorIdParaPantallaDetalle = async (req: Request, res: Response) => {
+    const eventoId = Number(req.params.id);
+
+    if (!Number.isInteger(eventoId) || eventoId <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "El identificador del evento no es válido",
+      });
+    }
+
+    try {
+      const evento = await this.eventoService.obtenerDetalleEventoParaPantallaDetalle(eventoId);
+      res.status(StatusCodes.OK).json({
+        success: true,
+        evento,
+      });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
   obtenerDatosBasicos = async (req: Request, res: Response) => {
     const organizadorId = req.userId;
 

@@ -1,3 +1,5 @@
+import type { Departamento } from "@/models/Departamento";
+import type { Provincia } from "@/models/Provincia";
 import HttpClient from "./Client";
 
 export interface LocationOption {
@@ -5,47 +7,55 @@ export interface LocationOption {
   nombre: string;
 }
 
-interface ApiResponseData<T> {
+// La respuesta de la API que contiene la data
+interface ApiResponse {
   success: boolean;
-  data: T;
+  data: Departamento[];
 }
 
-interface UbicacionesResponse {
-  [departamento: string]: {
-    [provincia: string]: string[];
-  };
-}
-
-let cache: UbicacionesResponse | null = null;
+let cache: Departamento[] | null = null;
 
 class UbicacionService {
-  private client = new HttpClient("");
+  private client = new HttpClient(""); 
 
-  async getUbicaciones(): Promise<UbicacionesResponse> {
-    if (cache) return cache;
+  private async getUbicaciones(): Promise<Departamento[]> {
+    if (cache) {
+      return cache;
+    }
 
-    const resp = await this.client.get<ApiResponseData<UbicacionesResponse>>("/evento/filtros/ubicaciones");
-    cache = resp.data;
+    const resp = await this.client.get<ApiResponse>("/ubicaciones");
+    cache = resp.data; 
     return cache!;
   }
 
   async getDepartamentos(): Promise<LocationOption[]> {
     const data = await this.getUbicaciones();
-    return Object.keys(data).map((nombre) => ({ id: nombre, nombre }));
+    return data.map((departamento: Departamento) => ({ id: departamento.id, nombre: departamento.nombre }));
   }
 
-  async getProvincias(departamento: string): Promise<LocationOption[]> {
+  async getProvincias(departamentoId: number): Promise<LocationOption[]> {
     const data = await this.getUbicaciones();
-    const provincias = data[departamento];
-    if (!provincias) return [];
-    return Object.keys(provincias).map((nombre) => ({ id: nombre, nombre }));
+    const provincias = data.find((dep) => dep.id === departamentoId)?.provincias;
+
+    if (!provincias) {
+      return [];
+    }
+
+    return provincias.map((prov: Provincia) => ({ id: prov.id, nombre: prov.nombre }));
   }
 
-  async getDistritos(departamento: string, provincia: string): Promise<LocationOption[]> {
+  async getDistritos(departamentoId: number, provinciaId: number): Promise<LocationOption[]> {
     const data = await this.getUbicaciones();
-    const distritos = data[departamento]?.[provincia];
-    if (!distritos) return [];
-    return distritos.map((nombre) => ({ id: nombre, nombre }));
+    const distritos = data
+      .find((dep) => dep.id === departamentoId)
+      ?.provincias.find((prov) => prov.id === provinciaId)
+      ?.distritos;
+
+    if (!distritos) {
+      return [];
+    }
+
+    return distritos.map((distrito) => ({ id: distrito.id, nombre: distrito.nombre }));
   }
 }
 

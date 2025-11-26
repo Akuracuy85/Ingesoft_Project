@@ -1,5 +1,5 @@
-export function ConvertirFechaUTCaPeru(fechaUTC: Date): Date {
-  return new Date(fechaUTC.getTime() - 5 * 60 * 60 * 1000);
+export function ConvertirFechaUTCaPeru(fechaUTC: Date, restar: number = 10): string {
+  return new Date(fechaUTC.getTime() - restar * 60 * 60 * 1000).toISOString();
 }
 
 export const FormatearFecha = (fecha: Date | string): string => {
