@@ -16,6 +16,7 @@ interface MultiSelectDropdownProps {
   onChange: (val: string[]) => void;
   // 🛑 CORRECCIÓN: Agregar la propiedad 'disabled'
   disabled?: boolean;
+  menuMaxHeight?: string; // optional inline max-height like '20px'
 }
 
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
@@ -25,6 +26,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   onChange, 
   // 🛑 CORRECCIÓN: Desestructurar la propiedad 'disabled' con valor por defecto
   disabled = false, 
+  menuMaxHeight,
 }) => {
   const [open, setOpen] = useState(false);
   // El estado interno es la lista de IDs seleccionados
@@ -115,8 +117,11 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       </div>
 
       {/* Dropdown con checkboxes */}
-      {open && (
-        <div className="absolute mt-2 w-full border border-gray-300 bg-white rounded shadow-lg max-h-48 overflow-y-auto z-10 dark:bg-gray-800 dark:border-gray-600">
+      {open && (
+        <div
+          className="absolute mt-2 w-full border border-gray-300 bg-white rounded shadow-lg overflow-y-auto z-10 dark:bg-gray-800 dark:border-gray-600"
+          style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+        >
           {options.map((option) => (
             <label
               key={option.id}

@@ -90,6 +90,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                     <CustomDropdown
                         options={withTodos(departamentoOptions)}
                         value={departamento || ""}
+                        menuMaxHeight="100px"
                         onChange={(id) => {
                             // Al cambiar de departamento, se resetean provincia y distrito
                             onChange({ departamento: id || null, provincia: null, distrito: null });
@@ -102,6 +103,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                     <CustomDropdown
                         options={withTodos(provincias)}
                         value={provincia || ""}
+                        menuMaxHeight="100px"
                         onChange={(id) => {
                             // Al cambiar de provincia, se resetea el distrito
                             onChange({ departamento, provincia: id || null, distrito: null });
@@ -115,6 +117,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
                     <CustomDropdown
                         options={withTodos(distritos)}
                         value={distrito || ""}
+                        menuMaxHeight="100px"
                         onChange={(id) => {
                             onChange({ departamento, provincia, distrito: id || null });
                         }}
