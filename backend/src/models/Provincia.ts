@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Departamento } from "./Departamento";
+import { Distrito } from "./Distrito";
 
 @Entity()
 export class Provincia {
@@ -8,4 +10,6 @@ export class Provincia {
   nombre: string;
   @ManyToOne(() => Departamento, (departamento) => departamento.provincias)
   departamento: Departamento;
+  @OneToMany(() => Distrito, (distrito) => distrito.provincia)
+  distritos: Distrito[];
 }
