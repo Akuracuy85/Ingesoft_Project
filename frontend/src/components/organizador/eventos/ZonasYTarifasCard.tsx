@@ -290,17 +290,17 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
     <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
       {/* Encabezado */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="bg-gray-100 p-2 rounded-md">
-          <MapPin className="h-5 w-5 text-gray-700" />
+        <div className="bg-gray-100 dark:bg-card p-2 rounded-md">
+          <MapPin className="h-5 w-5 text-gray-700 dark:text-gray-200" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">Zonas y tarifas diferenciadas</h3>
-          <p className="text-sm text-gray-500">Configura las zonas del evento con precios y preventa.</p>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Zonas y tarifas diferenciadas</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Configura las zonas del evento con precios y preventa.</p>
         </div>
       </div>
 
       {/* Imagen del lugar */}
-      <label className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-48 mb-5 text-gray-500 hover:bg-gray-50 cursor-pointer relative overflow-hidden">
+      <label className="border-2 border-dashed border-gray-300 dark:border-border rounded-md flex flex-col items-center justify-center h-48 mb-5 text-gray-500 dark:text-card-foreground hover:bg-gray-50 dark:hover:bg-card cursor-pointer relative overflow-hidden">
         {imageLugarBase64 ? (
           <img
             src={imageLugarBase64.startsWith('data:') ? imageLugarBase64 : `data:image/*;base64,${imageLugarBase64}`}
@@ -311,7 +311,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
           <>
             <Upload className="h-6 w-6 mb-2" />
             <p className="text-sm">Haz clic para subir imagen del lugar (PNG/JPG)</p>
-            <p className="text-xs text-gray-400">Tamaño recomendado: 1200×600 px</p>
+            <p className="text-xs text-gray-400 dark:text-gray-400">Tamaño recomendado: 1200×600 px</p>
           </>
         )}
         <input type="file" accept="image/png,image/jpeg" onChange={handleUploadMapa} className="hidden" />
@@ -320,40 +320,40 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
         )}
       </label>
 
-      {isLoading && <div className="text-sm text-gray-600 mb-4">Cargando zonas...</div>}
+      {isLoading && <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">Cargando zonas...</div>}
       {error && !isLoading && <div className="text-sm text-red-600 mb-4">{error}</div>}
 
       {/* Fechas globales preventa */}
       <div className="mb-4 flex flex-col gap-3">
         <div className="flex flex-row flex-wrap gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">Fecha inicio de preventa (global)</label>
+            <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Fecha inicio de preventa (global)</label>
             <input
               type="date"
               value={fechaInicioPreventa}
               onChange={(e) => setFechaInicioPreventa(e.target.value)}
               max={fechaFinPreventa || undefined}
-              className="border border-gray-300 rounded-md px-2 py-1 w-60"
+              className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-60 bg-white dark:bg-card dark:text-card-foreground"
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">Fecha fin de preventa (global)</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Fecha fin de preventa (global)</label>
             <input
               type="date"
               value={fechaFinPreventa}
               onChange={(e) => setFechaFinPreventa(e.target.value)}
               min={fechaInicioPreventa || undefined}
-              className="border border-gray-300 rounded-md px-2 py-1 w-60"
+              className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-60 bg-white dark:bg-card dark:text-card-foreground"
             />
           </div>
         </div>
-        <p className="text-xs text-gray-500">La venta normal inicia en la fecha fin de la preventa y termina en la fecha del evento.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">La venta normal inicia en la fecha fin de la preventa y termina en la fecha del evento.</p>
       </div>
 
       {/* Tabla de zonas */}
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
+          <thead className="bg-gray-50 dark:bg-card text-gray-700 dark:text-card-foreground font-medium border-b border-gray-200 dark:border-border">
             <tr>
               <th className="px-4 py-2 text-left">Zona</th>
               <th className="px-4 py-2 text-left">Capacidad</th>
@@ -365,22 +365,24 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
           <tbody>
             {zones.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-3 text-sm text-gray-500 text-center">Este evento no tiene zonas registradas.</td>
+                <td colSpan={5} className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                  Este evento no tiene zonas registradas.
+                </td>
               </tr>
             ) : (
               zones.map((z, i) => (
-                <tr key={z.id || i} className="border-t border-gray-200">
+                <tr key={z.id || i} className="border-t border-gray-200 dark:border-border">
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-3">
                       {(() => {
                         const src = getZonaImageSrc(z);
-                        return src ? <img src={src} alt={`Mapa ${z.nombre}`} className="w-10 h-10 rounded object-cover border border-gray-200" /> : null;
+                        return src ? <img src={src} alt={`Mapa ${z.nombre}`} className="w-10 h-10 rounded object-cover border border-gray-200 dark:border-border" /> : null;
                       })()}
                       <input
                         type="text"
                         value={z.nombre}
                         onChange={(e) => handleChangeCampo(i, 'nombre', e.target.value)}
-                        className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                        className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-full bg-white dark:bg-card dark:text-card-foreground"
                       />
                     </div>
                   </td>
@@ -389,7 +391,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
                       type="number"
                       value={z.capacidad}
                       onChange={(e) => handleChangeCampo(i, 'capacidad', e.target.value)}
-                      className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                      className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-full bg-white dark:bg-card dark:text-card-foreground"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -397,7 +399,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
                       type="number"
                       value={z.tarifaNormal?.precio ?? ''}
                       onChange={(e) => handleChangeTarifa(i, 'normal', e.target.value)}
-                      className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                      className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-full bg-white dark:bg-card dark:text-card-foreground"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -405,7 +407,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
                       type="number"
                       value={z.tarifaPreventa?.precio ?? ''}
                       onChange={(e) => handleChangeTarifa(i, 'preventa', e.target.value)}
-                      className="border border-gray-300 rounded-md px-2 py-1 w-full"
+                      className="border border-gray-300 dark:border-border rounded-md px-2 py-1 w-full bg-white dark:bg-card dark:text-card-foreground"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -432,11 +434,11 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       {/* Info imagen lugar */}
       <div className="mt-4">
-        {!imageLugarBase64 && (
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <ImageOff className="h-4 w-4" /> No hay imagen del lugar
-          </div>
-        )}
+          {!imageLugarBase64 && ( 
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <ImageOff className="h-4 w-4" /> No hay imagen del lugar 
+            </div> 
+          )}
       </div>
     </div>
   );

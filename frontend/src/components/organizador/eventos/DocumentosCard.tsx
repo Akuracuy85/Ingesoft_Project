@@ -123,26 +123,26 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
     <div>
       {/* Encabezado */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="bg-gray-100 p-2 rounded-md">
-          <FileText className="h-5 w-5 text-gray-700" />
+        <div className="bg-gray-100 dark:bg-card p-2 rounded-md">
+          <FileText className="h-5 w-5 text-gray-700 dark:text-gray-200" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">Documentos de respaldo</h3>
-          <p className="text-sm text-gray-500">Sube contratos, permisos y certificados.</p>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Documentos de respaldo</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Sube contratos, permisos y certificados.</p>
         </div>
       </div>
 
-      {loading && <p className="text-sm text-gray-500 mb-2">Cargando...</p>}
+      {loading && <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Cargando...</p>}
       {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
 
       {/* Área de carga */}
       <label
         htmlFor="file-upload"
-        className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-32 text-gray-500 cursor-pointer hover:bg-gray-50 mb-4"
+        className="border-2 border-dashed border-gray-300 dark:border-border rounded-md flex flex-col items-center justify-center h-32 text-gray-500 dark:text-card-foreground cursor-pointer hover:bg-gray-50 dark:hover:bg-card mb-4"
       >
         <Upload className="h-6 w-6 mb-2" />
         <p className="text-sm">Arrastra archivos aquí o haz clic para seleccionar</p>
-        <p className="text-xs text-gray-400">PDF, DOC, DOCX hasta 10MB</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">PDF, DOC, DOCX hasta 10MB</p>
         <input
           id="file-upload"
           type="file"
@@ -158,20 +158,20 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
         {documentos.map((doc) => (
           <div
             key={doc.id || doc.nombreArchivo}
-            className="flex justify-between items-center border border-gray-200 rounded-md px-4 py-2 text-sm bg-white"
+            className="flex justify-between items-center border border-gray-200 dark:border-border rounded-md px-4 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground"
           >
             <div className="flex items-center gap-3">
-              <FileText className="h-4 w-4 text-gray-600" />
+              <FileText className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               <div>
-                <p className="font-medium text-gray-900">{doc.nombreArchivo}</p>
-                <p className="text-xs text-gray-500">{(doc.tamano/1024).toFixed(0)} KB · DocumentoRespaldo</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">{doc.nombreArchivo}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{(doc.tamano/1024).toFixed(0)} KB · DocumentoRespaldo</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <span
                 className={`text-xs px-2 py-0.5 rounded-full ${
-                  doc.estado === "Aprobado" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"
+                  doc.estado === "Aprobado" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700 dark:bg-card dark:text-card-foreground"
                 }`}
               >
                 {doc.estado}
@@ -195,7 +195,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
           </div>
         ))}
         {!loading && documentos.length === 0 && !error && (
-          <p className="text-sm text-gray-500">No hay documentos subidos aún.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No hay documentos subidos aún.</p>
         )}
       </div>
     </div>

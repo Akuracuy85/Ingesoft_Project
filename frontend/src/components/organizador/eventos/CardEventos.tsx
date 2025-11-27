@@ -59,13 +59,13 @@ interface EventoItem {
 function getBadgeClass(estado: EstadoEventoUI): string {
   switch (estado) {
     case "Publicado":
-      return "bg-black text-white rounded-full px-3 py-1 text-sm";
+      return "bg-black text-white rounded-full px-3 py-1 text-sm dark:bg-amber-500 dark:text-black";
     case "Borrador":
-      return "bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm";
+      return "bg-gray-200 text-gray-700 rounded-full px-3 py-1 text-sm dark:bg-card dark:text-card-foreground dark:border-border";
     case "En revisión":
-      return "border border-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm";
+      return "border border-gray-300 text-gray-700 rounded-full px-3 py-1 text-sm dark:border-border dark:text-card-foreground dark:bg-transparent";
     case "Cancelado":
-      return "bg-red-100 text-red-700 rounded-full px-3 py-1 text-sm";
+      return "bg-red-100 text-red-700 rounded-full px-3 py-1 text-sm dark:bg-red-900 dark:text-red-200";
     default:
       return "rounded-full px-3 py-1 text-sm";
   }
@@ -497,13 +497,13 @@ const CardEventos: React.FC = () => {
     return (
       <div className="flex items-start justify-between gap-4">
         {/* Izquierda: ícono + títulos */}
-        <div className="flex items-start gap-3">
-          <div className="mt-1 text-gray-700">
+          <div className="flex items-start gap-3">
+          <div className="mt-1 text-gray-700 dark:text-gray-300">
             <Calendar className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Publicar y gestionar eventos</h2>
-            <p className="text-sm text-gray-600 mt-1">Crea, edita y elimina eventos del sistema.</p>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Publicar y gestionar eventos</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Crea, edita y elimina eventos del sistema.</p>
           </div>
         </div>
 
@@ -528,7 +528,7 @@ const CardEventos: React.FC = () => {
 
         {/* Loading y error */}
         {isLoading && (
-          <div className="mt-6 text-sm text-gray-600">Cargando eventos...</div>
+          <div className="mt-6 text-sm text-gray-600 dark:text-gray-300">Cargando eventos...</div>
         )}
         {error && !isLoading && (
           <div className="mt-6 text-sm text-red-600">{error}</div>
@@ -536,15 +536,15 @@ const CardEventos: React.FC = () => {
 
         {/* Detalles del evento seleccionado */}
         {eventoSeleccionado && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-4 relative">
+          <div className="bg-gray-50 dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 mt-4 relative">
             {/* Botón cerrar */}
-            <button
+              <button
               type="button"
               onClick={() => {
                 setEventoSeleccionado(null);
                 setSelectedIndex(null);
               }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-4 right-4 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
               aria-label="Cerrar detalles"
             >
               <X className="h-5 w-5" />
@@ -552,19 +552,19 @@ const CardEventos: React.FC = () => {
 
             {/* Título + estado */}
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-lg font-semibold text-gray-900">{eventoSeleccionado.nombre}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{eventoSeleccionado.nombre}</h2>
               <span className={getBadgeClass(eventoSeleccionado.estado)}>{eventoSeleccionado.estado}</span>
             </div>
-            <p className="text-sm text-gray-600 mb-4">{eventoSeleccionado.fecha}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{eventoSeleccionado.fecha}</p>
 
             {/* Encabezado de portada con botón alineado a la derecha */}
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium">Imagen de portada del evento</h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">Imagen de portada del evento</h3>
               <div>
                 <button
                   type="button"
                   onClick={handleUploadCoverClick}
-                  className="border border-gray-300 text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100"
+                  className="border border-gray-300 dark:border-border text-sm rounded-md px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-card"
                 >
                   <Upload className="h-4 w-4" /> Subir portada
                 </button>
@@ -583,7 +583,7 @@ const CardEventos: React.FC = () => {
             {(() => {
               const portadaSrc = buildImageSrc(eventoSeleccionado.imagenPortadaBase64);
               return portadaSrc ? (
-                <div className="h-48 rounded-md border border-gray-200 overflow-hidden bg-white">
+                  <div className="h-48 rounded-md border border-gray-200 dark:border-border overflow-hidden bg-white dark:bg-card">
                   <img
                     src={portadaSrc}
                     alt={`Portada de ${eventoSeleccionado.nombre}`}
@@ -592,7 +592,7 @@ const CardEventos: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-gray-300 bg-white rounded-md h-48 flex flex-col items-center justify-center text-gray-400">
+                <div className="border-2 border-dashed border-gray-300 dark:border-border bg-white dark:bg-card rounded-md h-48 flex flex-col items-center justify-center text-gray-400 dark:text-card-foreground">
                   <ImageOff className="h-8 w-8 mb-2" />
                   <p>No hay imagen de portada</p>
                 </div>
@@ -604,12 +604,12 @@ const CardEventos: React.FC = () => {
         {/* Contenido: lista + tabla */}
         <div className="mt-6">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-700">Lista de eventos</h3>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">Lista de eventos</h3>
             <div className="flex items-center gap-4">
               <span className="text-xs text-gray-500">Selecciona un evento para editar sus detalles</span>
               {/* Selector de tamaño de página */}
-              <div className="flex items-center gap-2">
-                <label htmlFor="pageSize" className="text-xs text-gray-600">Por página:</label>
+                <div className="flex items-center gap-2">
+                <label htmlFor="pageSize" className="text-xs text-gray-600 dark:text-gray-300">Por página:</label>
                 <select
                   id="pageSize"
                   value={pageSize}
@@ -617,7 +617,7 @@ const CardEventos: React.FC = () => {
                     setPageSize(Number(e.target.value));
                     setCurrentPage(1); // reinicia a primera página
                   }}
-                  className="border border-gray-300 rounded px-2 py-1 text-xs bg-white focus:outline-none"
+                  className="border border-gray-300 dark:border-border rounded px-2 py-1 text-xs bg-white dark:bg-card dark:text-card-foreground focus:outline-none"
                 >
                   <option value={5}>5</option>
                   <option value={10}>10</option>
@@ -629,27 +629,27 @@ const CardEventos: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50">
+                <tr className="text-left text-gray-600 border-b border-gray-200 bg-gray-50 dark:bg-card dark:text-card-foreground dark:border-border">
                   <th className="px-4 py-3 font-medium">Nombre del evento</th>
                   <th className="px-4 py-3 font-medium">Fecha</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedEventos.map((ev, localIndex) => {
                   const globalIndex = (currentPage - 1) * pageSize + localIndex;
                   return (
                   <tr
-                    key={ev.id}
-                    className={`${selectedIndex === globalIndex ? "bg-amber-50" : ""} hover:bg-gray-50 cursor-pointer`}
+                      key={ev.id}
+                      className={`${selectedIndex === globalIndex ? "bg-amber-50" : ""} hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer`}
                     onClick={() => {
                       setEventoSeleccionado(ev);
                       setSelectedIndex(globalIndex);
                     }}
                   >
-                    <td className="px-4 py-3 text-gray-900">{ev.nombre}</td>
-                    <td className="px-4 py-3 text-gray-700">{ev.fecha}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{ev.nombre}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{ev.fecha}</td>
                     <td className="px-4 py-3">
                       <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
                     </td>
@@ -664,7 +664,7 @@ const CardEventos: React.FC = () => {
                             e.stopPropagation();
                             setMenuAbierto(menuAbierto === globalIndex ? null : globalIndex);
                           }}
-                          className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-600"
+                          className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300"
                           aria-haspopup="menu"
                           aria-expanded={menuAbierto === globalIndex}
                           aria-label={`Acciones para ${ev.nombre}`}
@@ -674,13 +674,13 @@ const CardEventos: React.FC = () => {
 
                         {menuAbierto === globalIndex && (
                           <div
-                            className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                            className="absolute right-0 mt-2 w-40 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-md shadow-lg z-50 dark:text-card-foreground"
                             onClick={(e) => e.stopPropagation()}
                             role="menu"
                           >
                             <button
                               type="button"
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200"
                               onClick={() => {
                                 setMenuAbierto(null);
                                 handleOpenEdit(globalIndex);
@@ -692,7 +692,7 @@ const CardEventos: React.FC = () => {
                             </button>
                             <button
                               type="button"
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-red-600"
                               onClick={() => {
                                 setEventoAEliminar({ index: globalIndex, nombre: ev.nombre });
                                 setMenuAbierto(null);
@@ -718,7 +718,7 @@ const CardEventos: React.FC = () => {
           {/* Controles de paginación */}
           {totalPages > 1 && (
             <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-gray-600 dark:text-gray-300">
                 Página {currentPage} de {totalPages} — Mostrando {paginatedEventos.length} de {eventos.length} eventos
               </div>
               <div className="flex items-center gap-2">
@@ -726,7 +726,7 @@ const CardEventos: React.FC = () => {
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"}`}
+                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-card dark:text-card-foreground" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 dark:bg-card dark:hover:bg-card dark:text-card-foreground dark:border-border"}`}
                 >
                   ← Anterior
                 </button>
@@ -737,7 +737,7 @@ const CardEventos: React.FC = () => {
                       key={page}
                       type="button"
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 text-xs rounded border flex items-center justify-center ${page === currentPage ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
+                      className={`w-8 h-8 text-xs rounded border flex items-center justify-center ${page === currentPage ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-card dark:text-card-foreground dark:border-border dark:hover:bg-card"}`}
                       aria-label={`Ir a página ${page}`}
                     >
                       {page}
@@ -748,7 +748,7 @@ const CardEventos: React.FC = () => {
                   type="button"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"}`}
+                  className={`px-3 py-1 rounded border text-xs flex items-center gap-1 ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-card dark:text-card-foreground" : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 dark:bg-card dark:hover:bg-card dark:text-card-foreground dark:border-border"}`}
                 >
                   Siguiente →
                 </button>

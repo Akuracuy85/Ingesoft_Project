@@ -139,16 +139,16 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
     <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
       {/* Encabezado */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="bg-gray-100 p-2 rounded-md">
-          <FileText className="h-5 w-5 text-gray-700" />
+        <div className="bg-gray-100 dark:bg-card p-2 rounded-md">
+          <FileText className="h-5 w-5 text-gray-700 dark:text-gray-200" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">Términos y condiciones</h3>
-          <p className="text-sm text-gray-500">Sube un documento PDF con los términos del evento.</p>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Términos y condiciones</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Sube un documento PDF con los términos del evento.</p>
         </div>
       </div>
 
-      {cargandoInicial && <p className="text-sm text-gray-500 mb-2">Cargando...</p>}
+      {cargandoInicial && <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Cargando...</p>}
       {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
       {exito && <p className="text-sm text-green-600 mb-3">{exito}</p>}
 
@@ -156,11 +156,11 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
       {!terminosRemoto && (
         <label
           htmlFor={`terminos-upload-${eventoId}`}
-          className="border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center h-32 text-gray-500 cursor-pointer hover:bg-gray-50"
+          className="border-2 border-dashed border-gray-300 dark:border-border rounded-md flex flex-col items-center justify-center h-32 text-gray-500 dark:text-card-foreground cursor-pointer hover:bg-gray-50 dark:hover:bg-card"
         >
           <Upload className="h-6 w-6 mb-2" />
           <p className="text-sm">Arrastra el PDF aquí o haz clic para seleccionar</p>
-          <p className="text-xs text-gray-400">Solo PDF (máx. 10MB){subiendo && " - Subiendo..."}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400">Solo PDF (máx. 10MB){subiendo && " - Subiendo..."}</p>
           <input
             id={`terminos-upload-${eventoId}`}
             type="file"
@@ -175,12 +175,12 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
       {/* Archivo existente */}
       {terminosRemoto && (
         <div className="space-y-3">
-          <div className="flex justify-between items-center border border-gray-200 rounded-md px-4 py-2 text-sm bg-white">
+          <div className="flex justify-between items-center border border-gray-200 dark:border-border rounded-md px-4 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground">
             <div className="flex items-center gap-3">
-              <FileText className="h-4 w-4 text-gray-600" />
+              <FileText className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               <div>
-                <p className="font-medium text-gray-900">{terminosRemoto.nombreArchivo}</p>
-                <p className="text-xs text-gray-500">PDF · {(terminosRemoto.tamano / 1024).toFixed(0)} KB</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">{terminosRemoto.nombreArchivo}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">PDF · {(terminosRemoto.tamano / 1024).toFixed(0)} KB</p>
               </div>
             </div>
             <div className="flex gap-2 items-center">
@@ -192,7 +192,7 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
               >
                 Ver / Descargar
               </a>
-              <label className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+              <label className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200">
                 Reemplazar
                 <input
                   type="file"
@@ -213,7 +213,7 @@ export default function TerminosCard({ eventoId, onCambio }: TerminosCardProps) 
               </button>
             </div>
           </div>
-          {subiendo && <p className="text-xs text-gray-500">Procesando...</p>}
+          {subiendo && <p className="text-xs text-gray-500 dark:text-gray-400">Procesando...</p>}
         </div>
       )}
     </div>

@@ -18,19 +18,19 @@ const ConfirmarEliminacionModal: React.FC<ConfirmarEliminacionModalProps> = ({ o
       aria-labelledby="titulo-eliminar"
     >
       <div
-        className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md text-center"
+        className="bg-white dark:bg-card dark:text-card-foreground rounded-lg shadow-lg p-6 w-full max-w-md text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 id="titulo-eliminar" className="text-lg font-semibold mb-2">
+        <h3 id="titulo-eliminar" className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
           ¿Seguro que deseas eliminar este evento?
         </h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
           Esta acción no se puede deshacer. El evento <span className="font-medium">{nombre}</span> será eliminado permanentemente del sistema.
         </p>
         <div className="flex items-center justify-center space-x-3">
           <button
             type="button"
-            className="bg-white border border-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-100"
+            className="bg-white dark:bg-card border border-gray-300 dark:border-border text-gray-800 dark:text-card-foreground px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-card"
             onClick={onCancel}
           >
             Cancelar

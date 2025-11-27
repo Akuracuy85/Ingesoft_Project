@@ -19,7 +19,7 @@ const HeaderOrganizador: React.FC = () => {
       <div className="flex items-center gap-2">
         <img src={isDark ? LogoDark : LogoLight} alt="Unite logo" className="w-25 h-25" />
         <span className="font-semibold text-foreground"></span>
-        <Link to="/eventos" className="ml-4 px-3 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition">
+        <Link to="/eventos" className="ml-4 px-3 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] dark:bg-[#F6BA26] dark:hover:bg-[#C37723] text-white transition">
           Ver eventos
         </Link>
       </div>
