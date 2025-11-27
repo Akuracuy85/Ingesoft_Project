@@ -8,6 +8,7 @@ import { RestablecerContraseña } from "@/pages/auth/RestablecerContraseña";
 import { NuevaContraseña } from "@/pages/auth/NuevaContraseña";
 import { Registro } from "@/pages/auth/Registro";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
+import Error404 from "@/pages/Error404";
 import ColaVirtual from "./pages/client/Eventos/ColaVirtual";
 import CompraDeEntradas from "./pages/client/CompraDeEntradas";
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal";
@@ -36,6 +37,7 @@ function App() {
             <Route path="/registro" element={<Registro />} />
             <Route path="/organizador/registro" element={<RegistroOrganizador />} />
             <Route path="/eventos" element={<SeleccionDeEventos />} />
+            <Route path="/404" element={<Error404 />} />
             <Route path="/eventos/:id/detalle" element={<DetalleEvento />} />
 
             {/* Rutas protegidas */}
@@ -52,7 +54,9 @@ function App() {
             <Route path="/compra-exitosa" element={<CompraExitosa />} />
           </Route>
 
-           {/*<Route path="/*" element={<Login />} />*/}
+          {/* Catch-all: mostrar Error404 en rutas no encontradas */}
+          <Route path="*" element={<Error404 />} />
+          {/*<Route path="/*" element={<Login />} />*/}
           </Routes>
         </div>
       </AuthProvider>
