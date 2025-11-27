@@ -157,21 +157,25 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center" onClick={onClose}>
-      <div className="mx-auto my-10 bg-white rounded-lg shadow-lg p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center" onClick={onClose}>
+      <div
+        className="mx-auto bg-white text-gray-900 dark:bg-card dark:text-card-foreground rounded-lg shadow-lg p-6 w-full max-w-lg overflow-y-auto"
+        style={{ maxHeight: 'calc(100vh - 4rem)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Crear nuevo evento</h3>
-          <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700" aria-label="Cerrar">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Crear nuevo evento</h3>
+          <button type="button" onClick={onClose} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" aria-label="Cerrar">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
-        <div className="space-y-4 max-h-[75vh] overflow-y-auto px-1">
+        <div className="space-y-4 px-1">
           {/* Nombre del evento */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Nombre del evento<span className="text-red-500"> *</span>
             </label>
             <input
@@ -179,8 +183,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               name="nombre"
               value={form.nombre}
               onChange={onChangeText}
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                nombreError ? "border-red-500" : "border-gray-300"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                nombreError ? "border-red-500" : "border-gray-300 dark:border-border"
               }`}
             />
             {nombreError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -188,7 +192,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 
           {/* Descripción */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Descripción<span className="text-red-500"> *</span>
             </label>
             <textarea
@@ -196,8 +200,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               value={form.descripcion}
               onChange={onChangeText}
               rows={4}
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                descripcionError ? "border-red-500" : "border-gray-300"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                descripcionError ? "border-red-500" : "border-gray-300 dark:border-border"
               }`}
             />
             {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -205,7 +209,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 
           {/* Artista */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center justify-between">
               <span>Artista <span className="text-red-500">*</span></span>
               <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">
                 + Nuevo
@@ -215,8 +219,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               name="artistaId"
               value={form.artistaId ?? ""}
               onChange={handleArtistaChange}
-              className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                artistaError ? "border-red-500" : "border-gray-300"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                artistaError ? "border-red-500" : "border-gray-300 dark:border-border"
               }`}
             >
               <option value="">Selecciona artista</option>
@@ -230,7 +234,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           {/* Fecha y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Fecha <span className="text-red-500">*</span>
               </label>
               <input
@@ -238,14 +242,14 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
                 name="fecha"
                 value={form.fecha}
                 onChange={onChangeText}
-                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  fechaError ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  fechaError ? "border-red-500" : "border-gray-300 dark:border-border"
                 }`}
               />
               {fechaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Hora <span className="text-red-500">*</span>
               </label>
               <input
@@ -253,8 +257,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
                 name="hora"
                 value={form.hora}
                 onChange={onChangeText}
-                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  horaError ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  horaError ? "border-red-500" : "border-gray-300 dark:border-border"
                 }`}
               />
               {horaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -264,15 +268,15 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           {/* Ubicación: Departamento / Provincia / Distrito */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Departamento <span className="text-red-500">*</span>
               </label>
               <select
                 name="departamento"
                 value={form.departamentoId ?? ""}
                 onChange={handleDepartamentoChange}
-                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  departamentoError ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  departamentoError ? "border-red-500" : "border-gray-300 dark:border-border"
                 }`}
               >
                 <option value="">Selecciona departamento</option>
@@ -283,7 +287,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               {departamentoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Provincia <span className="text-red-500">*</span>
               </label>
               <select
@@ -291,8 +295,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
                 value={form.provinciaId ?? ""}
                 onChange={handleProvinciaChange}
                 disabled={!form.departamentoId}
-                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
-                  provinciaError ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 dark:disabled:bg-slate-700 ${
+                  provinciaError ? "border-red-500" : "border-gray-300 dark:border-border"
                 }`}
               >
                 <option value="">Selecciona provincia</option>
@@ -303,7 +307,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
               {provinciaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Distrito <span className="text-red-500">*</span>
               </label>
               <select
@@ -311,8 +315,8 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
                 value={form.distritoId ?? ""}
                 onChange={handleDistritoChange}
                 disabled={!form.departamentoId || !form.provinciaId}
-                className={`w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 ${
-                  distritoError ? "border-red-500" : "border-gray-300"
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 dark:disabled:bg-slate-700 ${
+                  distritoError ? "border-red-500" : "border-gray-300 dark:border-border"
                 }`}
               >
                 <option value="">Selecciona distrito</option>
@@ -326,15 +330,15 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 
           {/* Lugar */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Lugar <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Lugar <span className="text-red-500">*</span></label>
             <input
               type="text"
               name="lugar"
               value={form.lugar}
               onChange={onChangeText}
               placeholder="Ej: Teatro Nacional"
-              className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                lugarError ? "border-red-500" : "border-gray-300"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                lugarError ? "border-red-500" : "border-gray-300 dark:border-border"
               }`}
             />
             {lugarError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
@@ -345,17 +349,17 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
 
           {/* Imagen */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada del evento</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Imagen de portada del evento</label>
             <input
               type="file"
               name="imagen"
               accept="image/*"
               onChange={onChangeFile}
-              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              className="block w-full text-sm text-gray-700 dark:text-card-foreground file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 dark:file:bg-card file:text-gray-700 dark:file:text-card-foreground hover:file:bg-gray-200 dark:hover:file:bg-slate-600"
             />
-            <p className="mt-1 text-xs text-gray-500">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
             {form.imagen && (
-              <p className="mt-1 text-xs text-gray-600">Archivo seleccionado: {form.imagen.name}</p>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Archivo seleccionado: {form.imagen.name}</p>
             )}
           </div>
         </div>
@@ -365,7 +369,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
           >
             Cancelar
           </button>
