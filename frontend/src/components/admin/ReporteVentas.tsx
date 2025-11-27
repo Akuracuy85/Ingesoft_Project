@@ -12,8 +12,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-
+import NotificationService from "@/services/NotificationService"
 import { useVentas } from "@/hooks/useVentas"
+import { adminVentasService } from "@/services/AdminVentasService"
 
 export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -96,10 +97,36 @@ export function ReporteVentas() {
     }
   }, [fechaInicio, fechaFin])
 
-  const handleExport = () => {
-    setShowExportNotification(true)
-    setTimeout(() => setShowExportNotification(false), 3000)
+  const handleExport = async () => {
+    try {
+      const filtros = {
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
+        nombreEvento: debouncedQuery || undefined,
+        nombreOrganizador: debouncedQuery || undefined,
+      }
+
+      const blob = await adminVentasService.exportarReporteVentas(filtros)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      const fechaStr = new Date().toISOString().split("T")[0]
+      link.setAttribute("download", `Reporte_Ventas_${fechaStr}.pdf`)
+
+      document.body.appendChild(link)
+      link.click()
+
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      setShowExportNotification(true)
+      setTimeout(() => setShowExportNotification(false), 3000)
+    } catch (error) {
+      console.error("Error al exportar:", error)
+      NotificationService.error("La exportación no se ha realizado.")
+    }
   }
+
 
   const limpiarFiltros = () => {
     setFechaInicio("")
@@ -179,10 +206,6 @@ export function ReporteVentas() {
 
           {/* Export */}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport} className="gap-2">
-              <Download className="h-4 w-4" />
-              Exportar CSV
-            </Button>
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
               Exportar PDF

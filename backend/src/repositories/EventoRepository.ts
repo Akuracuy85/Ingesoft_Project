@@ -436,7 +436,8 @@ export class EventoRepository {
         "organizador.nombre",
         "organizador.apellidoPaterno",
         "organizador.email",
-        "organizador.rol"
+        "organizador.rol",
+        "organizador.RazonSocial",
       ]);
 
 

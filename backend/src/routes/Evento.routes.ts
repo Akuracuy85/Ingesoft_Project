@@ -23,6 +23,13 @@ router.get(
 );
 
 router.get(
+  "/admin/listar/reporte",
+  sessionMiddleware.VerificarToken,
+  autorMiddleware.VerificarEsAdmin,
+  eventoController.generarReporteVentas,
+);
+
+router.get(
   "/",
   sessionMiddleware.VerificarToken,
   eventoController.obtenerEventosDetallados

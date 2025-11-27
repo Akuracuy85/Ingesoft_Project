@@ -38,7 +38,8 @@ import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
 import { CategoriaRepository } from "../repositories/CategoriaRepository";
 import { EmailService } from "./EmailService";
-import { ConvertirFechaUTCaPeru } from "@/utils/FechaUtils";
+import { ConvertirFechaUTCaPeru, FormatearFecha } from "@/utils/FechaUtils";
+import { PDFService } from "./PDFService";
 
 const TIPO_TERMINOS_USO = "TerminosUso";
 const TIPO_DOCUMENTO_RESPALDO = "DocumentoRespaldo";
@@ -51,6 +52,7 @@ export class EventoService {
   private colaService: ColaService;
   private artistaRepository: Repository<Artista>;
   private s3Service: S3Service;
+  private PDFService: PDFService;
 
   private constructor() {
     this.eventoRepository = EventoRepository.getInstance();
@@ -58,6 +60,7 @@ export class EventoService {
     this.colaService = ColaService.getInstance();
     this.artistaRepository = AppDataSource.getRepository(Artista);
     this.s3Service = S3Service.getInstance();
+    this.PDFService = PDFService.getInstance();
   }
 
   public static getInstance(): EventoService {
@@ -166,7 +169,7 @@ export class EventoService {
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
-      return {...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento) };
+      return { ...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento) };
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
@@ -182,7 +185,7 @@ export class EventoService {
       if (!evento) {
         throw new CustomError("Evento no encontrado", StatusCodes.NOT_FOUND);
       }
-      return {...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)};
+      return { ...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5) };
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
@@ -237,8 +240,8 @@ export class EventoService {
         distrito: data.distrito.trim(),
         estado,
         fechaPublicacion: new Date(),
-        fechaFinPreventa, 
-        fechaInicioPreventa, 
+        fechaFinPreventa,
+        fechaInicioPreventa,
         aforoTotal: 0,
         entradasVendidas: 0,
         codigoPrivado: this.generarCodigoPrivado(),
@@ -247,7 +250,7 @@ export class EventoService {
         organizador,
         artista,
       });
-      
+
       if (data.imagenPortada) {
         const s3Path = `eventos/${evento.id}/imagenes`;
         const s3Key = `${s3Path}/banner-${Date.now()}.jpeg`;
@@ -257,7 +260,7 @@ export class EventoService {
         );
         await this.eventoRepository.guardarEvento(evento);
       }
-      
+
       return evento;
     } catch (error) {
       throw new CustomError(
@@ -1310,7 +1313,7 @@ export class EventoService {
   async obtenerTodosLosEventos(): Promise<Evento[] | any> {
     try {
       const eventos = await this.eventoRepository.obtenerTodosLosEventos();
-      return eventos.map(evento => ({...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)}));
+      return eventos.map(evento => ({ ...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5) }));
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
@@ -1357,12 +1360,50 @@ export class EventoService {
         nombreOrganizador: filtros.nombreOrganizador,
       });
 
-      return eventos.map(evento => ({...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5)}));
+      return eventos.map(evento => ({ ...evento, fechaEvento: ConvertirFechaUTCaPeru(evento.fechaEvento, 5) }));
 
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         "Error al obtener el listado de eventos para administración",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async generarReporteEventosAdmin(filtros:   {    fechaInicio?: string;
+    fechaFin?: string;
+    nombreEvento?: string;
+    nombreOrganizador?: string;}, autor: Usuario): Promise<Buffer> {
+    try {
+
+      const eventos = await this.listarEventosAdmin(filtros);
+
+      const headers = ["Evento", "Entradas Vendidas", "Ingresos Totales (S/.)", "Fecha de Evento", "Organizador"];
+      const body = eventos.map(evento => [
+        evento.nombre,
+        evento.entradasVendidas,
+        evento.gananciasTotales ? evento.gananciasTotales / 100 : 0,
+        FormatearFecha(evento.fechaEvento),
+        evento.organizador.RazonSocial,
+      ]);
+
+      const pdfBuffer = await this.PDFService.generateTableReport(
+        "Reporte de Ventas de Eventos",
+        headers,
+        body,
+        autor,
+        {
+          widths: ['auto', 'auto', 'auto', 'auto', '*']
+        }
+      );
+
+      return pdfBuffer;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      console.error(error);
+      throw new CustomError(
+        "Error al generar el reporte de ventas.",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

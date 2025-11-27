@@ -27,6 +27,7 @@
     "mysql2": "^3.15.3",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.10",
+    "pdfmake": "^0.2.20",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "tsconfig-paths": "^4.2.0",
@@ -40,6 +41,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^7.0.3",
+    "@types/pdfmake": "^0.2.12",
     "@types/qrcode": "^1.5.6",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2"
