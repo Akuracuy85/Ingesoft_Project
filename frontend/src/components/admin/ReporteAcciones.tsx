@@ -22,20 +22,29 @@ import {
 } from "recharts"
 
 import { useAccionesInternas } from "@/hooks/useAccionesInternas"
+import NotificationService from "@/services/NotificationService"
 
 export function ReporteAcciones() {
   const { acciones, isLoading, error, actualizarFiltros } = useAccionesInternas()
 
   const [actionType, setActionType] = useState("all")
-  const [showExportNotification, setShowExportNotification] = useState(false)
+  const [showExportNotification] = useState(false)
 
   const [paginaActual, setPaginaActual] = useState(1)
   const itemsPorPagina = 10
 
-  const handleExport = () => {
-    setShowExportNotification(true)
-    setTimeout(() => setShowExportNotification(false), 3000)
-  }
+  const handleExport = async () => {
+      try {
+        // const archivo = await adminVentasService.exportarPDF(filtros)
+        throw new Error("Export no implementado aún");
+        // descargarArchivo(archivo)
+        // setShowExportNotification(true)
+  
+      } catch (error) {
+        console.error("Error al exportar:", error)
+        NotificationService.error("La exportación no se ha realizado.")
+      }
+    }
 
   const handleChangeTipo = (tipo: string) => {
     setActionType(tipo)
