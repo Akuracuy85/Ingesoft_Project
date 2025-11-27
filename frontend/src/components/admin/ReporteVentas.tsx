@@ -14,12 +14,13 @@ import {
 } from "recharts"
 import NotificationService from "@/services/NotificationService"
 import { useVentas } from "@/hooks/useVentas"
+import { adminVentasService } from "@/services/AdminVentasService"
 
 export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
 
-  const [showExportNotification] = useState(false)
+  const [showExportNotification, setShowExportNotification] = useState(false)
 
   const [fechaInicio, setFechaInicio] = useState("")
   const [fechaFin, setFechaFin] = useState("")
@@ -98,11 +99,28 @@ export function ReporteVentas() {
 
   const handleExport = async () => {
     try {
-      // const archivo = await adminVentasService.exportarPDF(filtros)
-      throw new Error("Export no implementado aún");
-      // descargarArchivo(archivo)
-      // setShowExportNotification(true)
+      const filtros = {
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
+        nombreEvento: debouncedQuery || undefined,
+        nombreOrganizador: debouncedQuery || undefined,
+      }
 
+      const blob = await adminVentasService.exportarReporteVentas(filtros)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      const fechaStr = new Date().toISOString().split("T")[0]
+      link.setAttribute("download", `Reporte_Ventas_${fechaStr}.pdf`)
+
+      document.body.appendChild(link)
+      link.click()
+
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      setShowExportNotification(true)
+      setTimeout(() => setShowExportNotification(false), 3000)
     } catch (error) {
       console.error("Error al exportar:", error)
       NotificationService.error("La exportación no se ha realizado.")

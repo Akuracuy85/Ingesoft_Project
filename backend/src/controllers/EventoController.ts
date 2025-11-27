@@ -144,7 +144,7 @@ export class EventoController {
       HandleResponseError(res, error);
     }
   };
-listarEventosAdmin = async (req: Request, res: Response) => {
+  listarEventosAdmin = async (req: Request, res: Response) => {
     // Validación de Autor (Admin)
     const autor = req.author;
 
@@ -172,6 +172,27 @@ listarEventosAdmin = async (req: Request, res: Response) => {
         count: eventos.length,
         eventos,
       });
+    } catch (error) {
+      HandleResponseError(res, error);
+    }
+  };
+
+  generarReporteVentas = async (req: Request, res: Response) => {
+    try {
+      const { fechaInicio, fechaFin, nombreEvento, nombreOrganizador } = req.query;
+
+      const filtros = {
+        fechaInicio: fechaInicio as string,
+        fechaFin: fechaFin as string,
+        nombreEvento: nombreEvento as string,
+        nombreOrganizador: nombreOrganizador as string,
+      };
+
+      const pdfBuffer = await this.eventoService.generarReporteEventosAdmin(filtros, req.author);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=reporte_acciones.pdf');
+      res.send(pdfBuffer);
     } catch (error) {
       HandleResponseError(res, error);
     }
