@@ -8,7 +8,7 @@ import { RestablecerContraseña } from "@/pages/auth/RestablecerContraseña";
 import { NuevaContraseña } from "@/pages/auth/NuevaContraseña";
 import { Registro } from "@/pages/auth/Registro";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
-import Error404 from "@/components/Error404";
+import Error404 from "@/pages/Error404";
 import ColaVirtual from "./pages/client/Eventos/ColaVirtual";
 import CompraDeEntradas from "./pages/client/CompraDeEntradas";
 import InformacionPersonal from "./pages/client/InformacionPersonal/InformacionPersonal";

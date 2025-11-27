@@ -41,7 +41,7 @@ const Error404: React.FC = () => {
         />
 
         <h1 id="error-404-title" className="fade-in-up text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-4 drop-shadow-md">
-          La página que has buscado no existe 🚀
+          La página que has buscado no existe
         </h1>
 
         <button
