@@ -14,6 +14,8 @@ export interface User {
   activo: boolean;
   puntos: number;
   tarjetas: Tarjeta[];
+  RUC: string;
+  RazonSocial: string;
 }
 
 // La interfaz UserFormData probablemente no necesita 'puntos'
@@ -28,4 +30,6 @@ export interface UserFormData {
   rol: Rol;
   password: string;
   activo: boolean;
+  RUC: string;
+  RazonSocial: string;
 }
