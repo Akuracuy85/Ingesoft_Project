@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import type { User, UserFormData } from "../../models/User";
 import NotificationService from "@/services/NotificationService";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+export type Rol = "CLIENTE" | "ORGANIZADOR" | "ADMINISTRADOR";
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -176,44 +185,57 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               className="border rounded-md px-3 py-2 col-span-2"
             />
 
-            <select
-              name="rol"
+            <Select
               value={formData.rol}
-              onChange={handleChange}
-              className="border rounded-md px-3 py-2 col-span-2"
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, rol: value as Rol }))
+              }
             >
-              <option value="Cliente">Cliente</option>
-              <option value="Organizador">Organizador</option>
-              <option value="Administrador">Administrador</option>
-            </select>
+              <SelectTrigger className="w-full col-span-2">
+                <SelectValue placeholder="Seleccione un rol" />
+              </SelectTrigger>
 
-            <select
-              name="activo"
+              <SelectContent>
+                <SelectItem value="CLIENTE">Cliente</SelectItem>
+                <SelectItem value="ORGANIZADOR">Organizador</SelectItem>
+                <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
               value={formData.activo ? "true" : "false"}
-              onChange={handleChange}
-              className="border rounded-md px-3 py-2 col-span-2"
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, activo: value === "true" }))
+              }
             >
-              <option value="true">Activo</option>
-              <option value="false">Inactivo</option>
-            </select>
-          </div>
+              <SelectTrigger className="w-full col-span-2">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
 
-          <div className="flex justify-end gap-3 pt-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="border border-border text-muted-foreground px-4 py-2 rounded-md hover:bg-muted/20"
-            >
-              Cancelar
-            </button>
+              <SelectContent>
+                <SelectItem value="true">Activo</SelectItem>
+                <SelectItem value="false">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <button
-              type="submit"
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-            >
-              Guardar
-            </button>
-          </div>
+
+            <div className="flex justify-end gap-3 pt-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="border border-border text-muted-foreground px-4 py-2 rounded-md hover:bg-muted/20"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="submit"
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>  
         </form>
       </div>
     </div>
