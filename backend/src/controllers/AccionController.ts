@@ -42,6 +42,28 @@ export class AccionController {
             HandleResponseError(res, error);
         }
     };
+
+    generarReporteAcciones = async (req: Request, res: Response) => {
+        try {
+            const { fechaInicio, fechaFin, tipo, autorId } = req.query;
+
+            const filtros = {
+                fechaInicio: fechaInicio as string,
+                fechaFin: fechaFin as string,
+                tipo: tipo as TipoAccion,
+                autorId: autorId ? Number(autorId) : undefined,
+            };
+
+            const pdfBuffer = await this.accionService.generarReporteAccionesAdmin(filtros, req.author);
+            
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=reporte_acciones.pdf');
+            res.send(pdfBuffer);
+        } catch (error) {
+            HandleResponseError(res, error);
+        }
+    };
+
 }
 
 export const accionController = AccionController.getInstance();
