@@ -1,7 +1,7 @@
-import { UbicacionesRepository } from "@/repositories/UbicacionesRepository";
+import { UbicacionesRepository } from "../repositories/UbicacionesRepository";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { Departamento } from "@/models/Departamento";
+import { Departamento } from "../models/Departamento";
 
 export class UbicacionesService {
   private static instance: UbicacionesService;

@@ -7,7 +7,7 @@ import { Acción } from "../models/Acción";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
 import { Brackets, In, Repository } from "typeorm";
-import { EventMapper } from "@/dto/Event/EventMapper";
+
 export interface IFiltrosEventoAdmin {
   fechaInicio?: Date;
   fechaFin?: Date;

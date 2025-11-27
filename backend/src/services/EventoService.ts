@@ -36,9 +36,7 @@ import { AccionRepository } from "../repositories/AccionRepository";
 import { TipoAccion } from "../enums/TipoAccion";
 import { ColaService } from "./ColaService";
 import { tienePropiedad } from "../utils/ObjectUtils";
-import { CategoriaRepository } from "../repositories/CategoriaRepository";
-import { EmailService } from "./EmailService";
-import { ConvertirFechaUTCaPeru, FormatearFecha } from "@/utils/FechaUtils";
+import { ConvertirFechaUTCaPeru, FormatearFecha } from "../utils/FechaUtils";
 import { PDFService } from "./PDFService";
 
 const TIPO_TERMINOS_USO = "TerminosUso";
