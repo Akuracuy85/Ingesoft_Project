@@ -2,6 +2,16 @@ import { useEffect, useState, useCallback } from "react";
 import { adminAccionesService } from "@/services/AdminAccionesService";
 import type { Accion } from "@/models/Accion";
 
+function toUTCStart(dateString?: string) {
+  if (!dateString) return undefined;
+  return `${dateString}T00:00:00Z`;
+}
+
+function toUTCEnd(dateString?: string) {
+  if (!dateString) return undefined;
+  return `${dateString}T23:59:59Z`;
+}
+
 interface FiltrosAccion {
   fechaInicio?: string;
   fechaFin?: string;
@@ -20,8 +30,13 @@ export function useAccionesInternas() {
       setIsLoading(true);
       setError(null);
 
-      const response = await adminAccionesService.obtenerAcciones(filtros);
-      //console.log("Respuesta del backend (acciones):", response);  
+      const filtrosUTC = {
+        ...filtros,
+        fechaInicio: toUTCStart(filtros.fechaInicio),
+        fechaFin: toUTCEnd(filtros.fechaFin),
+      };
+
+      const response = await adminAccionesService.obtenerAcciones(filtrosUTC);
       setAcciones(response.acciones ?? []);
     } catch (err: any) {
       console.error("Error cargando acciones internas:", err);
@@ -30,6 +45,7 @@ export function useAccionesInternas() {
       setIsLoading(false);
     }
   }, [filtros]);
+
   useEffect(() => {
     fetchAcciones();
   }, [fetchAcciones]);
