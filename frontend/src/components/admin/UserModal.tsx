@@ -44,6 +44,8 @@ const UserModal: React.FC<UserModalProps> = ({
     celular: "",
     rol: "CLIENTE" as Rol,
     activo: true,
+    ruc: "",
+    razonSocial: "",
   };
 
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
@@ -60,6 +62,8 @@ const UserModal: React.FC<UserModalProps> = ({
         celular: user.celular,
         rol: user.rol as Rol,
         activo: user.activo,
+        ruc: user.ruc ?? "",
+        razonSocial: user.razonSocial ?? "",
       });
     } else {
       setFormData(initialFormData);
@@ -80,7 +84,13 @@ const UserModal: React.FC<UserModalProps> = ({
     if (name === "celular") {
       if (!soloNumeros(value) || value.length > 9) return;
     }
+    if (name === "ruc") {
+      if (!soloNumeros(value) || value.length > 11) return;
+    }
 
+    if (name === "razonSocial") {
+      if (!soloLetras(value) && value !== "") return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -91,9 +101,9 @@ const UserModal: React.FC<UserModalProps> = ({
     e.preventDefault();
 
     if (!formData.rol) {
-    NotificationService.warning("Selecciona un rol para el usuario.");
-    return;
-  }
+      NotificationService.warning("Selecciona un rol para el usuario.");
+      return;
+    }
 
     if (!soloLetras(formData.nombre)) {
       NotificationService.warning("El nombre solo debe contener letras.");
@@ -123,6 +133,19 @@ const UserModal: React.FC<UserModalProps> = ({
     if (!soloNumeros(formData.celular) || formData.celular.length !== 9) {
       NotificationService.warning("El número de celular debe tener 9 dígitos.");
       return;
+    }
+
+    if (formData.rol === "ORGANIZADOR") {
+      
+      if (!soloNumeros(formData.ruc) || formData.ruc.length !== 11) {
+        NotificationService.warning("El RUC debe tener 11 dígitos.");
+        return;
+      }
+
+      if (!soloLetras(formData.razonSocial)) {
+        NotificationService.warning("La razón social solo debe contener letras.");
+        return;
+      }
     }
 
     onSave({ ...formData, rol: formData.rol });
@@ -211,6 +234,27 @@ const UserModal: React.FC<UserModalProps> = ({
                 <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
               </SelectContent>
             </Select>
+            {formData.rol === "ORGANIZADOR" && (
+              <>
+                <input
+                  name="ruc"
+                  value={formData.ruc}
+                  onChange={handleChange}
+                  placeholder="RUC (11 dígitos)"
+                  className="border rounded-md px-3 py-2 col-span-2"
+                  required
+                />
+
+                <input
+                  name="razonSocial"
+                  value={formData.razonSocial}
+                  onChange={handleChange}
+                  placeholder="Agregue la razón social"
+                  className="border rounded-md px-3 py-2 col-span-2"
+                  required
+                />
+              </>
+            )}
 
             {/* ACTIVO */}
             <Select
