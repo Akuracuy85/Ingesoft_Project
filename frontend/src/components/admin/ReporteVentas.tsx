@@ -181,10 +181,6 @@ export function ReporteVentas() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="h-4 w-4" />
-              Exportar CSV
-            </Button>
-            <Button variant="outline" onClick={handleExport} className="gap-2">
-              <Download className="h-4 w-4" />
               Exportar PDF
             </Button>
           </div>
