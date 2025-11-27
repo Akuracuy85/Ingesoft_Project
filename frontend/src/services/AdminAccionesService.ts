@@ -20,6 +20,24 @@ class AdminAccionesService extends HttpClient {
       throw error;
     }
   }
+
+  async exportarReporteAcciones(params?: {
+    fechaInicio?: string;
+    fechaFin?: string;
+    tipo?: string;
+    autorId?: number;
+  }): Promise<Blob> {
+    try {
+      const response = await super.get<Blob>("/reporte", { 
+        params,
+        responseType: 'blob' 
+      });
+      return response;
+    } catch (error) {
+      console.error("Error descargando el reporte:", error);
+      throw error;
+    }
+  }
 }
 
 export const adminAccionesService = new AdminAccionesService();

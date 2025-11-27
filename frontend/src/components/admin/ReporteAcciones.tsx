@@ -22,29 +22,47 @@ import {
 } from "recharts"
 
 import { useAccionesInternas } from "@/hooks/useAccionesInternas"
+import { adminAccionesService } from "@/services/AdminAccionesService" // 1. Importar el servicio
 import NotificationService from "@/services/NotificationService"
 
 export function ReporteAcciones() {
   const { acciones, isLoading, error, actualizarFiltros } = useAccionesInternas()
 
   const [actionType, setActionType] = useState("all")
-  const [showExportNotification] = useState(false)
+  const [fechaInicio, setFechaInicio] = useState<string>("") 
+  const [showExportNotification, setShowExportNotification] = useState(false)
 
   const [paginaActual, setPaginaActual] = useState(1)
   const itemsPorPagina = 10
 
   const handleExport = async () => {
-      try {
-        // const archivo = await adminVentasService.exportarPDF(filtros)
-        throw new Error("Export no implementado aún");
-        // descargarArchivo(archivo)
-        // setShowExportNotification(true)
-  
-      } catch (error) {
-        console.error("Error al exportar:", error)
-        NotificationService.error("La exportación no se ha realizado.")
+    try {
+      const filtros = {
+        tipo: actionType === "all" ? undefined : actionType,
+        fechaInicio: fechaInicio || undefined
       }
+
+      const blob = await adminAccionesService.exportarReporteAcciones(filtros)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      const fechaStr = new Date().toISOString().split('T')[0]
+
+      link.setAttribute('download', `Reporte_Acciones_${fechaStr}.pdf`)
+      
+      document.body.appendChild(link)
+      link.click()
+      
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      setShowExportNotification(true)
+      setTimeout(() => setShowExportNotification(false), 3000)
+    } catch (error) {
+      console.error("Error al exportar:", error)
+      NotificationService.error("Ocurrió un error al exportar el reporte");
     }
+  }
 
   const handleChangeTipo = (tipo: string) => {
     setActionType(tipo)
@@ -60,24 +78,24 @@ export function ReporteAcciones() {
   )
 
   const actionDistribution = useMemo(() => {
-    return acciones.reduce(
-      (acc: { name: string; value: number; color: string }[], a) => {
-        const existing = acc.find((x) => x.name === a.tipo)
+  return acciones.reduce(
+    (acc: { name: string; value: number; color: string }[], a) => {
+      const existing = acc.find((x) => x.name === a.tipo)
 
-        if (existing) {
-          existing.value += 1
-        } else {
-          acc.push({
-            name: a.tipo,
-            value: 1,
-            color: generarColorDesdeTipo(a.tipo),
-          })
-        }
-        return acc
-      },
-      []
-    )
-  }, [acciones])
+      if (existing) {
+        existing.value += 1
+      } else {
+        acc.push({
+          name: a.tipo,
+          value: 1,
+          color: generarColorDesdeTipo(a.tipo),
+        })
+      }
+      return acc
+    },
+    []
+  )
+}, [acciones])
 
 
   return (
@@ -100,8 +118,11 @@ export function ReporteAcciones() {
             <Input
               type="date"
               className="w-[180px]"
+              value={fechaInicio}
               onChange={(e) => {
-                actualizarFiltros({ fechaInicio: e.target.value })
+                const nuevaFecha = e.target.value
+                setFechaInicio(nuevaFecha) 
+                actualizarFiltros({ fechaInicio: nuevaFecha })
                 setPaginaActual(1)
               }}
             />
@@ -122,17 +143,6 @@ export function ReporteAcciones() {
               <SelectItem value="GENERAR REPORTE DE Ventas">Generar reporte ventas</SelectItem>
             </SelectContent>
           </Select>
-          {/* Buscador por usuario */}
-          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-            <Input
-              placeholder="Buscar por usuario (ej. Raúl, Malaver, Raúl Malaver)"
-              onChange={(e) => {
-                actualizarFiltros({ autorTexto: e.target.value });
-                setPaginaActual(1);
-              }}
-              className="w-full"
-            />
-          </div>
 
           {/* Exportar */}
           <Button variant="outline" onClick={handleExport} className="gap-2 ml-auto">

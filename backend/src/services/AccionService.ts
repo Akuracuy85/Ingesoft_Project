@@ -4,6 +4,7 @@ import { Acción } from "../models/Acción"; // Asume la ruta
 import { Usuario } from "../models/Usuario";
 import { CustomError } from "../types/CustomError";
 import { StatusCodes } from "http-status-codes";
+import { PDFService } from "./PDFService";
 
 // Interfaz para definir los filtros que recibe el Service
 export interface FiltrosAccionService {
@@ -16,9 +17,11 @@ export interface FiltrosAccionService {
 export class AccionService {
     private static instance: AccionService;
     private accionRepository: AccionRepository;
+    private PDFService: PDFService;
 
     private constructor() {
         this.accionRepository = AccionRepository.getInstance();
+        this.PDFService = PDFService.getInstance();
     }
 
     public static getInstance(): AccionService {
@@ -106,6 +109,41 @@ export class AccionService {
             );
         }
     }
+
+    async generarReporteAccionesAdmin(filtros: FiltrosAccionService = {}, autor: Usuario): Promise<Buffer> {
+        try {
+            
+            const acciones = await this.buscarAccionesAdministradores(filtros);
+
+            const headers = ["Fecha", "Tipo", "Autor", "Descripción"];
+            const body = acciones.map(accion => [
+                new Date(accion.fechaHora).toLocaleString(),
+                accion.tipo,
+                accion.autor ? (accion.autor['nombre'] || `ID: ${accion.autor.id}`) : "Sistema/Desconocido",
+                accion.descripcion
+            ]);
+
+            const pdfBuffer = await this.PDFService.generateTableReport(
+                "Reporte de Acciones del Sistema",
+                headers,
+                body,
+                autor,
+                {
+                  widths: [120, 'auto', 'auto', '*'] 
+                }
+            );
+
+            return pdfBuffer;
+        } catch (error) {
+            if (error instanceof CustomError) throw error;
+            console.error(error);
+            throw new CustomError(
+                "Error al generar el reporte de acciones.",
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
 }
 
 export const accionService = AccionService.getInstance();
