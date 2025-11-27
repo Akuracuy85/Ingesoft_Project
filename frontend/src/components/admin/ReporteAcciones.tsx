@@ -23,6 +23,7 @@ import {
 
 import { useAccionesInternas } from "@/hooks/useAccionesInternas"
 import { adminAccionesService } from "@/services/AdminAccionesService" // 1. Importar el servicio
+import NotificationService from "@/services/NotificationService"
 
 export function ReporteAcciones() {
   const { acciones, isLoading, error, actualizarFiltros } = useAccionesInternas()
@@ -42,20 +43,16 @@ export function ReporteAcciones() {
       }
 
       const blob = await adminAccionesService.exportarReporteAcciones(filtros)
-
-      // Crear URL temporal
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      
-      // Nombre del archivo con fecha actual
       const fechaStr = new Date().toISOString().split('T')[0]
+
       link.setAttribute('download', `Reporte_Acciones_${fechaStr}.pdf`)
       
       document.body.appendChild(link)
       link.click()
       
-      // Limpieza
       link.parentNode?.removeChild(link)
       window.URL.revokeObjectURL(url)
 
@@ -63,6 +60,7 @@ export function ReporteAcciones() {
       setTimeout(() => setShowExportNotification(false), 3000)
     } catch (error) {
       console.error("Error al exportar:", error)
+      NotificationService.error("Ocurrió un error al exportar el reporte");
     }
   }
 
