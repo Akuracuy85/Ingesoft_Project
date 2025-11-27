@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { HandleResponseError } from "../utils/Errors";
 import { StatusCodes } from "http-status-codes";
-import { UbicacionesService } from "@/services/UbicacionesService";
+import { UbicacionesService } from "../services/UbicacionesService";
 
 export class UbicacionesController {
   private static instance: UbicacionesController;

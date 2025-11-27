@@ -1,7 +1,6 @@
 
-import { Departamento } from "@/models/Departamento";
+import { Departamento } from "../models/Departamento";
 import { AppDataSource } from "../database/data-source";
-import { Categoria } from "../models/Categoria";
 import { Repository } from "typeorm";
 
 export class UbicacionesRepository {
