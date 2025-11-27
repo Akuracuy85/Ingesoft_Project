@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 import userIcon from "../../assets/Header_UserIcon.svg";
 import { useDarkMode } from "@/hooks/useModoOscuro";
 import { Moon, Sun } from "lucide-react";
@@ -18,6 +19,9 @@ const HeaderOrganizador: React.FC = () => {
       <div className="flex items-center gap-2">
         <img src={isDark ? LogoDark : LogoLight} alt="Unite logo" className="w-25 h-25" />
         <span className="font-semibold text-foreground"></span>
+        <Link to="/eventos" className="ml-4 px-3 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition">
+          Ver eventos
+        </Link>
       </div>
 
       {/* Usuario actual */}
