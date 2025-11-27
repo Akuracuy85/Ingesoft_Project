@@ -3,6 +3,7 @@ import { Rol } from "../enums/Rol";
 import { Usuario } from "../models/Usuario";
 import { Cliente } from "../models/Cliente";
 import { Organizador } from "../models/Organizador";
+import { Administrador } from "../models/Administrador";
 import { Repository } from "typeorm";
 
 export class UsuarioRepository {
@@ -44,26 +45,32 @@ export class UsuarioRepository {
     let usuario: Usuario;
     switch (data.rol) {
       case Rol.CLIENTE:
-        usuario = this.repository.create(data as Cliente);
+        usuario = new Cliente();
         break;
       case Rol.ORGANIZADOR:
-        usuario = this.repository.create(data as Organizador);
+        usuario = new Organizador();
+        break;
+      case Rol.ADMINISTRADOR:
+        usuario = new Administrador();
         break;
       default:
-        usuario = this.repository.create(data);
+        usuario = new Usuario();
+        break;
     }
+
+    Object.assign(usuario, data);
     return await this.repository.save(usuario);
   }
 
-  async actualizarUsuario(id: number, data: Partial<Usuario>){
+  async actualizarUsuario(id: number, data: Partial<Usuario>) {
     await this.repository.update(id, data);
   }
 
   async borrarUsuario(usuario: Usuario): Promise<void> {
-    await this.repository.delete({ id : usuario.id });
+    await this.repository.delete({ id: usuario.id });
   }
 
   async getAllUser(): Promise<Usuario[]> {
-    return await this.repository.find();
-  }
+    return await this.repository.find();
+  }
 }

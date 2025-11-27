@@ -3,7 +3,7 @@ import { Usuario } from "./Usuario";
 import { Rol } from "../enums/Rol";
 import { Evento } from "./Evento";
 
-@ChildEntity()
+@ChildEntity(Rol.ORGANIZADOR)
 export class Organizador extends Usuario {
   @Column({ nullable: true })
   RUC: string;
