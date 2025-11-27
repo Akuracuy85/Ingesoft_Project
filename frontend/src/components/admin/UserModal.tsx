@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from "react";
-import type { User, UserFormData } from "../../models/User";
+import type { User, UserFormData, Rol } from "../../models/User";
 import NotificationService from "@/services/NotificationService";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +28,12 @@ const emailValido = (valor: string) =>
 const soloNumeros = (valor: string) =>
   /^[0-9]*$/.test(valor);
 
-const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) => {
+const UserModal: React.FC<UserModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  user,
+}) => {
   const initialFormData: UserFormData = {
     nombre: "",
     password: "",
@@ -27,7 +42,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     dni: "",
     email: "",
     celular: "",
-    rol: "CLIENTE",
+    rol: "CLIENTE" as Rol,
     activo: true,
   };
 
@@ -43,7 +58,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
         dni: user.dni,
         email: user.email,
         celular: user.celular,
-        rol: user.rol,
+        rol: user.rol as Rol,
         activo: user.activo,
       });
     } else {
@@ -51,9 +66,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
     }
   }, [user, isOpen]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     if (["nombre", "apellidoPaterno", "apellidoMaterno"].includes(name)) {
@@ -70,12 +83,17 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
 
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "activo" ? value === "true" : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    if (!formData.rol) {
+    NotificationService.warning("Selecciona un rol para el usuario.");
+    return;
+  }
 
     if (!soloLetras(formData.nombre)) {
       NotificationService.warning("El nombre solo debe contener letras.");
@@ -107,9 +125,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
       return;
     }
 
-    onSave(formData);
+    onSave({ ...formData, rol: formData.rol });
   };
-
 
   if (!isOpen) return null;
 
@@ -121,6 +138,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* CAMPOS */}
           <div className="grid grid-cols-2 gap-3">
             <input
               name="nombre"
@@ -176,28 +194,43 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               className="border rounded-md px-3 py-2 col-span-2"
             />
 
-            <select
-              name="rol"
-              value={formData.rol}
-              onChange={handleChange}
-              className="border rounded-md px-3 py-2 col-span-2"
+            {/* ROL */}
+            <Select
+              value={formData.rol ?? undefined}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, rol: value as Rol }))
+              }
             >
-              <option value="Cliente">Cliente</option>
-              <option value="Organizador">Organizador</option>
-              <option value="Administrador">Administrador</option>
-            </select>
+              <SelectTrigger className="w-full col-span-2">
+                <SelectValue placeholder="Seleccione un rol" />
+              </SelectTrigger>
 
-            <select
-              name="activo"
+              <SelectContent>
+                <SelectItem value="CLIENTE">Cliente</SelectItem>
+                <SelectItem value="ORGANIZADOR">Organizador</SelectItem>
+                <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* ACTIVO */}
+            <Select
               value={formData.activo ? "true" : "false"}
-              onChange={handleChange}
-              className="border rounded-md px-3 py-2 col-span-2"
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, activo: value === "true" }))
+              }
             >
-              <option value="true">Activo</option>
-              <option value="false">Inactivo</option>
-            </select>
+              <SelectTrigger className="w-full col-span-2">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="true">Activo</SelectItem>
+                <SelectItem value="false">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* BOTONES */}
           <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
@@ -207,12 +240,9 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
               Cancelar
             </button>
 
-            <button
-              type="submit"
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-            >
+            <Button type="submit" className="gap-2">
               Guardar
-            </button>
+            </Button>
           </div>
         </form>
       </div>

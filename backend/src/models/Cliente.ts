@@ -3,7 +3,7 @@ import { Usuario } from "./Usuario";
 import { Rol } from "../enums/Rol";
 import { Tarjeta } from "./Tarjeta";
 
-@ChildEntity()
+@ChildEntity(Rol.CLIENTE)
   export class Cliente extends Usuario {
   @Column({ type: "int", default: 0 })
   puntos: number;

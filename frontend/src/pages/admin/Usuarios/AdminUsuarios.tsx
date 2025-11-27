@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Search, Plus, AlertTriangle } from "lucide-react";
 import Loading from '@/components/common/Loading';
 import AdminLayout from "../AdminLayout";
@@ -10,29 +10,40 @@ import { useAuth } from "@/hooks/useAuth";
 import type { User, UserFormData, Rol } from "../../../models/User";
 
 import { Navigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DEFAULT_PASSWORD = "unite123";
 
 export default function AdminUsuarios(): React.ReactElement {
   const { user, isLoggedIn, isLoading } = useAuth();
-  const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
+  const REQUIRED_ROLE: Rol = "ADMINISTRADOR";
   const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "Activo" | "Inactivo">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
+
   if (isLoading) {
     return <Loading fullScreen message={"Cargando autenticación..."} />;
   }
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace />; 
+    return <Navigate to="/login" replace />;
   }
-  
-  // Lógica de Acceso Denegado
+
   if (user?.rol !== REQUIRED_ROLE) {
     return (
       <AdminLayout activeItem="Usuarios">
@@ -43,16 +54,15 @@ export default function AdminUsuarios(): React.ReactElement {
             Tu cuenta tiene el rol de **{user?.rol ?? 'Usuario'}**. Solo los usuarios con rol **Administrador** pueden acceder a esta sección.
           </p>
           <Link
-          to="/login"
-          className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out"
-        >
-          Ir a la página de Login
-        </Link>
+            to="/login"
+            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out"
+          >
+            Ir a la página de Login
+          </Link>
         </div>
       </AdminLayout>
     );
   }
-  
 
   const users = usersQuery.data ?? [];
 
@@ -67,12 +77,20 @@ export default function AdminUsuarios(): React.ReactElement {
     const matchesRole =
       roleFilter === "all" ||
       u.rol?.toLowerCase() === roleFilter.toLowerCase();
+
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "Activo" ? u.activo : !u.activo);
 
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const totalPaginas = Math.ceil(filteredUsers.length / itemsPorPagina);
+
+  const usuariosPaginados = useMemo(() => {
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    return filteredUsers.slice(inicio, inicio + itemsPorPagina);
+  }, [filteredUsers, paginaActual]);
 
   const handleCreateUser = (): void => {
     setEditingUser(null);
@@ -84,21 +102,24 @@ export default function AdminUsuarios(): React.ReactElement {
     setIsModalOpen(true);
   };
 
-  const handleSaveUser = (userData: UserFormData): void => {
+    const handleSaveUser = (userData: UserFormData): void => {
+    const payload: UserFormData = {
+      ...userData,
+      rol: (userData.rol || "CLIENTE").toUpperCase() as Rol,
+      password: editingUser ? userData.password : DEFAULT_PASSWORD,
+    };
+
     if (editingUser) {
-      updateUser.mutate({ id: editingUser.id, data: userData });
+      updateUser.mutate({ id: editingUser.id, data: payload });
     } else {
-      const newUserDataWithDefaultPassword: UserFormData = {
-        ...userData,
-        password: DEFAULT_PASSWORD,
-      };
-      createUser.mutate(newUserDataWithDefaultPassword);
+      createUser.mutate(payload);
     }
     setIsModalOpen(false);
   };
 
+
   const handleToggleStatus = (userId: number, currentStatus: "Activo" | "Inactivo"): void => {
-  toggleStatus.mutate({ id: userId, currentStatus });
+    toggleStatus.mutate({ id: userId, currentStatus });
   };
 
   const handleDeleteUser = (userId: number): void => {
@@ -110,6 +131,7 @@ export default function AdminUsuarios(): React.ReactElement {
   return (
     <AdminLayout activeItem="Usuarios">
       <div className="max-w-7xl mx-auto">
+
         {/* Título */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -123,49 +145,64 @@ export default function AdminUsuarios(): React.ReactElement {
         {/* Filtros */}
         <div className="bg-card rounded-lg border border-border p-6 mb-6 shadow-sm">
           <div className="flex flex-wrap gap-4">
+            {/* Buscador */}
             <div className="flex-1 min-w-[250px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   placeholder="Buscar por nombre, correo o DNI"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPaginaActual(1);
+                  }}
                   className="pl-10 border border-border rounded-md px-3 py-2 w-full text-sm"
                 />
               </div>
             </div>
 
-            <select
+            {/* Filtro Rol */}
+            <Select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as "all" | Rol)}
-              className="border border-border rounded-md px-3 py-2 text-sm"
+              onValueChange={(val) => {
+                setRoleFilter(val as "all" | Rol);
+                setPaginaActual(1);
+              }}
             >
-              <option value="all">Todos los roles</option>
-              <option value="Cliente">Cliente</option>
-              <option value="Organizador">Organizador</option>
-              {/* Nota: 'Administrador' aquí debe coincidir con el tipo Rol */}
-              <option value="Administrador">Administrador</option>
-            </select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                <SelectItem value="Cliente">Cliente</SelectItem>
+                <SelectItem value="Organizador">Organizador</SelectItem>
+                <SelectItem value="Administrador">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <select
+            {/* Filtro Estado */}
+            <Select
               value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as "all" | "Activo" | "Inactivo")
-              }
-              className="border border-border rounded-md px-3 py-2 text-sm"
+              onValueChange={(val) => {
+                setStatusFilter(val as "all" | "Activo" | "Inactivo");
+                setPaginaActual(1);
+              }}
             >
-              <option value="all">Todos los estados</option>
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="Activo">Activo</SelectItem>
+                <SelectItem value="Inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <button
-              onClick={handleCreateUser}
-              className="bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-primary/90"
-            >
+            {/* Botón crear */}
+            <Button onClick={handleCreateUser} className="gap-2">
               <Plus className="h-4 w-4" />
               Crear usuario
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -177,13 +214,37 @@ export default function AdminUsuarios(): React.ReactElement {
             </div>
           ) : (
             <UserTable
-              users={filteredUsers}
+              users={usuariosPaginados}
               onEdit={handleEditUser}
               onToggleStatus={(id, activo) => handleToggleStatus(id, activo)}
               onDelete={handleDeleteUser}
             />
           )}
         </div>
+
+        {/* PAGINACIÓN */}
+        <div className="flex justify-between items-center mt-6 px-2">
+          <Button
+            variant="outline"
+            disabled={paginaActual === 1}
+            onClick={() => setPaginaActual(paginaActual - 1)}
+          >
+            Anterior
+          </Button>
+
+          <p className="text-sm text-muted-foreground">
+            Página {paginaActual} de {totalPaginas || 1}
+          </p>
+
+          <Button
+            variant="outline"
+            disabled={paginaActual === totalPaginas || totalPaginas === 0}
+            onClick={() => setPaginaActual(paginaActual + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+
         {/* Modal */}
         <UserModal
           isOpen={isModalOpen}
