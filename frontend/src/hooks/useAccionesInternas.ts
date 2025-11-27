@@ -16,7 +16,7 @@ interface FiltrosAccion {
   fechaInicio?: string;
   fechaFin?: string;
   tipo?: string;
-  autorId?: number;
+  autorTexto?: string;
 }
 
 export function useAccionesInternas() {
@@ -31,14 +31,31 @@ export function useAccionesInternas() {
       setError(null);
 
       const filtrosUTC = {
-        ...filtros,
         fechaInicio: toUTCStart(filtros.fechaInicio),
         fechaFin: toUTCEnd(filtros.fechaFin),
+        tipo: filtros.tipo,
       };
-
       const response = await adminAccionesService.obtenerAcciones(filtrosUTC);
-      setAcciones(response.acciones ?? []);
-    } catch (err: any) {
+      let lista = response.acciones ?? [];
+
+      if (filtros.autorTexto && filtros.autorTexto.trim() !== "") {
+        const q = filtros.autorTexto.toLowerCase();
+
+        lista = lista.filter((acc) => {
+          const nombre = acc.autor?.nombre?.toLowerCase() ?? "";
+          const apellido = acc.autor?.apellido?.toLowerCase() ?? "";
+          const completo = `${nombre} ${apellido}`;
+
+          return (
+            nombre.includes(q) ||
+            apellido.includes(q) ||
+            completo.includes(q)
+          );
+        });
+      }
+
+      setAcciones(lista);
+    } catch (err) {
       console.error("Error cargando acciones internas:", err);
       setError("No se pudieron cargar las acciones.");
     } finally {
@@ -60,6 +77,5 @@ export function useAccionesInternas() {
     error,
     filtros,
     actualizarFiltros,
-    fetchAcciones,
   };
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo  } from "react"
+import { useState, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { generarColorDesdeTipo } from "@/utils/generarColorDesdeTipo"
@@ -51,24 +51,24 @@ export function ReporteAcciones() {
   )
 
   const actionDistribution = useMemo(() => {
-  return acciones.reduce(
-    (acc: { name: string; value: number; color: string }[], a) => {
-      const existing = acc.find((x) => x.name === a.tipo)
+    return acciones.reduce(
+      (acc: { name: string; value: number; color: string }[], a) => {
+        const existing = acc.find((x) => x.name === a.tipo)
 
-      if (existing) {
-        existing.value += 1
-      } else {
-        acc.push({
-          name: a.tipo,
-          value: 1,
-          color: generarColorDesdeTipo(a.tipo),
-        })
-      }
-      return acc
-    },
-    []
-  )
-}, [acciones])
+        if (existing) {
+          existing.value += 1
+        } else {
+          acc.push({
+            name: a.tipo,
+            value: 1,
+            color: generarColorDesdeTipo(a.tipo),
+          })
+        }
+        return acc
+      },
+      []
+    )
+  }, [acciones])
 
 
   return (
@@ -113,6 +113,17 @@ export function ReporteAcciones() {
               <SelectItem value="GENERAR REPORTE DE Ventas">Generar reporte ventas</SelectItem>
             </SelectContent>
           </Select>
+          {/* Buscador por usuario */}
+          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+            <Input
+              placeholder="Buscar por usuario (ej. Raúl, Malaver, Raúl Malaver)"
+              onChange={(e) => {
+                actualizarFiltros({ autorTexto: e.target.value });
+                setPaginaActual(1);
+              }}
+              className="w-full"
+            />
+          </div>
 
           {/* Exportar */}
           <Button variant="outline" onClick={handleExport} className="gap-2 ml-auto">
