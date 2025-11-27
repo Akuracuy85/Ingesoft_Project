@@ -1,4 +1,4 @@
-import { useState, useMemo  } from "react"
+import { useState, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { generarColorDesdeTipo } from "@/utils/generarColorDesdeTipo"
@@ -22,19 +22,48 @@ import {
 } from "recharts"
 
 import { useAccionesInternas } from "@/hooks/useAccionesInternas"
+import { adminAccionesService } from "@/services/AdminAccionesService" // 1. Importar el servicio
 
 export function ReporteAcciones() {
   const { acciones, isLoading, error, actualizarFiltros } = useAccionesInternas()
 
   const [actionType, setActionType] = useState("all")
+  const [fechaInicio, setFechaInicio] = useState<string>("") 
   const [showExportNotification, setShowExportNotification] = useState(false)
 
   const [paginaActual, setPaginaActual] = useState(1)
   const itemsPorPagina = 10
 
-  const handleExport = () => {
-    setShowExportNotification(true)
-    setTimeout(() => setShowExportNotification(false), 3000)
+  const handleExport = async () => {
+    try {
+      const filtros = {
+        tipo: actionType === "all" ? undefined : actionType,
+        fechaInicio: fechaInicio || undefined
+      }
+
+      const blob = await adminAccionesService.exportarReporteAcciones(filtros)
+
+      // Crear URL temporal
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      
+      // Nombre del archivo con fecha actual
+      const fechaStr = new Date().toISOString().split('T')[0]
+      link.setAttribute('download', `Reporte_Acciones_${fechaStr}.pdf`)
+      
+      document.body.appendChild(link)
+      link.click()
+      
+      // Limpieza
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      setShowExportNotification(true)
+      setTimeout(() => setShowExportNotification(false), 3000)
+    } catch (error) {
+      console.error("Error al exportar:", error)
+    }
   }
 
   const handleChangeTipo = (tipo: string) => {
@@ -91,8 +120,11 @@ export function ReporteAcciones() {
             <Input
               type="date"
               className="w-[180px]"
+              value={fechaInicio} // Vincular valor
               onChange={(e) => {
-                actualizarFiltros({ fechaInicio: e.target.value })
+                const nuevaFecha = e.target.value
+                setFechaInicio(nuevaFecha) // Actualizar estado local
+                actualizarFiltros({ fechaInicio: nuevaFecha }) // Actualizar hook
                 setPaginaActual(1)
               }}
             />
