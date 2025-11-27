@@ -12,14 +12,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-
+import NotificationService from "@/services/NotificationService"
 import { useVentas } from "@/hooks/useVentas"
 
 export function ReporteVentas() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
 
-  const [showExportNotification, setShowExportNotification] = useState(false)
+  const [showExportNotification] = useState(false)
 
   const [fechaInicio, setFechaInicio] = useState("")
   const [fechaFin, setFechaFin] = useState("")
@@ -96,10 +96,19 @@ export function ReporteVentas() {
     }
   }, [fechaInicio, fechaFin])
 
-  const handleExport = () => {
-    setShowExportNotification(true)
-    setTimeout(() => setShowExportNotification(false), 3000)
+  const handleExport = async () => {
+    try {
+      // const archivo = await adminVentasService.exportarPDF(filtros)
+      throw new Error("Export no implementado aún");
+      // descargarArchivo(archivo)
+      // setShowExportNotification(true)
+
+    } catch (error) {
+      console.error("Error al exportar:", error)
+      NotificationService.error("La exportación no se ha realizado.")
+    }
   }
+
 
   const limpiarFiltros = () => {
     setFechaInicio("")
