@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Button } from "../ui/button";
 export type Rol = "CLIENTE" | "ORGANIZADOR" | "ADMINISTRADOR";
 interface UserModalProps {
   isOpen: boolean;
@@ -228,14 +229,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSave, user }) 
                 Cancelar
               </button>
 
-              <button
-                type="submit"
-                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-              >
+              <Button type="submit" className="gap-2">
                 Guardar
-              </button>
+              </Button>
+
             </div>
-          </div>  
+          </div>
         </form>
       </div>
     </div>

@@ -10,13 +10,14 @@ import { useAuth } from "@/hooks/useAuth";
 import type { User, UserFormData, Rol } from "../../../models/User";
 
 import { Navigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 
 const DEFAULT_PASSWORD = "unite123";
 
 export default function AdminUsuarios(): React.ReactElement {
   const { user, isLoggedIn, isLoading } = useAuth();
-  const REQUIRED_ROLE: Rol = "ADMINISTRADOR"; 
+  const REQUIRED_ROLE: Rol = "ADMINISTRADOR";
   const { usersQuery, createUser, updateUser, deleteUser, toggleStatus } = useUsuarios();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | Rol>("all");
@@ -29,9 +30,9 @@ export default function AdminUsuarios(): React.ReactElement {
   }
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" replace />; 
+    return <Navigate to="/login" replace />;
   }
-  
+
   // Lógica de Acceso Denegado
   if (user?.rol !== REQUIRED_ROLE) {
     return (
@@ -43,16 +44,16 @@ export default function AdminUsuarios(): React.ReactElement {
             Tu cuenta tiene el rol de **{user?.rol ?? 'Usuario'}**. Solo los usuarios con rol **Administrador** pueden acceder a esta sección.
           </p>
           <Link
-          to="/login"
-          className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out"
-        >
-          Ir a la página de Login
-        </Link>
+            to="/login"
+            className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out"
+          >
+            Ir a la página de Login
+          </Link>
         </div>
       </AdminLayout>
     );
   }
-  
+
 
   const users = usersQuery.data ?? [];
 
@@ -98,7 +99,7 @@ export default function AdminUsuarios(): React.ReactElement {
   };
 
   const handleToggleStatus = (userId: number, currentStatus: "Activo" | "Inactivo"): void => {
-  toggleStatus.mutate({ id: userId, currentStatus });
+    toggleStatus.mutate({ id: userId, currentStatus });
   };
 
   const handleDeleteUser = (userId: number): void => {
@@ -159,13 +160,11 @@ export default function AdminUsuarios(): React.ReactElement {
               <option value="Inactivo">Inactivo</option>
             </select>
 
-            <button
-              onClick={handleCreateUser}
-              className="bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-primary/90"
-            >
+            <Button onClick={handleCreateUser} className="gap-2">
               <Plus className="h-4 w-4" />
               Crear usuario
-            </button>
+            </Button>
+
           </div>
         </div>
 
