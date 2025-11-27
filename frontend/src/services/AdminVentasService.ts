@@ -34,6 +34,21 @@ class AdminVentasService extends HttpClient {
       throw error;
     }
   }
+
+  async exportarReporteVentas(params?: FiltroVentas
+  ): Promise<Blob> {
+    try {
+      const response = await super.get<Blob>("/reporte", {
+        params,
+        responseType: 'blob'
+      });
+      return response;
+    } catch (error) {
+      console.error("Error descargando el reporte:", error);
+      throw error;
+    }
+  }
+
 }
 
 export const adminVentasService = new AdminVentasService();
