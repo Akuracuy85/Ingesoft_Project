@@ -1,4 +1,5 @@
 import React from "react"
+import { Link } from 'react-router-dom';
 import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
 import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
 import { useAuth } from "@/hooks/useAuth"
@@ -20,6 +21,9 @@ const HeaderAdmin: React.FC = () => {
       {/* Logo */}
       <div className="flex items-center gap-2">
         <img src={isDark ? LogoDark : LogoLight} alt="Unite logo" className="w-25 h-25" />
+        <Link to="/eventos" className="ml-4 px-3 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition">
+          Ver eventos
+        </Link>
       </div>
 
       {/* Usuario actual */}

@@ -116,6 +116,38 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           ) : isLoggedIn ? (
             <>
+              {/* Modo Organizador / Administrador */}
+              {user?.rol === 'ORGANIZADOR' && (
+                <button
+                  onClick={(e) => {
+                    if (compraGuard.isCompraActive) {
+                      e.preventDefault();
+                      requestExit(() => navigate('/organizador/eventos'));
+                    } else {
+                      navigate('/organizador/eventos');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
+                >
+                  Modo organizador
+                </button>
+              )}
+
+              {user?.rol === 'ADMINISTRADOR' && (
+                <button
+                  onClick={(e) => {
+                    if (compraGuard.isCompraActive) {
+                      e.preventDefault();
+                      requestExit(() => navigate('/admin/eventos'));
+                    } else {
+                      navigate('/admin/eventos');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-md font-medium text-sm bg-[#F6BA26] hover:bg-[#C37723] text-white dark:text-gray-900 transition cursor-pointer"
+                >
+                  Modo administrador
+                </button>
+              )}
               {/* Perfil */}
               <Link
                 to="/perfil"
