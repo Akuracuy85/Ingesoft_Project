@@ -8,8 +8,10 @@ export function useUsuarios() {
   const usersQuery = useQuery<User[]>({
     queryKey: ["usuarios"],
     queryFn: async () => {
-      const token = localStorage.getItem("token")
-      return userService.getAll(token || undefined)
+      const token = localStorage.getItem("token");
+      const data = await userService.getAll(token || undefined);
+      console.log("USUARIOS DEL BACKEND:", data);
+      return data;
     },
   })
 

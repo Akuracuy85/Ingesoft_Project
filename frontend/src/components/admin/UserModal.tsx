@@ -44,8 +44,8 @@ const UserModal: React.FC<UserModalProps> = ({
     celular: "",
     rol: "CLIENTE" as Rol,
     activo: true,
-    ruc: "",
-    razonSocial: "",
+    RUC: "",
+    RazonSocial: "",
   };
 
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
@@ -62,8 +62,8 @@ const UserModal: React.FC<UserModalProps> = ({
         celular: user.celular,
         rol: user.rol as Rol,
         activo: user.activo,
-        ruc: user.ruc ?? "",
-        razonSocial: user.razonSocial ?? "",
+        RUC: user.RUC ?? "",
+        RazonSocial: user.RazonSocial ?? "",
       });
     } else {
       setFormData(initialFormData);
@@ -84,11 +84,11 @@ const UserModal: React.FC<UserModalProps> = ({
     if (name === "celular") {
       if (!soloNumeros(value) || value.length > 9) return;
     }
-    if (name === "ruc") {
+    if (name === "RUC") {
       if (!soloNumeros(value) || value.length > 11) return;
     }
 
-    if (name === "razonSocial") {
+    if (name === "RazonSocial") {
       if (!soloLetras(value) && value !== "") return;
     }
     setFormData((prev) => ({
@@ -137,12 +137,12 @@ const UserModal: React.FC<UserModalProps> = ({
 
     if (formData.rol === "ORGANIZADOR") {
       
-      if (!soloNumeros(formData.ruc) || formData.ruc.length !== 11) {
+      if (!soloNumeros(formData.RUC) || formData.RUC.length !== 11) {
         NotificationService.warning("El RUC debe tener 11 dígitos.");
         return;
       }
 
-      if (!soloLetras(formData.razonSocial)) {
+      if (!soloLetras(formData.RazonSocial)) {
         NotificationService.warning("La razón social solo debe contener letras.");
         return;
       }
@@ -237,8 +237,8 @@ const UserModal: React.FC<UserModalProps> = ({
             {formData.rol === "ORGANIZADOR" && (
               <>
                 <input
-                  name="ruc"
-                  value={formData.ruc}
+                  name="RUC"
+                  value={formData.RUC}
                   onChange={handleChange}
                   placeholder="RUC (11 dígitos)"
                   className="border rounded-md px-3 py-2 col-span-2"
@@ -246,8 +246,8 @@ const UserModal: React.FC<UserModalProps> = ({
                 />
 
                 <input
-                  name="razonSocial"
-                  value={formData.razonSocial}
+                  name="RazonSocial"
+                  value={formData.RazonSocial}
                   onChange={handleChange}
                   placeholder="Agregue la razón social"
                   className="border rounded-md px-3 py-2 col-span-2"
