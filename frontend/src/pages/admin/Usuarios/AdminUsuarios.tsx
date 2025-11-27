@@ -12,6 +12,13 @@ import type { User, UserFormData, Rol } from "../../../models/User";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const DEFAULT_PASSWORD = "unite123";
 
@@ -136,29 +143,40 @@ export default function AdminUsuarios(): React.ReactElement {
               </div>
             </div>
 
-            <select
+            {/* Filtro de Rol */}
+            <Select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as "all" | Rol)}
-              className="border border-border rounded-md px-3 py-2 text-sm"
+              onValueChange={(val) => setRoleFilter(val as "all" | Rol)}
             >
-              <option value="all">Todos los roles</option>
-              <option value="Cliente">Cliente</option>
-              <option value="Organizador">Organizador</option>
-              {/* Nota: 'Administrador' aquí debe coincidir con el tipo Rol */}
-              <option value="Administrador">Administrador</option>
-            </select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los roles" />
+              </SelectTrigger>
 
-            <select
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                <SelectItem value="Cliente">Cliente</SelectItem>
+                <SelectItem value="Organizador">Organizador</SelectItem>
+                <SelectItem value="Administrador">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Filtro de Estado */}
+            <Select
               value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as "all" | "Activo" | "Inactivo")
+              onValueChange={(val) =>
+                setStatusFilter(val as "all" | "Activo" | "Inactivo")
               }
-              className="border border-border rounded-md px-3 py-2 text-sm"
             >
-              <option value="all">Todos los estados</option>
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="Activo">Activo</SelectItem>
+                <SelectItem value="Inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
 
             <Button onClick={handleCreateUser} className="gap-2">
               <Plus className="h-4 w-4" />
