@@ -102,18 +102,21 @@ export default function AdminUsuarios(): React.ReactElement {
     setIsModalOpen(true);
   };
 
-  const handleSaveUser = (userData: UserFormData): void => {
+    const handleSaveUser = (userData: UserFormData): void => {
+    const payload: UserFormData = {
+      ...userData,
+      rol: (userData.rol || "CLIENTE").toUpperCase() as Rol,
+      password: editingUser ? userData.password : DEFAULT_PASSWORD,
+    };
+
     if (editingUser) {
-      updateUser.mutate({ id: editingUser.id, data: userData });
+      updateUser.mutate({ id: editingUser.id, data: payload });
     } else {
-      const newUserDataWithDefaultPassword: UserFormData = {
-        ...userData,
-        password: DEFAULT_PASSWORD,
-      };
-      createUser.mutate(newUserDataWithDefaultPassword);
+      createUser.mutate(payload);
     }
     setIsModalOpen(false);
   };
+
 
   const handleToggleStatus = (userId: number, currentStatus: "Activo" | "Inactivo"): void => {
     toggleStatus.mutate({ id: userId, currentStatus });
