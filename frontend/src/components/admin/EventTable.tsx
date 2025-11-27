@@ -58,7 +58,9 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {events.map((event) => (
+            {events.map((event) => {
+              //console.log("EVENTO EN TABLA:", event);
+              return(
               <tr key={event.id} className="hover:bg-muted/30 transition-colors">
                 <td className="px-6 py-4 text-sm font-medium text-foreground">{event.id}</td>
 
@@ -69,7 +71,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {event.organizador?.RazonSocial || "Sin Organizador"}
+                  {event.organizador?.RazonSocial ?? "Sin Organizador"}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
@@ -126,7 +128,7 @@ export function EventsTable({ events, onViewDetails, onApprove, onReject }: Even
                   </div>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>

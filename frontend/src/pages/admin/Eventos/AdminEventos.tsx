@@ -59,7 +59,7 @@ export default function AdminEventos(): React.ReactElement {
     const matchesFilter = activeFilter === "Todos" || event.estado?.toUpperCase() === activeFilter
     const matchesSearch =
       event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.organizador.nombre?.toLowerCase().includes(searchQuery.toLowerCase())
+      event.organizador?.RazonSocial?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesSearch
   })
   return (

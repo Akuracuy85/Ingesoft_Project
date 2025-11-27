@@ -24,7 +24,7 @@ class AdminEventoService extends HttpClient {
       return ["PENDIENTE_APROBACION", "PUBLICADO", "CANCELADO"].includes(estado)
     })
 
-    console.log("Filtrados: ", respuesta)
+    //console.log("Filtrados: ", respuesta)
 
     return filtrados.map((e: any) => {
       let estadoNormalizado: "PENDIENTE_APROBACION" | "PUBLICADO" | "CANCELADO" =
@@ -60,10 +60,7 @@ class AdminEventoService extends HttpClient {
           : "",
         artist: e.artista ?? { id: 0, nombre: "Sin artista" },
         zonas: e.zonas ?? [],
-        organizadorNombre:
-          e.organizador?.RazonSocial ??
-          e.organizador?.nombre ??
-          "Sin organizador",
+        organizador: e.organizador ?? null,
         estado: estadoNormalizado,
         terminosUso: e.terminosUso,
         documentosRespaldo: e.documentosRespaldo
