@@ -10,7 +10,7 @@ export function useUsuarios() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const data = await userService.getAll(token || undefined);
-      console.log("USUARIOS DEL BACKEND:", data);
+      //console.log("USUARIOS DEL BACKEND:", data);
       return data;
     },
   })
