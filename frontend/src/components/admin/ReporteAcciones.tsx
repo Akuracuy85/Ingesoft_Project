@@ -118,11 +118,11 @@ export function ReporteAcciones() {
             <Input
               type="date"
               className="w-[180px]"
-              value={fechaInicio} // Vincular valor
+              value={fechaInicio}
               onChange={(e) => {
                 const nuevaFecha = e.target.value
-                setFechaInicio(nuevaFecha) // Actualizar estado local
-                actualizarFiltros({ fechaInicio: nuevaFecha }) // Actualizar hook
+                setFechaInicio(nuevaFecha) 
+                actualizarFiltros({ fechaInicio: nuevaFecha })
                 setPaginaActual(1)
               }}
             />

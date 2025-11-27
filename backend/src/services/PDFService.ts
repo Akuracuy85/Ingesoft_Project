@@ -38,7 +38,6 @@ export class PDFService {
   ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       try {
-        // Modificamos la construcción del body para agregar márgenes a cada celda
         const tableBody: TableCell[][] = [
           headers.map(header => ({ text: header, style: 'tableHeader' })),
           ...body.map(row => row.map(cell => ({
@@ -46,9 +45,8 @@ export class PDFService {
             margin: [0, 5, 0, 5] 
           } as TableCell))) 
         ];
-
-        const content: any[] = [];
         
+        const content: any[] = [];
         content.push({
             image: path.join(__dirname, "../assets/Logo_Unite.png"),
             width: 100,
