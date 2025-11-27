@@ -127,7 +127,7 @@ export class AccionService {
                 "Reporte de Acciones del Sistema",
                 headers,
                 body,
-                `Reporte generado el ${new Date().toLocaleString()} - Total de registros: ${acciones.length}\nPor: ${autor.nombre + " " + autor.apellidoPaterno + " / " + autor.email}`,
+                autor,
                 {
                   widths: [120, 'auto', 'auto', '*'] 
                 }

@@ -1,3 +1,4 @@
+import { Usuario } from '@/models/Usuario';
 import path from 'path';
 import PdfPrinter from 'pdfmake';
 import { TDocumentDefinitions, TableCell } from 'pdfmake/interfaces';
@@ -30,7 +31,7 @@ export class PDFService {
     title: string,
     headers: string[],
     body: any[][],
-    footerText: string,
+    autor: Usuario,
     options: { 
         widths?: (string | number)[], 
         orientation?: 'portrait' | 'landscape'
@@ -45,7 +46,7 @@ export class PDFService {
             margin: [0, 5, 0, 5] 
           } as TableCell))) 
         ];
-        
+
         const content: any[] = [];
         content.push({
             image: path.join(__dirname, "../assets/Logo_Unite.png"),
@@ -66,7 +67,7 @@ export class PDFService {
         });
 
         content.push({ 
-            text: footerText, 
+            text: `Reporte generado el ${new Date().toLocaleString()} - Total de registros: ${body?.length}\nPor: ${autor.nombre + " " + autor.apellidoPaterno + " / " + autor.email}`, 
             style: 'footerText', 
             margin: [0, 20, 0, 0], 
             alignment: 'center' 
