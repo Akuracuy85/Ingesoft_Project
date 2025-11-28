@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, LogOut, Settings } from "lucide-react";
+import { Calendar, LogOut } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AuthService from "@/services/AuthService";
@@ -11,7 +11,6 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: "Gestión de eventos", icon: Calendar },
-  { name: "Configuración", icon: Settings },
   { name: "Salir", icon: LogOut },
 ];
 
@@ -39,15 +38,12 @@ const SidebarOrganizador: React.FC<SidebarOrganizadorProps> = ({ activeItem }) =
       {/* Logo */}
       <div className="p-6">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-lg text-sidebar-foreground">Unite</span>
+          <span className="font-semibold text-lg text-sidebar-foreground">Panel Administrativo</span>
         </div>
       </div>
 
       {/* Menú de navegación */}
       <nav className="flex-1 px-3">
-        <p className="px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Panel Administrativo
-        </p>
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;

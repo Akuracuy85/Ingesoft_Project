@@ -506,8 +506,7 @@ export class EventoRepository {
     if (filtros.nombreOrganizador) {
       qb.andWhere(
         new Brackets((subQb) => {
-          subQb.where("organizador.nombre LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
-            .orWhere("organizador.apellidoPaterno LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
+          subQb.where("organizador.RazonSocial LIKE :nombreOrg", { nombreOrg: `%${filtros.nombreOrganizador}%` })
         })
       );
     }

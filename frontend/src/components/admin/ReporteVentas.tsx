@@ -197,7 +197,7 @@ export function ReporteVentas() {
           {/* Botón limpiar */}
           <Button
             variant="destructive"
-            className="gap-2"
+            className="gap-2 cursor-pointer"
             onClick={limpiarFiltros}
           >
             <X className="w-4 h-4" />
@@ -206,7 +206,7 @@ export function ReporteVentas() {
 
           {/* Export */}
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport} className="gap-2">
+            <Button variant="outline" onClick={handleExport} className="gap-2 cursor-pointer">
               <Download className="h-4 w-4" />
               Exportar PDF
             </Button>
@@ -275,7 +275,7 @@ export function ReporteVentas() {
                   {item.fechaEvento.split("T")[0]}
                 </td>
                 <td className="py-3 px-4 text-sm text-foreground">
-                  {item.organizadorNombre}
+                  {item.organizadorRazonSocial}
                 </td>
               </tr>
             ))}
@@ -297,6 +297,7 @@ export function ReporteVentas() {
           variant="outline"
           disabled={paginaActual === 1}
           onClick={() => setPaginaActual(paginaActual - 1)}
+          className="cursor-pointer"
         >
           Anterior
         </Button>
@@ -309,6 +310,7 @@ export function ReporteVentas() {
           variant="outline"
           disabled={paginaActual === totalPaginas || totalPaginas === 0}
           onClick={() => setPaginaActual(paginaActual + 1)}
+          className="cursor-pointer"
         >
           Siguiente
         </Button>

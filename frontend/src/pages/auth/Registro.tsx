@@ -133,7 +133,8 @@ export const Registro = () => {
       <img
         src={isDark ? LogoDark : LogoLight}
         alt="Logo Unite"
-        className="h-12 w-auto transition-opacity duration-300"
+        className="h-12 w-auto transition-opacity duration-300 cursor-pointer"
+        onClick={() => navigate("/eventos")}
       />
 
       {/* Toggle Dark Mode */}

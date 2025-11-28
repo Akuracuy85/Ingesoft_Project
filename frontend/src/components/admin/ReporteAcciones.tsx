@@ -145,7 +145,7 @@ export function ReporteAcciones() {
           </Select>
 
           {/* Exportar */}
-          <Button variant="outline" onClick={handleExport} className="gap-2 ml-auto">
+          <Button variant="outline" onClick={handleExport} className="gap-2 ml-auto cursor-pointer">
             <Download className="h-4 w-4" />
             Exportar log
           </Button>
@@ -216,6 +216,7 @@ export function ReporteAcciones() {
             variant="outline"
             disabled={paginaActual === 1}
             onClick={() => setPaginaActual(paginaActual - 1)}
+            className="cursor-pointer"
           >
             Anterior
           </Button>
@@ -228,6 +229,7 @@ export function ReporteAcciones() {
             variant="outline"
             disabled={paginaActual === totalPaginas || totalPaginas === 0}
             onClick={() => setPaginaActual(paginaActual + 1)}
+            className="cursor-pointer"
           >
             Siguiente
           </Button>
