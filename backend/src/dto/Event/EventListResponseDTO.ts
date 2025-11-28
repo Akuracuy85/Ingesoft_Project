@@ -15,5 +15,6 @@ export interface EventListResponseDTO {
   artistName: string;
   category?: string;
   zonas: ZonaDto[];
+  minPrice?: number;
   imagePlace?: string;
 }

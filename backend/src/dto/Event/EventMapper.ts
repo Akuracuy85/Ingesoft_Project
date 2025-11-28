@@ -56,13 +56,12 @@ export class EventMapper {
     if (!tarifa) {
       return null;
     }
-
     return {
       id: tarifa.id,
       nombre: tarifa.nombre,
       precio: tarifa.precio,
-      fechaInicio: tarifa.fechaInicio.toISOString(),
-      fechaFin: tarifa.fechaFin.toISOString(),
+      fechaInicio: tarifa.fechaInicio ? tarifa.fechaInicio.toISOString() : null,
+      fechaFin: tarifa.fechaFin ? tarifa.fechaFin.toISOString() : null,
     };
   }
   
@@ -92,6 +91,53 @@ export class EventMapper {
       tarifaPreventa: this.mapearTarifaDto(zona.tarifaPreventa)
     }));
 
+    // Calcular el precio mínimo disponible para el evento considerando solo tarifas vigentes
+    const now = new Date();
+
+    // Considerar vigentes las tarifas que NO han terminado aún en términos de DÍA
+    // (comparación por fecha: fechaFin_date >= today_date). Ignoramos la hora.
+    // Si no hay fechaFin, la tarifa se considera vigente.
+    const toDateOnly = (d: any): Date | null => {
+      if (!d) return null;
+      const dt = new Date(d);
+      if (Number.isNaN(dt.getTime())) return null;
+      // Normalizar a fecha sin hora (UTC) para comparar solo el día
+      return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+    };
+
+    const todayDateOnly = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    const tarifaVigente = (tarifa: any) => {
+      if (!tarifa || typeof tarifa.precio !== 'number') return false;
+      const ff = toDateOnly(tarifa.fechaFin);
+      if (ff) {
+        return ff.getTime() >= todayDateOnly.getTime();
+      }
+      // Sin fechaFin, consideramos vigente (no hay indicación de expiración)
+      return true;
+    };
+
+    const precios: number[] = [];
+    (entity.zonas || []).forEach((zona: any) => {
+      if (!zona || typeof zona !== 'object') return;
+
+      // Preferir objetos de tarifa con información de fechas
+      if (zona.tarifaNormal && tarifaVigente(zona.tarifaNormal)) {
+        precios.push(zona.tarifaNormal.precio);
+      } else if (typeof zona.normal === 'number') {
+        // Fallback: zona provista como fila raw con 'normal' sin info temporal
+        precios.push(zona.normal);
+      }
+
+      if (zona.tarifaPreventa && tarifaVigente(zona.tarifaPreventa)) {
+        precios.push(zona.tarifaPreventa.precio);
+      } else if (typeof zona.preventa === 'number') {
+        precios.push(zona.preventa);
+      }
+    });
+
+    const minPrice = precios.length ? Math.min(...precios) : undefined;
+
     return {
       id: entity.id,
       title: entity.nombre,
@@ -107,6 +153,7 @@ export class EventMapper {
       artistName: entity.artista.nombre,
       category: entity.artista.categoria?.nombre,
       zonas: zonasDto,
+      minPrice,
     };
   }
 
