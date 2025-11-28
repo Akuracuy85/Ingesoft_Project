@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
+import ReactDOM from "react-dom"; // NUEVO: para portal
 import { Calendar, MoreVertical, Plus, Edit3, Trash2, X, ImageOff, Upload } from "lucide-react";
 import ModalCrearEvento, { type NuevoEventoForm, type EstadoEventoUI } from "./ModalCrearEvento";
 import ModalEditarEvento from "./ModalEditarEvento";
@@ -115,8 +116,10 @@ const CardEventos: React.FC = () => {
   // Menú de acciones por fila
   const [menuAbierto, setMenuAbierto] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  // Nuevo: input de archivo para portada en edición
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // NUEVO: coords y ref del botón que abrió el menú
+  const [menuCoords, setMenuCoords] = useState<{ top: number; left: number; direction: "down" | "up" } | null>(null);
+  const lastButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Modal eliminar
   const [eventoAEliminar, setEventoAEliminar] = useState<{ index: number; nombre: string } | null>(null);
@@ -172,16 +175,49 @@ const CardEventos: React.FC = () => {
     loadEventos();
   }, []);
 
+  // Eliminado: efecto anterior de cierre usando contención dentro de la celda
+  // Reemplazado por nuevo efecto para manejar click fuera, scroll y resize
   useEffect(() => {
-    const handleDocClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuAbierto(null);
-      }
-    };
     if (menuAbierto !== null) {
-      document.addEventListener("click", handleDocClick);
+      const handleDocMouseDown = (e: MouseEvent) => {
+        if (
+          menuRef.current &&
+          !menuRef.current.contains(e.target as Node) &&
+          lastButtonRef.current &&
+          !lastButtonRef.current.contains(e.target as Node)
+        ) {
+          setMenuAbierto(null);
+          setMenuCoords(null);
+        }
+      };
+      const handleScrollOrResize = () => {
+        setMenuAbierto(null);
+        setMenuCoords(null);
+      };
+      document.addEventListener("mousedown", handleDocMouseDown);
+      window.addEventListener("scroll", handleScrollOrResize, true);
+      window.addEventListener("resize", handleScrollOrResize);
+      return () => {
+        document.removeEventListener("mousedown", handleDocMouseDown);
+        window.removeEventListener("scroll", handleScrollOrResize, true);
+        window.removeEventListener("resize", handleScrollOrResize);
+      };
     }
-    return () => document.removeEventListener("click", handleDocClick);
+  }, [menuAbierto]);
+
+  // Efecto: recalcular posición real tras conocer altura/ancho del menú portal
+  useEffect(() => {
+    if (menuAbierto !== null && menuRef.current && lastButtonRef.current) {
+      const buttonRect = lastButtonRef.current.getBoundingClientRect();
+      const menuRect = menuRef.current.getBoundingClientRect();
+      const direction = buttonRect.bottom + menuRect.height <= window.innerHeight ? "down" : "up";
+      const top = direction === "down" ? buttonRect.bottom : buttonRect.top - menuRect.height;
+      let left = buttonRect.left;
+      if (left + menuRect.width > window.innerWidth - 8) {
+        left = window.innerWidth - menuRect.width - 8;
+      }
+      setMenuCoords({ top, left, direction });
+    }
   }, [menuAbierto]);
 
   // Mantener selección válida si cambia la lista
@@ -640,74 +676,56 @@ const CardEventos: React.FC = () => {
                 {paginatedEventos.map((ev, localIndex) => {
                   const globalIndex = (currentPage - 1) * pageSize + localIndex;
                   return (
-                  <tr
+                    <tr
                       key={ev.id}
                       className={`${selectedIndex === globalIndex ? "bg-amber-50" : ""} hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer`}
-                    onClick={() => {
-                      setEventoSeleccionado(ev);
-                      setSelectedIndex(globalIndex);
-                    }}
-                  >
-                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{ev.nombre}</td>
+                      onClick={() => {
+                        setEventoSeleccionado(ev);
+                        setSelectedIndex(globalIndex);
+                      }}
+                    >
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{ev.nombre}</td>
                       <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{ev.fecha}</td>
-                    <td className="px-4 py-3">
-                      <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div
-                        className="relative inline-block text-left"
-                        ref={menuAbierto === globalIndex ? menuRef : null}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuAbierto(menuAbierto === globalIndex ? null : globalIndex);
-                          }}
-                          className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300"
-                          aria-haspopup="menu"
-                          aria-expanded={menuAbierto === globalIndex}
-                          aria-label={`Acciones para ${ev.nombre}`}
-                        >
-                          <MoreVertical className="h-5 w-5" />
-                        </button>
-
-                        {menuAbierto === globalIndex && (
-                          <div
-                            className="absolute right-0 mt-2 w-40 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-md shadow-lg z-50 dark:text-card-foreground"
-                            onClick={(e) => e.stopPropagation()}
-                            role="menu"
+                      <td className="px-4 py-3">
+                        <span className={getBadgeClass(ev.estado)}>{ev.estado}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-block text-left">
+                          <button
+                            type="button"
+                            ref={menuAbierto === globalIndex ? lastButtonRef : null}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (menuAbierto === globalIndex) {
+                                setMenuAbierto(null);
+                                setMenuCoords(null);
+                              } else {
+                                setMenuAbierto(globalIndex);
+                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                const tentativeHeight = 96; // altura estimada del menú (ajustada posteriormente)
+                                const direction = rect.bottom + tentativeHeight <= window.innerHeight ? "down" : "up";
+                                const top = direction === "down" ? rect.bottom : rect.top - tentativeHeight;
+                                const menuWidth = 160; // ancho esperado del menú
+                                let left = rect.left;
+                                if (left + menuWidth > window.innerWidth - 8) {
+                                  left = window.innerWidth - menuWidth - 8;
+                                }
+                                setMenuCoords({ top, left, direction });
+                                lastButtonRef.current = e.currentTarget as HTMLButtonElement;
+                              }
+                            }}
+                            className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300"
+                            aria-haspopup="menu"
+                            aria-expanded={menuAbierto === globalIndex}
+                            aria-label={`Acciones para ${ev.nombre}`}
                           >
-                            <button
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200"
-                              onClick={() => {
-                                setMenuAbierto(null);
-                                handleOpenEdit(globalIndex);
-                              }}
-                              role="menuitem"
-                            >
-                              <Edit3 className="h-4 w-4" />
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-red-600"
-                              onClick={() => {
-                                setEventoAEliminar({ index: globalIndex, nombre: ev.nombre });
-                                setMenuAbierto(null);
-                              }}
-                              role="menuitem"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Eliminar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );})}
+                            <MoreVertical className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {!isLoading && !error && eventos.length === 0 && (
@@ -789,6 +807,51 @@ const CardEventos: React.FC = () => {
         distrito: eventoSeleccionado.distrito || "",
         estado: eventoSeleccionado.estado
       }} />}
+
+      {/* Portal del menú de acciones */}
+      {menuAbierto !== null && menuCoords && ReactDOM.createPortal(
+        <div
+          ref={menuRef}
+          role="menu"
+          className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-md shadow-lg w-40 z-[9999] py-1"
+          style={{ position: "fixed", top: menuCoords.top, left: menuCoords.left, zIndex: 9999 }}
+        >
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200"
+            onClick={() => {
+              const idx = menuAbierto;
+              setMenuAbierto(null);
+              setMenuCoords(null);
+              if (idx !== null) {
+                handleOpenEdit(idx);
+              }
+            }}
+            role="menuitem"
+          >
+            <Edit3 className="h-4 w-4" />
+            Editar
+          </button>
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 flex items-center gap-2 text-red-600"
+            onClick={() => {
+              const idx = menuAbierto;
+              if (idx !== null) {
+                const ev = eventos[idx];
+                setEventoAEliminar({ index: idx, nombre: ev.nombre });
+              }
+              setMenuAbierto(null);
+              setMenuCoords(null);
+            }}
+            role="menuitem"
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar
+          </button>
+        </div>,
+        document.body
+      )}
     </>
   );
 };
