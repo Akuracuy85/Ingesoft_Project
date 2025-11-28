@@ -54,7 +54,7 @@ const SelectionSummaryTable: React.FC<SelectionSummaryTableProps> = ({
           <div className="py-3 px-4 text-center col-span-2">
             <button
               onClick={() => onDeleteItem(item.zona)}
-              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
+              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium cursor-pointer"
               aria-label={`Eliminar ${item.zona}`}
             >
               Eliminar

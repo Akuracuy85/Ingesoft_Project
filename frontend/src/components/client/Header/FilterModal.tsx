@@ -179,7 +179,7 @@ export const FilterModal = ({
       <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] p-4 sm:p-6 relative select-none mx-4 dark:bg-gray-900 dark:text-gray-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white"
+          className="absolute top-4 right-4 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white cursor-pointer"
         >
           ✕
         </button>
@@ -218,7 +218,7 @@ export const FilterModal = ({
           {/* BOTÓN DE LIMPIAR (ESTILO NARANJA) */}
           <button
             onClick={handleClear}
-            className="text-sm font-medium border border-orange-700 bg-orange-100 text-orange-800 px-4 py-2 rounded hover:bg-orange-200 transition dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20"
+            className="text-sm font-medium border border-orange-700 bg-orange-100 text-orange-800 px-4 py-2 rounded hover:bg-orange-200 transition dark:text-orange-200 dark:bg-orange-900/20 dark:border-orange-600 dark:hover:bg-orange-800/20 cursor-pointer"
           >
             Limpiar Filtros
           </button>
@@ -226,7 +226,7 @@ export const FilterModal = ({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="text-sm font-medium text-gray-700 px-4 py-2 rounded hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="text-sm font-medium text-gray-700 px-4 py-2 rounded hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 cursor-pointer"
             >
               Cancelar
             </button>

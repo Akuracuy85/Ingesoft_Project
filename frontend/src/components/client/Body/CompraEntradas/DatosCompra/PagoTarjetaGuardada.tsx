@@ -40,7 +40,7 @@ const PagoTarjetaGuardada: React.FC<PagoTarjetaGuardadaProps> = ({
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold cursor-pointer"
         >
           ×
         </button>

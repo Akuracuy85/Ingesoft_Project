@@ -57,7 +57,7 @@ const ZoneRow: React.FC<ZoneRowProps> = ({
 
       <div className="flex items-center justify-center gap-2">
         <button
-          className="w-6 h-6 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
+          className="w-6 h-6 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 cursor-pointer"
           onClick={handleDecrement}
           disabled={quantity === 0}
         >
@@ -65,7 +65,7 @@ const ZoneRow: React.FC<ZoneRowProps> = ({
         </button>
         <span>{quantity}</span>
         <button
-          className="w-6 h-6 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
+          className="w-6 h-6 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600 cursor-pointer"
           onClick={handleIncrement}
           disabled={quantity >= maxAllowedForZone}
         >
