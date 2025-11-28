@@ -211,7 +211,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center justify-between">
               <span>Artista <span className="text-red-500">*</span></span>
-              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white dark:text-gray-900 hover:bg-amber-600" aria-label="Crear artista">
                 + Nuevo
               </button>
             </label>
@@ -376,7 +376,7 @@ const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSa
           <button
             type="button"
             onClick={handleGuardar}
-            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white"
+            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900"
           >
             Guardar evento
           </button>

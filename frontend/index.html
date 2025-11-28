@@ -5,6 +5,55 @@
     <link rel="icon" type="image/svg+xml" href="/unite.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unite</title>
+    <!-- Set theme (dark/light/system) and initial inline background as early as possible to avoid flash -->
+    <script>
+      (function(){
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = false;
+          if (stored === 'dark') isDark = true;
+          else if (stored === 'light') isDark = false;
+          else isDark = prefersDark;
+
+          // Determine path to infer admin/organizador pages before auth loads
+          var path = typeof window !== 'undefined' ? window.location.pathname : '';
+          var isPrivilegedPath = path.startsWith('/admin') || path.startsWith('/organizador');
+
+          // Choose initial background color immediately (inline) to avoid white flash.
+          // Use #18181B for admin/organizador in dark, otherwise a general dark background.
+          var darkBgPriv = '#18181B';
+          var darkBgDefault = '#020817';
+          var lightBg = '#ffffff';
+
+          var bg = lightBg;
+          if (isDark) bg = isPrivilegedPath ? darkBgPriv : darkBgDefault;
+
+          // Apply class for components that rely on .dark
+          if (isDark) document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+
+          // Immediately set inline background-color on html/body to prevent white flash
+          try {
+            document.documentElement.style.backgroundColor = bg;
+            document.body && (document.body.style.backgroundColor = bg);
+            // temporarily disable transitions so the background doesn't animate from white
+            document.documentElement.style.transition = 'none';
+            document.body && (document.body.style.transition = 'none');
+          } catch (e) {}
+
+          // re-enable transitions after a short delay once app and CSS have loaded
+          setTimeout(function(){
+            try {
+              document.documentElement.style.transition = '';
+              document.body && (document.body.style.transition = '');
+            } catch(e){}
+          }, 1200);
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -387,7 +387,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center justify-between">
               <span>Artista <span className="text-red-500">*</span></span>
-              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear artista">+ Nuevo</button>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white dark:text-gray-900 hover:bg-amber-600" aria-label="Crear artista">+ Nuevo</button>
             </label>
             <select
               name="artistaId"
@@ -583,7 +583,7 @@ const ModalEditarEvento: React.FC<ModalEditarEventoProps> = ({ open, onClose, ev
           <button type="button" onClick={onClose} className="bg-gray-100 dark:bg-card hover:bg-gray-200 dark:hover:bg-card text-gray-800 dark:text-card-foreground px-4 py-2 rounded-md">
             Cancelar
           </button>
-          <button type="button" onClick={handleGuardar} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md">
+          <button type="button" onClick={handleGuardar} className="bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900 px-4 py-2 rounded-md">
             Guardar cambios
           </button>
         </div>
