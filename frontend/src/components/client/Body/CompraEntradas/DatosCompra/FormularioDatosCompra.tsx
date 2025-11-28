@@ -17,16 +17,13 @@ interface Attendee {
 interface FormularioDatosCompraProps {
   handleSubmit: (e: React.FormEvent) => void;
   handleDniChange: (id: string, value: string) => void;
-  handleConadisChange: (id: string, value: string) => void;
   setTermsAccepted: (accepted: boolean) => void;
   setUniteTermsAccepted: (accepted: boolean) => void;
   allAttendees: Attendee[];
-  conadisAttendees: Attendee[];
   summaryItems: SummaryItem[];
   dniValues: Record<string, string>;
   dniErrors: Record<string, string>;
   duplicateDnis: Set<string>;
-  conadisCodes: Record<string, string>;
   termsAccepted: boolean;
   uniteTermsAccepted: boolean;
   isLoading: boolean;
@@ -36,16 +33,13 @@ interface FormularioDatosCompraProps {
 export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
   handleSubmit,
   handleDniChange,
-  handleConadisChange,
   setTermsAccepted,
   setUniteTermsAccepted,
   allAttendees,
-  conadisAttendees,
   summaryItems,
   dniValues,
   dniErrors,
   duplicateDnis,
-  conadisCodes,
   termsAccepted,
   uniteTermsAccepted,
   isLoading,
@@ -107,34 +101,7 @@ export const FormularioDatosCompra: React.FC<FormularioDatosCompraProps> = ({
         </div>
       </div>
 
-      {/* --- Sección 2: Códigos CONADIS --- */}
-      {conadisAttendees.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mt-6 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-            ② Identificación de asistentes con CONADIS
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Coloque los códigos de CONADIS de las personas que asistirán al evento:
-          </p>
-          <div className="space-y-3">
-            {conadisAttendees.map(attendee => (
-              <div key={attendee.id}>
-                <label htmlFor={`conadis-${attendee.id}`} className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
-                  {attendee.label}
-                </label>
-                <input
-                  type="text"
-                  id={`conadis-${attendee.id}`}
-                  value={conadisCodes[attendee.id] || ""}
-                  onChange={(e) => handleConadisChange(attendee.id, e.target.value)}
-                  placeholder="Ingrese código"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none caret-amber-500 dark:caret-amber-200 focus:ring-yellow-700 focus:border-yellow-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* CONADIS removed: no longer required */}
 
       {/* --- Checkbox y Botón --- */}
       <div className="mt-6 space-y-4">

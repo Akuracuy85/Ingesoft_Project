@@ -41,7 +41,6 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
 }) => {
   const [dniValues, setDniValues] = useState<Record<string, string>>({});
   const [dniErrors, setDniErrors] = useState<Record<string, string>>({});
-  const [conadisCodes, setConadisCodes] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const [uniteTermsAccepted, setUniteTermsAccepted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,9 +62,6 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
       }))
   );
 
-  const conadisAttendees = allAttendees.filter((att) =>
-    att.zona.toUpperCase().includes("CONADIS")
-  );
 
   // --- Detectar DNIs duplicados en tiempo real ---
   const duplicateDnis = useMemo(() => {
@@ -92,9 +88,6 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
     }
   };
 
-  const handleConadisChange = (id: string, value: string) => {
-    setConadisCodes((prev) => ({ ...prev, [id]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,16 +214,13 @@ const DatosCompra: React.FC<DatosCompraProps> = ({
           <FormularioDatosCompra
             handleSubmit={handleSubmit}
             handleDniChange={handleDniChange}
-            handleConadisChange={handleConadisChange}
             setTermsAccepted={setTermsAccepted}
             setUniteTermsAccepted={setUniteTermsAccepted}
             allAttendees={allAttendees}
-            conadisAttendees={conadisAttendees}
             summaryItems={summaryItems}
             dniValues={dniValues}
             dniErrors={dniErrors}
             duplicateDnis={duplicateDnis}
-            conadisCodes={conadisCodes}
             termsAccepted={termsAccepted}
             uniteTermsAccepted={uniteTermsAccepted}
             isLoading={isLoading}

@@ -205,6 +205,11 @@ export const FilterModal = ({
                 disabled={artistaOptions.length === 0}
                 menuMaxHeight="130px"
               />
+              {filters.categories.length === 0 && filters.artists.length === 0 && (
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                  Necesitas seleccionar una o más categorías para poder elegir a los artistas de dicha categoría.
+                </p>
+              )}
             </div>
           </div>
         </div>
