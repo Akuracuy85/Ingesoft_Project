@@ -119,7 +119,8 @@ export const RegistroOrganizador = () => {
     `w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-700 
    text-gray-900 dark:text-gray-100 border 
    ${valid ? "border-gray-300 dark:border-gray-600" : "border-red-500"} 
-   focus:ring-2 focus:ring-orange-500 outline-none`;
+   focus:ring-2 focus:ring-orange-500 outline-none 
+   caret-orange-500`;
 
   return (
     <div
@@ -246,11 +247,13 @@ export const RegistroOrganizador = () => {
                 onChange={handleDniChange}
                 className={inputClass(esDniValido)}
               />
-              {!esDniValido && dni && (
-                <p className="text-red-500 text-sm mt-1">
-                  Deben ser 8 caracteres numéricos
-                </p>
-              )}
+              <div className="h-5">
+                {!esDniValido && dni.length > 0 && (
+                  <p className="text-red-500 text-sm">
+                    Deben ser 8 caracteres numéricos
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -262,11 +265,13 @@ export const RegistroOrganizador = () => {
                 onChange={handleTelefonoChange}
                 className={inputClass(esTelefonoValido)}
               />
-              {!esTelefonoValido && telefono && (
-                <p className="text-red-500 text-sm mt-1">
-                  Deben ser 9 caracteres numéricos
-                </p>
-              )}
+              <div className="h-5">
+                {!esTelefonoValido && telefono.length > 0 && (
+                  <p className="text-red-500 text-sm">
+                    Deben ser 9 caracteres numéricos
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -280,11 +285,13 @@ export const RegistroOrganizador = () => {
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass(esEmailValido)}
             />
-            {!esEmailValido && email && (
-              <p className="text-red-500 text-sm mt-1">
-                El correo no es válido
-              </p>
-            )}
+            <div className="h-5">
+              {!esEmailValido && email.length > 0 && (
+                <p className="text-red-500 text-sm">
+                  El correo no es válido
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Contraseñas */}
@@ -324,11 +331,13 @@ export const RegistroOrganizador = () => {
                 {showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
 
-              {!contraseñasCoinciden && confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  Las contraseñas no coinciden
-                </p>
-              )}
+              <div className="h-5">
+                {!contraseñasCoinciden && (
+                  <p className="text-red-500 text-sm">
+                    Las contraseñas deben coincidir
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
