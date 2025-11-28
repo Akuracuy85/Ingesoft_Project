@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import mapaAsientos from "@/assets/EstadioImagen2.png";
+import mapaAsientosDefault from "@/assets/EstadioImagen.png";
 import { useEventoDetalle } from "@/hooks/useEventoDetalle";
 import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
@@ -47,7 +47,6 @@ const isTarifaActiva = (tarifa?: Tarifa | null) => {
   const now = new Date();
   const fechaFin = new Date(tarifa.fechaFin);
   fechaFin.setHours(23, 59, 59, 999);
-  console.log("Fecha fin: ", fechaFin);
   return new Date(tarifa.fechaInicio) <= now && now <= fechaFin;
 };
 
@@ -66,16 +65,7 @@ export const BodyDetalleEvento: React.FC = () => {
     error: string | null;
   };
 
-  console.log(evento);
-
-  if (isLoading) {
-    return (
-      <>
-        <Loading fullScreen />
-      </>
-    );
-  }
-
+  if (isLoading) return <Loading fullScreen />;
 
   if (error || !evento) {
     return (
@@ -98,6 +88,7 @@ export const BodyDetalleEvento: React.FC = () => {
   );
 
   const horaEvento = evento.time || "";
+
   const primeraZonaConPreventa = zonas.find((z) => z.tarifaPreventa);
   const primeraZonaConNormal = zonas.find((z) => z.tarifaNormal);
 
@@ -116,8 +107,7 @@ export const BodyDetalleEvento: React.FC = () => {
       return;
     }
 
-    let tienePuntosParaEntrada = false;
-
+    // Preventa: validar puntos
     if (tipo === "Preventa") {
       let minPuntosRequeridos = 99999;
 
@@ -130,23 +120,17 @@ export const BodyDetalleEvento: React.FC = () => {
 
       const puntos = await PerfilService.getPuntos();
 
-      if (minPuntosRequeridos <= (puntos.totalPoints ?? 0)) {
-        tienePuntosParaEntrada = true;
-      }
-
-      if (!tienePuntosParaEntrada) {
+      if (minPuntosRequeridos > (puntos.totalPoints ?? 0)) {
         NotificationService.warning(
-          "Necesitas al menos " +
-            minPuntosRequeridos +
-            " puntos para comprar una entrada en Preventa"
+          `Necesitas al menos ${minPuntosRequeridos} puntos para comprar en Preventa`
         );
         return;
       }
     }
 
     const cantidad = await CompraService.getCantidadEntradasPorEvento(Number(id));
-    if((cantidad ?? 0) >= 4) {
-      NotificationService.warning("Parece que ya tienes 4 entradas para este evento");
+    if ((cantidad ?? 0) >= 4) {
+      NotificationService.warning("Ya tienes 4 entradas para este evento");
       return;
     }
 
@@ -155,12 +139,9 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const formatFechaLarga = (iso: string) => {
     if (!iso) return "";
-    console.log(iso);
-    
     if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
       iso = iso + "T05:00:00Z";
     }
-    console.log(iso);
     const d = new Date(iso);
 
     return d.toLocaleDateString("es-PE", {
@@ -187,31 +168,41 @@ export const BodyDetalleEvento: React.FC = () => {
           })`,
         }}
       >
-        <div className="absolute inset-0
-                bg-gradient-to-b
-                from-black/20 via-black/10 to-transparent
-                dark:from-black/60 dark:via-black/30 dark:to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-transparent dark:from-black/70 dark:via-black/40 dark:to-transparent" />
+
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
-            <h1 className="text-6xl md:text-8xl font-extrabold">{evento.nombre}</h1>
 
-            <h2 className="text-4xl md:text-6xl font-bold">
-              {evento.artist?.nombre?.trim() || "Artista invitado"}
-            </h2>
+            {/* TÍTULO = NOMBRE DEL EVENTO */}
+            <h1 className="text-4xl md:text-6xl font-extrabold">
+              {evento.title}
+            </h1>
 
-            <p className="mt-6 text-lg md:text-3xl text-gray-200 dark:text-gray-300">
+            {/* Artista (solo si existe) */}
+            {evento.artist?.nombre && (
+              <h2 className="text-3xl md:text-5xl font-bold mt-4">
+                 {evento.artist.nombre}
+              </h2>
+            )}
+
+            <p className="mt-6 text-lg md:text-3xl text-gray-200 dark:text-gray-300 space-y-2">
+
               📅 <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
+
               {evento.lugar && (
                 <>
-                  📍 {evento.lugar}
+                  🏟 Lugar: <span className="font-semibold">{evento.lugar}</span>
                   <br />
                 </>
               )}
+
               📍 {evento.distrito}, {evento.provincia}
               <br />
+
               🕐 {horaEvento}
             </p>
+
           </div>
         </div>
       </section>
@@ -221,10 +212,10 @@ export const BodyDetalleEvento: React.FC = () => {
 
         <section className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-24">
 
-          {/* Imagen del mapa */}
+          {/* Imagen del lugar (CORREGIDO) */}
           <div className="w-full lg:w-1/2 flex justify-center p-4">
             <img
-              src={evento?.imageLugar ?? mapaAsientos}
+              src={evento.imageLugar || mapaAsientosDefault}
               alt="Lugar del Evento"
               className="
                 w-full max-w-md rounded-lg object-contain 
@@ -243,16 +234,16 @@ export const BodyDetalleEvento: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-600 dark:text-gray-200 uppercase">
+                  <th className="px-10 py-3 text-center text-lg font-medium text-gray-600 dark:text-gray-200 uppercase">
                     ZONA
                   </th>
 
                   {tiposTarifas.map((tipo) => (
                     <th
                       key={tipo}
-                      className="px-10 py-3 text-center text-base md:text-lg font-medium text-gray-600 dark:text-gray-200 uppercase"
+                      className="px-10 py-3 text-center text-lg font-medium text-gray-600 dark:text-gray-200 uppercase"
                     >
-                      <div>{tipo.toUpperCase()}</div>
+                      {tipo.toUpperCase()}
 
                       {tipo === "Preventa" && rangoPreventa && (
                         <div className="text-xs md:text-sm text-gray-400 dark:text-gray-300 mt-1">
@@ -279,17 +270,17 @@ export const BodyDetalleEvento: React.FC = () => {
                       key={zona.id}
                       className="hover:bg-orange-100 dark:hover:bg-gray-700"
                     >
-                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-900 dark:text-gray-100 font-medium">
+                      <td className="px-10 py-4 text-center text-xl text-gray-900 dark:text-gray-100 font-medium">
                         {zona.nombre}
                       </td>
 
-                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-700 dark:text-gray-200">
+                      <td className="px-10 py-4 text-center text-xl">
                         {zona.tarifaPreventa
                           ? `S/ ${zona.tarifaPreventa.precio.toFixed(2)}`
                           : "—"}
                       </td>
 
-                      <td className="px-10 py-4 text-center text-lg md:text-xl text-gray-700 dark:text-gray-200">
+                      <td className="px-10 py-4 text-center text-xl">
                         {zona.tarifaNormal
                           ? `S/ ${zona.tarifaNormal.precio.toFixed(2)}`
                           : "—"}
@@ -300,9 +291,9 @@ export const BodyDetalleEvento: React.FC = () => {
                   <tr>
                     <td
                       colSpan={1 + tiposTarifas.length}
-                      className="text-center py-6 text-gray-500 dark:text-gray-300 text-lg md:text-xl"
+                      className="text-center py-6 text-gray-500 dark:text-gray-300 text-xl"
                     >
-                      No hay zonas disponibles para este evento.
+                      No hay zonas disponibles.
                     </td>
                   </tr>
                 )}
@@ -311,7 +302,7 @@ export const BodyDetalleEvento: React.FC = () => {
           </div>
 
         </section>
-      </div>       
+      </div>
 
       {/* ===== SECCIÓN COMPRA ===== */}
       <div className="bg-white dark:bg-gray-900 px-4 md:px-12 py-16">
@@ -323,8 +314,7 @@ export const BodyDetalleEvento: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            Compra tus entradas para {evento.artist?.nombre?.trim()} <br />
-            en {evento.distrito}
+            Compra tus entradas para {evento.title?.trim()} <br /> en {evento.distrito}
           </motion.h2>
 
           <motion.div
@@ -348,13 +338,8 @@ export const BodyDetalleEvento: React.FC = () => {
                   disabled={disabled}
                   className={`
                     px-10 py-4 rounded-md text-lg font-semibold
-                    
-                    ${disabled ? "cursor-not-allowed" : "cursor-pointer"}
-                    ${
-                      disabled
-                        ? "bg-gray-400 cursor-not-allowed text-white"
-                        : "bg-black dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"
-                    }
+                    ${disabled ? "bg-gray-400 cursor-not-allowed text-white" 
+                               : "bg-black dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"}
                   `}
                 >
                   Comprar {tipo}
