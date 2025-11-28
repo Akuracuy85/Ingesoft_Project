@@ -2,7 +2,7 @@ import HttpClient from "./Client";
 
 export class GenericService extends HttpClient {
   
-  public static TYC_LINK = "https://unite-local-bucket.s3.us-east-1.amazonaws.com/TerminosUnite.pdf" 
+  public static TYC_LINK = "https://unite-local-bucket.s3.amazonaws.com/TerminosUnite.pdf" 
 
   constructor() {
     super("/generic");

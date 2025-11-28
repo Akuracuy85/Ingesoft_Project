@@ -157,3 +157,7 @@
 html {
   scrollbar-gutter: stable;
 }
+
+.Toastify__toast-container {
+  z-index: 999999 !important;
+}
