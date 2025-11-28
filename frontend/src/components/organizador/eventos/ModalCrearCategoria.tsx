@@ -85,7 +85,7 @@ const ModalCrearCategoria: React.FC<ModalCrearCategoriaProps> = ({ open, onClose
             type="button"
             onClick={handleCrear}
             disabled={loading}
-            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
+            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900 disabled:opacity-60"
           >
             {loading ? "Guardando..." : "Crear"}
           </button>

@@ -110,7 +110,7 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
                     <option key={c.id} value={String(c.id)}>{c.nombre}</option>
                   ))}
                 </select>
-                <button type="button" onClick={() => setOpenCrearCategoria(true)} className="text-xs px-2 py-2 rounded bg-amber-500 text-white hover:bg-amber-600" aria-label="Crear categoría">+ Nueva</button>
+                <button type="button" onClick={() => setOpenCrearCategoria(true)} className="text-xs px-2 py-2 rounded bg-amber-500 text-white dark:text-gray-900 hover:bg-amber-600" aria-label="Crear categoría">+ Nueva</button>
               </div>
               {categoriaError && <p className="mt-1 text-xs text-red-600">Obligatoria.</p>}
             </div>
@@ -128,7 +128,7 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
               type="button"
               onClick={handleCrear}
               disabled={loading}
-              className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
+              className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900 disabled:opacity-60"
             >
               {loading ? "Guardando..." : "Crear"}
             </button>

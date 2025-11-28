@@ -547,7 +547,7 @@ const CardEventos: React.FC = () => {
         <button
           type="button"
           onClick={handleOpenCreate}
-          className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md flex items-center gap-2 cursor-pointer"
+          className="bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900 px-4 py-2 rounded-md flex items-center gap-2 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Nuevo evento</span>
@@ -755,7 +755,7 @@ const CardEventos: React.FC = () => {
                       key={page}
                       type="button"
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 text-xs rounded border flex items-center justify-center ${page === currentPage ? "bg-amber-500 text-white border-amber-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-card dark:text-card-foreground dark:border-border dark:hover:bg-card"}`}
+                      className={`w-8 h-8 text-xs rounded border flex items-center justify-center ${page === currentPage ? "bg-amber-500 text-white dark:text-gray-900 border-amber-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-card dark:text-card-foreground dark:border-border dark:hover:bg-card"}`}
                       aria-label={`Ir a página ${page}`}
                     >
                       {page}
