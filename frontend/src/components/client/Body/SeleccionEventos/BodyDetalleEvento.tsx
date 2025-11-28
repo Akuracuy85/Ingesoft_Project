@@ -192,7 +192,7 @@ export const BodyDetalleEvento: React.FC = () => {
 
               {evento.lugar && (
                 <>
-                  🏟 Lugar: <span className="font-semibold">{evento.lugar}</span>
+                  🏟 <span className="font-semibold">{evento.lugar}</span>
                   <br />
                 </>
               )}
@@ -339,7 +339,7 @@ export const BodyDetalleEvento: React.FC = () => {
                   className={`
                     px-10 py-4 rounded-md text-lg font-semibold
                     ${disabled ? "bg-gray-400 cursor-not-allowed text-white" 
-                               : "bg-black dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600"}
+                               : "bg-black dark:bg-gray-700 text-white hover:bg-gray-900 dark:hover:bg-gray-600 cursor-pointer"}
                   `}
                 >
                   Comprar {tipo}
