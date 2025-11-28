@@ -360,6 +360,8 @@ export class OrdenCompraService {
       // 3. Ejecutar la transacción (el método del repo no cambia)
       await this.ordenCompraRepo.confirmarOrdenYActualizarPuntos(orden, cliente);
 
+      await this.eventoRepo.actualizarGananciaTotal(orden.evento.id, orden.totalPagado);
+
       return orden;
 
     } catch (error) {
@@ -402,6 +404,8 @@ export class OrdenCompraService {
 
       // 5. Ejecutar la transacción
       await this.ordenCompraRepo.confirmarOrdenYActualizarPuntos(orden, cliente);
+
+      await this.eventoRepo.actualizarGananciaTotal(orden.evento.id, orden.totalPagado);
 
       return orden;
 

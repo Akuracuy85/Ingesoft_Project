@@ -477,6 +477,10 @@ export class EventoRepository {
 
     return await qb.getMany();
   }
+
+  async actualizarGananciaTotal(eventoId: number, monto: number): Promise<void> {
+    await this.repository.increment({ id: eventoId }, "gananciaTotal", monto);
+  }
 }
 
 export const eventoRepository = EventoRepository.getInstance();
