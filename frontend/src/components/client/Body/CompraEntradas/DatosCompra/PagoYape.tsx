@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ const PagoYape: React.FC<{ monto: number; onClose: () => void; onConfirm: () => 
 }) => {
   const [celular, setCelular] = useState("");
   const [codigo, setCodigo] = useState("");
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [buttonAvailable, setButtonAvailable] = useState(true);
   const handleConfirm = async () =>{
     setButtonAvailable(false);
@@ -53,13 +54,27 @@ const PagoYape: React.FC<{ monto: number; onClose: () => void; onConfirm: () => 
           {Array.from({ length: 6 }).map((_, index) => (
             <Input
               key={index}
+              ref={(el) => { inputsRef.current[index] = el }}
               maxLength={1}
               value={codigo[index] || ""}
+              showCaret={false}
               className="text-center"
               onChange={(e) => {
+                const val = e.target.value.slice(-1);
                 const newCodigo = codigo.split("");
-                newCodigo[index] = e.target.value;
+                newCodigo[index] = val;
                 setCodigo(newCodigo.join(""));
+                if (val && inputsRef.current[index + 1]) {
+                  inputsRef.current[index + 1]!.focus();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Backspace") {
+                  const curVal = (e.target as HTMLInputElement).value;
+                  if (!curVal && index > 0 && inputsRef.current[index - 1]) {
+                    inputsRef.current[index - 1]!.focus();
+                  }
+                }
               }}
             />
           ))}
