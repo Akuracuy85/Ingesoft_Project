@@ -195,8 +195,9 @@ export const Registro = () => {
                 bg-white dark:bg-gray-700
                 text-gray-900 dark:text-gray-100 
                 border 
-                ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                ${nombres.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
                 focus:ring-2 focus:ring-orange-500 
+                caret-orange-500
                 outline-none
               `}
               />
@@ -215,15 +216,16 @@ export const Registro = () => {
                 value={apellidoPaterno}
                 onChange={(e) => setApellidoPaterno(e.target.value)}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${apellidoPaterno.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  caret-orange-500
+                  outline-none
+                `}
 
               />
               {!apellidoPaterno}
@@ -238,15 +240,16 @@ export const Registro = () => {
                 value={apellidoMaterno}
                 onChange={(e) => setApellidoMaterno(e.target.value)}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${apellidoMaterno.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  caret-orange-500
+                  outline-none
+                `}
               />
               {!apellidoMaterno}
             </div>
@@ -264,15 +267,16 @@ export const Registro = () => {
                 value={dni}
                 onChange={handleDniChange}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${dni.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  caret-orange-500
+                  outline-none
+                `}
               />
               {!esDniValido && dni.length > 0 && (
                 <p className="text-red-500 text-sm mt-1">
@@ -291,15 +295,16 @@ export const Registro = () => {
                 value={telefono}
                 onChange={handleTelefonoChange}
                 className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                  w-full px-4 py-3 
+                  rounded-lg 
+                  bg-white dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100 
+                  border 
+                  ${telefono.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500 
+                  caret-orange-500
+                  outline-none
+                `}
 
               />
               {!esTelefonoValido && telefono.length > 0 && (
@@ -323,15 +328,16 @@ export const Registro = () => {
               onChange={handleEmailChange}
               required
               className={`
-  w-full px-4 py-3 
-  rounded-lg 
-  bg-white dark:bg-gray-700
-  text-gray-900 dark:text-gray-100 
-  border 
-  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-  focus:ring-2 focus:ring-orange-500 
-  outline-none
-`}
+                w-full px-4 py-3 
+                rounded-lg 
+                bg-white dark:bg-gray-700
+                text-gray-900 dark:text-gray-100 
+                border 
+                ${email.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                focus:ring-2 focus:ring-orange-500 
+                caret-orange-500
+                outline-none
+              `}
             />
             {!esEmailValido && email.length > 0 && (
               <p className="text-red-500 text-sm mt-1">
@@ -358,8 +364,9 @@ export const Registro = () => {
                   bg-white dark:bg-gray-700
                   text-gray-900 dark:text-gray-100 
                   border 
-                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  ${password.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
                   focus:ring-2 focus:ring-orange-500 
+                  caret-orange-500
                   outline-none
                 `}
               />
@@ -389,8 +396,9 @@ export const Registro = () => {
                   bg-white dark:bg-gray-700
                   text-gray-900 dark:text-gray-100 
                   border 
-                  ${nombres ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
-                  focus:ring-2 focus:ring-orange-500 
+                  ${confirmPassword.length > 0 ? "border-gray-300 dark:border-gray-600" : "border-red-500"}
+                  focus:ring-2 focus:ring-orange-500
+                  caret-orange-500 
                   outline-none
                 `}
               />
