@@ -34,6 +34,9 @@ const UserModal: React.FC<UserModalProps> = ({
   onSave,
   user,
 }) => {
+
+  if (!isOpen) return null;
+
   const initialFormData: UserFormData = {
     nombre: "",
     password: "",
@@ -48,7 +51,24 @@ const UserModal: React.FC<UserModalProps> = ({
     RazonSocial: "",
   };
 
-  const [formData, setFormData] = useState<UserFormData>(initialFormData);
+  const [formData, setFormData] = useState<UserFormData>(() => {
+    if (user) {
+      return {
+        nombre: user.nombre,
+        password: "",
+        apellidoPaterno: user.apellidoPaterno,
+        apellidoMaterno: user.apellidoMaterno,
+        dni: user.dni,
+        email: user.email,
+        celular: user.celular,
+        rol: (user.rol?.toString().toUpperCase() as Rol) || "CLIENTE",
+        activo: user.activo,
+        RUC: user.RUC ?? "",
+        RazonSocial: user.RazonSocial ?? "",
+      };
+    }
+    return initialFormData;
+  });
 
   useEffect(() => {
     if (user) {
@@ -60,7 +80,7 @@ const UserModal: React.FC<UserModalProps> = ({
         dni: user.dni,
         email: user.email,
         celular: user.celular,
-        rol: user.rol as Rol,
+        rol: (user.rol?.toString().toUpperCase() as Rol) || "CLIENTE",
         activo: user.activo,
         RUC: user.RUC ?? "",
         RazonSocial: user.RazonSocial ?? "",
@@ -68,7 +88,7 @@ const UserModal: React.FC<UserModalProps> = ({
     } else {
       setFormData(initialFormData);
     }
-  }, [user, isOpen]);
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -150,8 +170,6 @@ const UserModal: React.FC<UserModalProps> = ({
 
     onSave({ ...formData, rol: formData.rol });
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

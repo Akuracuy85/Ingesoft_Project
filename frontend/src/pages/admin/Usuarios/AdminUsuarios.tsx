@@ -199,7 +199,7 @@ export default function AdminUsuarios(): React.ReactElement {
             </Select>
 
             {/* Botón crear */}
-            <Button onClick={handleCreateUser} className="gap-2">
+            <Button onClick={handleCreateUser} className="gap-2 cursor-pointer">
               <Plus className="h-4 w-4" />
               Crear usuario
             </Button>
