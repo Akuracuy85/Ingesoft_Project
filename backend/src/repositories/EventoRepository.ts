@@ -184,6 +184,25 @@ export class EventoRepository {
     if (filtros.provincia) idQb.andWhere("evento.provincia = :p", { p: filtros.provincia });
     if (filtros.distrito) idQb.andWhere("evento.distrito = :dist", { dist: filtros.distrito });
 
+    if (filtros.categoriaIds && filtros.categoriaIds.length > 0) {
+      // Necesitamos hacer JOIN con Artista y luego con Categoria para filtrar
+      idQb.innerJoin("evento.artista", "filtroArtista")
+        .innerJoin("filtroArtista.categoria", "filtroCategoria")
+        .andWhere("filtroCategoria.id IN (:...catIds)", { catIds: filtros.categoriaIds });
+    }
+
+    // Filtro por Artistas (Ya que estaba en tu interfaz, es útil tenerlo)
+    if (filtros.artistaIds && filtros.artistaIds.length > 0) {
+      
+      if (!filtros.categoriaIds || filtros.categoriaIds.length === 0) {
+        idQb.innerJoin("evento.artista", "filtroArtistaDirecto");
+        idQb.andWhere("filtroArtistaDirecto.id IN (:...artIds)", { artIds: filtros.artistaIds });
+      } else {
+        // Si ya filtramos por categoría, el join a 'filtroArtista' ya existe arriba
+        idQb.andWhere("filtroArtista.id IN (:...artIds)", { artIds: filtros.artistaIds });
+      }
+    }
+
     if (filtros.fechaInicio)
       idQb.andWhere("evento.fechaEvento >= :fi", { fi: filtros.fechaInicio });
 
