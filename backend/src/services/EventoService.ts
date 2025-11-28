@@ -1401,7 +1401,7 @@ export class EventoService {
       if (error instanceof CustomError) throw error;
       console.error(error);
       throw new CustomError(
-        "Error al generar el reporte de ventas.",
+        "Error al generar el reporte de ventas: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

@@ -138,7 +138,7 @@ export class AccionService {
             if (error instanceof CustomError) throw error;
             console.error(error);
             throw new CustomError(
-                "Error al generar el reporte de acciones.",
+                "Error al generar el reporte de acciones: " + error,
                 StatusCodes.INTERNAL_SERVER_ERROR
             );
         }

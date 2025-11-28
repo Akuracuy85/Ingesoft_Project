@@ -9,6 +9,8 @@ RUN npm install
 COPY . .
 RUN npm run build
 RUN mkdir -p dist/emails && cp -r src/emails/* dist/emails/
+RUN mkdir -p dist/assets && cp -r src/assets/* dist/assets/
+RUN mkdir -p dist/fonts && cp -r src/fonts/* dist/fonts/
 
 FROM node:20-alpine
 
