@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { generarColorDesdeTipo } from "@/utils/generarColorDesdeTipo"
@@ -24,6 +24,7 @@ import {
 import { useAccionesInternas } from "@/hooks/useAccionesInternas"
 import { adminAccionesService } from "@/services/AdminAccionesService" // 1. Importar el servicio
 import NotificationService from "@/services/NotificationService"
+import usuarioService, { type Usuario } from "@/services/UsuarioService"
 
 export function ReporteAcciones() {
   const { acciones, isLoading, error, actualizarFiltros } = useAccionesInternas()
@@ -31,15 +32,32 @@ export function ReporteAcciones() {
   const [actionType, setActionType] = useState("all")
   const [fechaInicio, setFechaInicio] = useState<string>("") 
   const [showExportNotification, setShowExportNotification] = useState(false)
+  const [administradores, setAdministradores] = useState<Usuario[]>([])
+  const [selectedAdmin, setSelectedAdmin] = useState<string>("all")
 
   const [paginaActual, setPaginaActual] = useState(1)
   const itemsPorPagina = 10
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await usuarioService.getByRol("ADMINISTRADOR")
+        if (response.success) {
+          setAdministradores(response.usuarios)
+        }
+      } catch (error) {
+        console.error("Error cargando administradores:", error)
+      }
+    }
+    fetchAdmins()
+  }, [])
 
   const handleExport = async () => {
     try {
       const filtros = {
         tipo: actionType === "all" ? undefined : actionType,
-        fechaInicio: fechaInicio || undefined
+        fechaInicio: fechaInicio || undefined,
+        autorId: selectedAdmin === "all" ? undefined : Number(selectedAdmin)
       }
 
       const blob = await adminAccionesService.exportarReporteAcciones(filtros)
@@ -66,7 +84,19 @@ export function ReporteAcciones() {
 
   const handleChangeTipo = (tipo: string) => {
     setActionType(tipo)
-    actualizarFiltros({ tipo: tipo === "all" ? undefined : tipo })
+    actualizarFiltros({ 
+      tipo: tipo === "all" ? undefined : tipo,
+      autorId: selectedAdmin === "all" ? undefined : Number(selectedAdmin)
+    })
+    setPaginaActual(1)
+  }
+
+  const handleChangeAdmin = (adminId: string) => {
+    setSelectedAdmin(adminId)
+    actualizarFiltros({ 
+      autorId: adminId === "all" ? undefined : Number(adminId),
+      tipo: actionType === "all" ? undefined : actionType
+    })
     setPaginaActual(1)
   }
 
@@ -141,6 +171,21 @@ export function ReporteAcciones() {
               <SelectItem value="DESACTIVAR USUARIO">Desactivar usuario</SelectItem>
               <SelectItem value="GENERAR REPORTE DE ACCIONES">Generar reporte acciones</SelectItem>
               <SelectItem value="GENERAR REPORTE DE Ventas">Generar reporte ventas</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Selector de Administrador */}
+          <Select value={selectedAdmin} onValueChange={handleChangeAdmin}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Filtrar por administrador" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los administradores</SelectItem>
+              {administradores.map((admin) => (
+                <SelectItem key={admin.id} value={String(admin.id)}>
+                  {admin.nombre} {admin.apellido}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

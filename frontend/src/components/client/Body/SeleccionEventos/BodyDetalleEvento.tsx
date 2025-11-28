@@ -29,6 +29,7 @@ interface EventoDetalle {
   zonas: Zone[];
   time: string | null;
   lugar: string | null;
+  title: string | null;
 }
 
 // Helpers

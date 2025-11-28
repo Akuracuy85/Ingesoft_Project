@@ -17,6 +17,7 @@ interface FiltrosAccion {
   fechaFin?: string;
   tipo?: string;
   autorTexto?: string;
+  autorId?: number;
 }
 
 export function useAccionesInternas() {
@@ -34,6 +35,7 @@ export function useAccionesInternas() {
         fechaInicio: toUTCStart(filtros.fechaInicio),
         fechaFin: toUTCEnd(filtros.fechaFin),
         tipo: filtros.tipo,
+        autorId: filtros.autorId,
       };
       const response = await adminAccionesService.obtenerAcciones(filtrosUTC);
       let lista = response.acciones ?? [];
