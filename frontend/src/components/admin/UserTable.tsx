@@ -73,7 +73,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onToggleStatus }) 
                           user.activo
                             ? "text-green-600 hover:text-green-800"
                             : "text-red-600 hover:text-red-800"
-                        } transition`}
+                        } transition cursor-pointer`}
                         title={
                           user.activo ? "Desactivar usuario" : "Activar usuario"
                         }

@@ -13,4 +13,5 @@ export interface AdminVenta {
   entradasVendidas: number;
   gananciaTotal: number;
   organizadorNombre: string;
+  organizadorRazonSocial: string;
 }

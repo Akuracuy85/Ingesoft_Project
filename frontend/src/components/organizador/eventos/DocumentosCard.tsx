@@ -120,7 +120,7 @@ export default function DocumentosCard({ eventoId }: DocumentosCardProps) {
   };
 
   return (
-    <div>
+    <div className={"bg-card border border-border rounded-lg p-6 shadow-sm"}>
       {/* Encabezado */}
       <div className="flex items-center gap-3 mb-4">
         <div className="bg-gray-100 dark:bg-card p-2 rounded-md">

@@ -82,7 +82,8 @@ export const Login = () => {
         <img
           src={isDark ? LogoDark : LogoLight}
           alt="Logo Unite"
-          className="h-12 w-auto transition-opacity"
+          className="h-12 w-auto transition-opacity cursor-pointer"
+          onClick={() => navigate("/eventos")}
         />
 
         {/* Botón modo oscuro */}
@@ -91,7 +92,7 @@ export const Login = () => {
           className="
             p-2 rounded-full bg-gray-200 dark:bg-gray-700 
             hover:scale-110 transition flex items-center justify-center
-            mr-4
+            mr-4 cursor-pointer
           "
         >
           {isDark ? (

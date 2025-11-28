@@ -424,10 +424,10 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
 
       {/* Botones */}
       <div className="flex justify-between mt-4">
-        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600">
+        <button onClick={handleAddZone} className="bg-amber-500 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-amber-600 cursor-pointer">
           <Plus className="h-4 w-4" /> Agregar zona
         </button>
-        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800">
+        <button onClick={handleGuardar} disabled={isSaving} className="bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md px-4 py-2 flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
           <Save className="h-4 w-4" /> {isSaving ? 'Guardando...' : 'Guardar configuración'}
         </button>
       </div>

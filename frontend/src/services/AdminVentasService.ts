@@ -28,6 +28,7 @@ class AdminVentasService extends HttpClient {
         entradasVendidas: evt.entradasVendidas,
         gananciaTotal: evt.gananciaTotal,
         organizadorNombre: `${evt.organizador.nombre} ${evt.organizador.apellidoPaterno}`,
+        organizadorRazonSocial: evt.organizador.RazonSocial,
       }));
     } catch (error) {
       console.error("Error obteniendo ventas:", error);

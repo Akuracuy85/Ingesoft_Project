@@ -547,7 +547,7 @@ const CardEventos: React.FC = () => {
         <button
           type="button"
           onClick={handleOpenCreate}
-          className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md flex items-center gap-2 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Nuevo evento</span>
@@ -678,7 +678,7 @@ const CardEventos: React.FC = () => {
                   return (
                     <tr
                       key={ev.id}
-                      className={`${selectedIndex === globalIndex ? "bg-amber-50" : ""} hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer`}
+                      className={`${selectedIndex === globalIndex ? "bg-amber-50 dark:bg-amber-900" : ""} hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer`}
                       onClick={() => {
                         setEventoSeleccionado(ev);
                         setSelectedIndex(globalIndex);
@@ -714,7 +714,7 @@ const CardEventos: React.FC = () => {
                                 lastButtonRef.current = e.currentTarget as HTMLButtonElement;
                               }
                             }}
-                            className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300"
+                            className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 cursor-pointer"
                             aria-haspopup="menu"
                             aria-expanded={menuAbierto === globalIndex}
                             aria-label={`Acciones para ${ev.nombre}`}
