@@ -34,8 +34,10 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
       return;
     }
 
-    if(TipoDeTarjeta(tarjeta) === "Desconocida") {
-      NotificationService.warning("El número de tarjeta ingresado no es válido. Recuerda que debe ser Visa o Mastercard");
+    if (TipoDeTarjeta(tarjeta) === "Desconocida") {
+      NotificationService.warning(
+        "El número de tarjeta ingresado no es válido. Recuerda que debe ser Visa o Mastercard"
+      );
       return;
     }
 
@@ -49,11 +51,13 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
           mesExp: parseInt(fecha.split("/")[0]),
           anExp: parseInt(fecha.split("/")[1]),
           cvv: cvv,
-        })
+        });
         NotificationService.success("Tarjeta guardada correctamente en tu perfil");
       }
     } catch (e) {
-      NotificationService.warning("No se pudo guardar la tarjeta en tu perfil. Pero tu compra se procesó correctamente");
+      NotificationService.warning(
+        "No se pudo guardar la tarjeta en tu perfil. Pero tu compra se procesó correctamente"
+      );
     }
   };
 
@@ -92,7 +96,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                   tarjeta: e.target.value.replace(/\D/g, "").slice(0, 16),
                 })
               }
-              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
             />
           </div>
 
@@ -106,13 +110,12 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 value={form.fecha}
                 onChange={(e) => {
                   let value = e.target.value.replace(/\D/g, "");
-                  if (value.length > 2)
-                    value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                  if (value.length > 2) value = value.slice(0, 2) + "/" + value.slice(2, 4);
                   else value = value.slice(0, 2);
                   setForm({ ...form, fecha: value });
                 }}
                 maxLength={5}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
               />
             </div>
             <div className="relative w-1/2">
@@ -127,7 +130,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                     cvv: e.target.value.replace(/\D/g, "").slice(0, 3),
                   })
                 }
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
               />
             </div>
           </div>
@@ -141,7 +144,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 placeholder="Nombre"
                 value={form.nombre}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
               />
             </div>
             <div className="relative w-1/2">
@@ -151,7 +154,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
                 placeholder="Apellido"
                 value={form.apellido}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
               />
             </div>
           </div>
@@ -179,7 +182,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
               type="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+              className="w-full border border-gray-300 rounded-md pl-9 py-2 text-sm focus:ring-2 focus:ring-amber-600 focus:border-amber-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 caret-amber-500 dark:caret-amber-200"
             />
           </div>
         </div>
