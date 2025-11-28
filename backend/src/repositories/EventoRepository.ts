@@ -192,22 +192,12 @@ export class EventoRepository {
       fechaFin.setDate(fechaFin.getDate() + 1);
       idQb.andWhere("evento.fechaEvento < :ff", { ff: fechaFin });
     }
-
-    console.log("Primera consulta");
-    let startTime = Date.now();
     const idsRaw = await idQb.getRawMany();
-    let endTime = Date.now();
-    let elapsedTime = endTime - startTime;
-    console.log(`Elapsed time en primera consulta: ${elapsedTime} ms`);
-    console.log("Termina primera consulta");
-
     const ids = idsRaw.map(r => r.evento_id);
 
     if (!ids.length) return [];
 
     // 2️⃣ Cargar eventos ya con artista y categoría
-    console.log("Segunda consulta");
-    startTime = Date.now();
     const eventosRaw = await this.repository.createQueryBuilder("e")
       .select([
         "e.id AS id",
@@ -233,14 +223,8 @@ export class EventoRepository {
       .getRawMany();
 
     const eventos = eventosRaw.map(mapRawEvento);
-    endTime = Date.now();
-    elapsedTime = endTime - startTime;
-    console.log(`Elapsed time en segunda consulta: ${elapsedTime} ms`);
-    console.log("Termina Segunda consulta");
 
     // 3️⃣ Cargar zonas en un solo query
-    console.log("Tercera consulta");
-    startTime = Date.now();
     const zonas = await this.zonaRepository.createQueryBuilder("z")
       .select([
         "z.id",
@@ -253,13 +237,8 @@ export class EventoRepository {
       .leftJoin("z.tarifaPreventa", "t2")
       .where("z.eventoId IN (:...ids)", { ids })
       .getRawMany();
-    endTime = Date.now();
-    elapsedTime = endTime - startTime;
-    console.log(`Elapsed time en tercera consulta: ${elapsedTime} ms`);
-    console.log("Termina tercera consulta");
-    
+
     // 4️⃣ Agrupar zonas
-    console.log("Calculos");
     const map = new Map<number, any[]>();
     zonas.forEach(z => {
       const eventId = z.eventoId;
@@ -285,7 +264,6 @@ export class EventoRepository {
         })
       );
     }
-    console.log("Termina calculos");
 
     return eventos;
   }
@@ -476,6 +454,10 @@ export class EventoRepository {
     qb.orderBy("evento.fechaEvento", "DESC");
 
     return await qb.getMany();
+  }
+
+  async actualizarGananciaTotal(eventoId: number, monto: number): Promise<void> {
+    await this.repository.increment({ id: eventoId }, "gananciaTotal", monto);
   }
 }
 

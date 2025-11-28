@@ -155,9 +155,10 @@ export const BodyDetalleEvento: React.FC = () => {
 
   const formatFechaLarga = (iso: string) => {
     if (!iso) return "";
+    console.log(iso);
     
     if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
-      iso = iso + (import.meta.env.VITE_ENV === "prod" ? "T00:00:00Z" : "T05:00:00Z");
+      iso = iso + "T05:00:00Z";
     }
     console.log(iso);
     const d = new Date(iso);
