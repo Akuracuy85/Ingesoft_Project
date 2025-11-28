@@ -34,18 +34,21 @@ interface EventoDetalle {
 // Helpers
 const formatDMY = (iso: string) => {
   if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("es-PE", {
+  return new Intl.DateTimeFormat("es-PE", {
+    timeZone: "UTC",
     day: "2-digit",
     month: "2-digit",
-    year: "numeric",
-  });
+    year: "numeric"
+  }).format(new Date(iso));
 };
 
 const isTarifaActiva = (tarifa?: Tarifa | null) => {
   if (!tarifa) return false;
   const now = new Date();
-  return new Date(tarifa.fechaInicio) <= now && now <= new Date(tarifa.fechaFin);
+  const fechaFin = new Date(tarifa.fechaFin);
+  fechaFin.setHours(23, 59, 59, 999);
+  console.log("Fecha fin: ", fechaFin);
+  return new Date(tarifa.fechaInicio) <= now && now <= fechaFin;
 };
 
 const isZonaAgotada = (zona: Zone) =>
@@ -54,7 +57,7 @@ const isZonaAgotada = (zona: Zone) =>
 export const BodyDetalleEvento: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const eventoId = Number(id);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
   const { evento, isLoading, error } = useEventoDetalle(eventoId) as {
@@ -108,6 +111,11 @@ export const BodyDetalleEvento: React.FC = () => {
       return;
     }
 
+    if (user?.rol !== "CLIENTE") {
+      NotificationService.warning("Solo los clientes pueden comprar entradas");
+      return;
+    }
+
     let tienePuntosParaEntrada = false;
 
     if (tipo === "Preventa") {
@@ -149,7 +157,7 @@ export const BodyDetalleEvento: React.FC = () => {
     if (!iso) return "";
     
     if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
-      iso = iso + "T05:00:00Z";
+      iso = iso + (import.meta.env.VITE_ENV === "prod" ? "T00:00:00Z" : "T05:00:00Z");
     }
     console.log(iso);
     const d = new Date(iso);
