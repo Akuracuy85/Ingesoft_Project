@@ -33,7 +33,7 @@ export class GenericService {
       return result.url;
     } catch (error) {
       throw new CustomError(
-        "Error al subir los términos y condiciones",
+        "Error al subir los términos y condiciones: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

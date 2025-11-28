@@ -84,7 +84,7 @@ export class S3Service {
       );
     } catch (error) {
       throw new CustomError(
-        "No se pudo guardar el archivo en el almacenamiento",
+        "No se pudo guardar el archivo en el almacenamiento: " + error,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

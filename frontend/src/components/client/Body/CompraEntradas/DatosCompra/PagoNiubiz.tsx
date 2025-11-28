@@ -5,6 +5,7 @@ import { CreditCard, Calendar, Lock, User, Mail } from "lucide-react";
 import NotificationService from "@/services/NotificationService";
 import { TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import PerfilService from "@/services/PerfilService";
+import { esFechaValida } from "@/utils/date-utils";
 
 interface PagoNiubizProps {
   total: number;
@@ -38,6 +39,11 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
       NotificationService.warning(
         "El número de tarjeta ingresado no es válido. Recuerda que debe ser Visa o Mastercard"
       );
+      return;
+    }
+
+    if (!esFechaValida(fecha)) {
+      NotificationService.warning("La tarjeta ingresada está vencida o la fecha es incorrecta");
       return;
     }
 
@@ -169,7 +175,7 @@ const PagoNiubiz: React.FC<PagoNiubizProps> = ({ total, onClose, onConfirm }) =>
               className="h-4 w-4 border border-gray-300 pl-9 py-2 text-sm dark:border-gray-600"
             />
             <label htmlFor="rememberCard" className="ml-2 text-sm text-gray-700 dark:text-gray-200">
-              Recordar tarjeta 
+              Recordar tarjeta
             </label>
           </div>
 
