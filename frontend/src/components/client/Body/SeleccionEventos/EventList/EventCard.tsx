@@ -9,7 +9,9 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const { title, date, place, distrito, provincia, image } = event;
+  const { title, date, place, distrito, provincia, image, minPrice } = event;
+
+  // Debug log removed as requested
 
   const provinciaDistrito = `${provincia}, ${distrito}`;
 
@@ -41,9 +43,17 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
         <div className="p-2.5 flex flex-col gap-1 text-black dark:text-white">
           <p className="font-semibold text-sm line-clamp-2">{title}</p>
+          {event.artist?.nombre && (
+            <p className="text-sm line-clamp-1 text-gray-600 dark:text-gray-300">{event.artist.nombre}</p>
+          )}
           <p className="text-sm line-clamp-1">{date}</p>
           <p className="text-sm line-clamp-1">{provinciaDistrito}</p>
           <p className="text-sm line-clamp-1">{place}</p>
+          {typeof minPrice === 'number' ? (
+            <p className="text-sm font-semibold mt-1">Desde S/. {minPrice.toFixed(2)}</p>
+          ) : (
+            <p className="text-sm text-gray-500 mt-1">Precio no disponible</p>
+          )}
         </div>
       </div>
     </Link>

@@ -140,9 +140,12 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
       {/* TEXTO SUPERIOR */}
       <div className="relative z-10 flex flex-col items-start justify-center h-full max-w-6xl mx-auto px-6 text-white">
         <h2 className="text-3xl md:text-4xl font-bold mb-3">{event.title}</h2>
+        {event.artist?.nombre && (
+          <p className="text-lg md:text-xl mb-1">{event.artist.nombre}</p>
+        )}
         <p className="text-lg md:text-xl mb-1">📅 {event.date}</p>
         <p className="text-lg md:text-xl mb-1">📍 {distritoProvincia}</p>
-        <p className="text-lg md:text-xl mb-4">📍 {event.place}</p>
+        <p className="text-lg md:text-xl mb-4">🏛️ {event.place}</p>
 
         <button
           onClick={() => navigate(`/eventos/${event.id}/detalle`)}

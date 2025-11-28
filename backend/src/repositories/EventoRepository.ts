@@ -243,23 +243,66 @@ export class EventoRepository {
 
     const eventos = eventosRaw.map(mapRawEvento);
 
-    // 3️⃣ Cargar zonas en un solo query
-    const zonas = await this.zonaRepository.createQueryBuilder("z")
+    // 3️⃣ Cargar zonas en un solo query incluyendo campos de tarifa
+    const zonasRaw = await this.zonaRepository.createQueryBuilder("z")
       .select([
         "z.id",
         "z.nombre",
+        "z.capacidad",
+        "z.cantidadComprada",
         "z.eventoId",
-        "t1.precio AS normal",
-        "t2.precio AS preventa"
+
+        // Tarifa normal (alias prefijado)
+        "t1.id AS tarifaNormal_id",
+        "t1.nombre AS tarifaNormal_nombre",
+        "t1.precio AS tarifaNormal_precio",
+        "t1.fechaInicio AS tarifaNormal_fechaInicio",
+        "t1.fechaFin AS tarifaNormal_fechaFin",
+
+        // Tarifa preventa (alias prefijado)
+        "t2.id AS tarifaPreventa_id",
+        "t2.nombre AS tarifaPreventa_nombre",
+        "t2.precio AS tarifaPreventa_precio",
+        "t2.fechaInicio AS tarifaPreventa_fechaInicio",
+        "t2.fechaFin AS tarifaPreventa_fechaFin",
       ])
       .leftJoin("z.tarifaNormal", "t1")
       .leftJoin("z.tarifaPreventa", "t2")
       .where("z.eventoId IN (:...ids)", { ids })
       .getRawMany();
 
-    // 4️⃣ Agrupar zonas
+    // 4️⃣ Transformar filas crudas en objetos de zona con propiedades `tarifaNormal` y `tarifaPreventa`
+    const zonasTransformadas = zonasRaw.map((z: any) => {
+      const tarifaNormal = z.tarifaNormal_id != null ? {
+        id: z.tarifaNormal_id,
+        nombre: z.tarifaNormal_nombre,
+        precio: z.tarifaNormal_precio,
+        fechaInicio: z.tarifaNormal_fechaInicio ? new Date(z.tarifaNormal_fechaInicio) : null,
+        fechaFin: z.tarifaNormal_fechaFin ? new Date(z.tarifaNormal_fechaFin) : null,
+      } : null;
+
+      const tarifaPreventa = z.tarifaPreventa_id != null ? {
+        id: z.tarifaPreventa_id,
+        nombre: z.tarifaPreventa_nombre,
+        precio: z.tarifaPreventa_precio,
+        fechaInicio: z.tarifaPreventa_fechaInicio ? new Date(z.tarifaPreventa_fechaInicio) : null,
+        fechaFin: z.tarifaPreventa_fechaFin ? new Date(z.tarifaPreventa_fechaFin) : null,
+      } : null;
+
+      return {
+        id: z.id,
+        nombre: z.nombre,
+        capacidad: z.capacidad,
+        cantidadComprada: z.cantidadComprada,
+        eventoId: z.eventoId,
+        tarifaNormal,
+        tarifaPreventa,
+      };
+    });
+
+    // 5️⃣ Agrupar zonas por eventoId y asignarlas a los eventos
     const map = new Map<number, any[]>();
-    zonas.forEach(z => {
+    zonasTransformadas.forEach(z => {
       const eventId = z.eventoId;
       if (!map.has(eventId)) map.set(eventId, []);
       map.get(eventId)!.push(z);
