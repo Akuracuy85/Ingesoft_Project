@@ -55,7 +55,7 @@ const SelectorPago: React.FC<SelectorPagoProps> = ({
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm relative dark:bg-gray-800 dark:text-gray-100">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold"
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white text-2xl font-bold cursor-pointer"
         >
           ×
         </button>

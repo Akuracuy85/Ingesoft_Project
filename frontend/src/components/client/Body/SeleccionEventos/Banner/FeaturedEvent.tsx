@@ -159,7 +159,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-[95px] h-[180px] flex items-center justify-center bg-black/20 rounded-4xl opacity-0 
                    group-hover:opacity-100 transition-all duration-300 
                    hover:scale-105 hover:bg-black/40 
-                   focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                   focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <img
           className="w-[85px] h-[85px] object-contain"
@@ -175,7 +175,7 @@ export const FeaturedEvent: React.FC<FeaturedEventProps> = ({ events }) => {
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-[95px] h-[180px] flex items-center justify-center bg-black/20 rounded-4xl opacity-0 
                    group-hover:opacity-100 transition-all duration-300 
                    hover:scale-105 hover:bg-black/40 
-                   focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                   focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <img
           className="w-[85px] h-[85px] object-contain"
