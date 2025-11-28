@@ -173,9 +173,9 @@ export const BodyDetalleEvento: React.FC = () => {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
 
-            {/* CORREGIDO: TÍTULO = NOMBRE DEL EVENTO */}
-            <h1 className="text-6xl md:text-8xl font-extrabold">
-              {evento.nombre}
+            {/* TÍTULO = NOMBRE DEL EVENTO */}
+            <h1 className="text-4xl md:text-6xl font-extrabold">
+              {evento.title}
             </h1>
 
             {/* Artista (solo si existe) */}
@@ -186,12 +186,6 @@ export const BodyDetalleEvento: React.FC = () => {
             )}
 
             <p className="mt-6 text-lg md:text-3xl text-gray-200 dark:text-gray-300 space-y-2">
-              {evento.artist?.nombre && (
-                <>
-                  🎤 Artista: <span className="font-semibold">{evento.artist.nombre}</span>
-                  <br />
-                </>
-              )}
 
               📅 <span className="font-semibold">{formatFechaLarga(evento.date)}</span>
               <br />
@@ -320,7 +314,7 @@ export const BodyDetalleEvento: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            Compra tus entradas para {evento.artist?.nombre?.trim()} <br /> en {evento.distrito}
+            Compra tus entradas para {evento.title?.trim()} <br /> en {evento.distrito}
           </motion.h2>
 
           <motion.div

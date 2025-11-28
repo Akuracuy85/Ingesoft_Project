@@ -5,6 +5,7 @@ import type { Zone } from "@/models/Zone";
 import type { Tarifa } from "@/models/Tarifa";
 
 type BackendEventoRaw = Partial<Event> & {
+  title: string;
   fechaEvento?: string;
   zonas?: ZonaRaw[];
   place?: string;
