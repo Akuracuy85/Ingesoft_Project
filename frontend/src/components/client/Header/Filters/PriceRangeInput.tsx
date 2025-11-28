@@ -105,7 +105,7 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, setValue, handleFocus, h
           setValue(num.toFixed(2));
         }
       }}
-            className={`w-full pl-10 border border-gray-300 rounded p-2 dark:border-gray-600 dark:bg-gray-800 
+            className={`w-full pl-10 border border-gray-300 rounded p-2 dark:border-gray-600 dark:bg-gray-800 caret-amber-500 dark:caret-amber-200 
                 ${value === "" || parseFloat(value.replace(/,/g, '.') || '0') === 0 ? "text-gray-400 dark:text-gray-400" : "text-black dark:text-white"}`}
     />
   </div>
