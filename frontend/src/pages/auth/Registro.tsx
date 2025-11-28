@@ -278,11 +278,13 @@ export const Registro = () => {
                   outline-none
                 `}
               />
-              {!esDniValido && dni.length > 0 && (
-                <p className="text-red-500 text-sm mt-1">
-                  Deben ser 8 caracteres numéricos
-                </p>
-              )}
+              <div className="h-5">
+                {!esDniValido && dni.length > 0 && (
+                  <p className="text-red-500 text-sm">
+                    Deben ser 8 caracteres numéricos
+                  </p>
+                )}
+              </div>
               {!dni}
             </div>
             <div>
@@ -307,11 +309,13 @@ export const Registro = () => {
                 `}
 
               />
-              {!esTelefonoValido && telefono.length > 0 && (
-                <p className="text-red-500 text-sm mt-1">
-                  Deben ser 9 caracteres numéricos
-                </p>
-              )}
+              <div className="h-5">
+                {!esTelefonoValido && telefono.length > 0 && (
+                  <p className="text-red-500 text-sm">
+                    Deben ser 9 caracteres numéricos
+                  </p>
+                )}
+              </div>
               {!telefono}
             </div>
           </div>
@@ -339,11 +343,13 @@ export const Registro = () => {
                 outline-none
               `}
             />
-            {!esEmailValido && email.length > 0 && (
-              <p className="text-red-500 text-sm mt-1">
-                El correo no es válido
-              </p>
-            )}
+            <div className="h-5">
+              {!esEmailValido && email.length > 0 && (
+                <p className="text-red-500 text-sm">
+                  El correo no es válido
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Contraseñas */}
@@ -409,11 +415,13 @@ export const Registro = () => {
               >
                 {showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
-              {!contraseñasCoinciden && (
-                <p className="text-red-500 text-sm mt-1">
-                  Las contraseñas deben coincidir
-                </p>
-              )}
+              <div className="h-5">
+                {!contraseñasCoinciden && (
+                  <p className="text-red-500 text-sm">
+                    Las contraseñas deben coincidir
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
