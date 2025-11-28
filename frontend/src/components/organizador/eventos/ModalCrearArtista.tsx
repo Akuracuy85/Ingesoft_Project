@@ -97,18 +97,6 @@ const ModalCrearArtista: React.FC<ModalCrearArtistaProps> = ({ open, onClose, on
               {nombreError && <p className="mt-1 text-xs text-red-600">Obligatorio.</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Prioridad <span className="text-red-500">*</span></label>
-              <input
-                type="number"
-                name="prioridad"
-                value={form.prioridad}
-                onChange={onChange}
-                min={0}
-                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${prioridadError ? "border-red-500" : "border-gray-300 dark:border-border"}`}
-              />
-              {prioridadError && <p className="mt-1 text-xs text-red-600">Entero ≥ 0.</p>}
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Categoría <span className="text-red-500">*</span></label>
               <div className="flex items-center gap-2">
                 <select

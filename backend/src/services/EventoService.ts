@@ -143,11 +143,9 @@ export class EventoService {
    */
   async listarEventosPublicados(filtros: IFiltrosEvento): Promise<Evento[]> {
     try {
-      console.log("Comienza el listado");
       const eventos = await this.eventoRepository.listarEventosFiltrados(
         filtros
       );
-      console.log("Termina el listado");
       return eventos;
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -1369,10 +1367,12 @@ export class EventoService {
     }
   }
 
-  async generarReporteEventosAdmin(filtros:   {    fechaInicio?: string;
+  async generarReporteEventosAdmin(filtros: {
+    fechaInicio?: string;
     fechaFin?: string;
     nombreEvento?: string;
-    nombreOrganizador?: string;}, autor: Usuario): Promise<Buffer> {
+    nombreOrganizador?: string;
+  }, autor: Usuario): Promise<Buffer> {
     try {
 
       const eventos = await this.listarEventosAdmin(filtros);
