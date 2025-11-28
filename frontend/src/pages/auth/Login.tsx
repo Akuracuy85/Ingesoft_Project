@@ -139,6 +139,7 @@ export const Login = () => {
               border-gray-300 dark:border-gray-600
               text-gray-900 dark:text-gray-100
               focus:outline-none focus:ring-2 focus:ring-orange-500
+              caret-orange-500
               transition-colors
             "
           />
@@ -161,6 +162,7 @@ export const Login = () => {
                 border-gray-300 dark:border-gray-600
                 text-gray-900 dark:text-gray-100
                 focus:outline-none focus:ring-2 focus:ring-orange-500
+                caret-orange-500
                 transition-colors
               "
             />
@@ -215,7 +217,7 @@ export const Login = () => {
 
           <div className="mt-2 sm:mt-0 flex justify-center items-center gap-1 w-full text-center">
             <span className="text-gray-700 dark:text-gray-300">¿No tienes cuenta? </span>
-            <Link to="/registro" className="text-blue-500 hover:underline">
+            <Link to="/registro" className="text-blue-500 hover:underline cursor-pointer">
               Regístrate
             </Link>
           </div>
