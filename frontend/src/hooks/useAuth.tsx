@@ -37,9 +37,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Llama al método del servicio
       const userData = await AuthService.getProfile();
       setUser(userData);
+      try {
+        if (userData && userData.rol) {
+          document.documentElement.setAttribute('data-user-role', userData.rol);
+        } else {
+          document.documentElement.removeAttribute('data-user-role');
+        }
+      } catch (e) {
+        // ignore DOM errors
+      }
     } catch (error) {
       console.error("No se pudo cargar el perfil:", error);
       setUser(null); // Desloguea si hay error
+      try { document.documentElement.removeAttribute('data-user-role'); } catch (e) {}
     }
   };
 
@@ -94,6 +104,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       // 4. Limpia el estado del usuario pase lo que pase
       setUser(null); 
+      try { document.documentElement.removeAttribute('data-user-role'); } catch (e) {}
     }
   };
 

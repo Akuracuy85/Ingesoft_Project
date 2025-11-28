@@ -83,12 +83,18 @@ const Loading: React.FC<LoadingProps> = ({
   );
 
   if (fullScreen) {
+    const role = typeof document !== 'undefined' ? document.documentElement.getAttribute('data-user-role') : null;
+    // If role not yet set (during initial auth check), infer privileged pages from pathname
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    const pathSuggestsPrivileged = path.startsWith('/admin') || path.startsWith('/organizador');
+    const privileged = (role === 'ADMINISTRADOR' || role === 'ORGANIZADOR') || (!role && pathSuggestsPrivileged);
+
+    const overlayClass = privileged
+      ? 'fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-[#18181B]'
+      : 'fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-gray-900';
+
     return (
-      <div
-        aria-live="polite"
-        role="status"
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-gray-900"
-      >
+      <div aria-live="polite" role="status" className={overlayClass}>
         {inner}
       </div>
     );
