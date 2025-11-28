@@ -37,6 +37,9 @@ export interface Event {
   image: string;
   imageBanner?: string | null;
   imageLugar?: string | null;
+  
+  /** Precio mínimo vigente para el evento (s/.) */
+  minPrice?: number;
 
   artist: Artist;
 

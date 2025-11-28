@@ -121,9 +121,17 @@ class EventoService extends HttpClient {
     // Si NO vienen filtros → devolver todos los eventos sin filtros
     if (!filters) {
       const respuesta = await super.get<EventsWrapper<Event> | Event[]>(path);
-      return Array.isArray(respuesta)
-        ? respuesta
-        : respuesta.eventos ?? respuesta.data ?? [];
+      const raw = Array.isArray(respuesta) ? respuesta : respuesta.eventos ?? respuesta.data ?? [];
+
+      // Normalizar: asegurar que exista la propiedad `artist` con `nombre`.
+      const normalized = (raw as any[]).map((ev: any) => ({
+        // conservar todas las propiedades devueltas por el backend
+        ...ev,
+        // Simplificado: usar `artist` cuando exista, si no usar `artistName`/`artista` como fallback
+        artist: ev.artist ?? { id: ev.artista?.id ?? ev.artistaId ?? 0, nombre: ev.artistName ?? ev.artista?.nombre ?? "" },
+      })) as Event[];
+
+      return normalized;
     }
 
     // Si hay filtros → mapearlos y aplicarlos
@@ -131,9 +139,15 @@ class EventoService extends HttpClient {
 
     const respuesta = await super.get<EventsWrapper<Event> | Event[]>(path, { params });
 
-    return Array.isArray(respuesta)
-      ? respuesta
-      : respuesta.eventos ?? respuesta.data ?? [];
+    const raw = Array.isArray(respuesta) ? respuesta : respuesta.eventos ?? respuesta.data ?? [];
+
+    // Normalizar igual que la rama sin filtros
+    const normalized = (raw as any[]).map((ev: any) => ({
+      ...ev,
+      artist: ev.artist ?? { id: ev.artista?.id ?? ev.artistaId ?? 0, nombre: ev.artistName ?? ev.artista?.nombre ?? "" },
+    })) as Event[];
+
+    return normalized;
   }
 
   async buscarDatosCompraPorId(id: string): Promise<EventDetailsForPurchase> {
