@@ -4,8 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import { SeleccionDeEventos } from "./pages/client/SeleccionDeEventos";
 import { Login } from "@/pages/auth/Login";
-import { RestablecerContraseña } from "@/pages/auth/RestablecerContraseña";
-import { NuevaContraseña } from "@/pages/auth/NuevaContraseña";
 import { Registro } from "@/pages/auth/Registro";
 import { RegistroOrganizador } from "@/pages/auth/RegistroOrganizador";
 import Error404 from "@/pages/Error404";
