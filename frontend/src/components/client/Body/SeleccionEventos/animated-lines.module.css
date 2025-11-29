@@ -1,0 +1,42 @@
+/* animated-lines.module.css */
+
+.wrapper {
+  position: absolute;     /* antes fixed */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;           /* ocupa solo el main */
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* barras laterales */
+.leftContainer,
+.rightContainer {
+  position: absolute;     /* antes fixed */
+  top: 0;
+  height: 100%;           /* altura del contenido del main */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.leftContainer {
+  left: 0;
+}
+
+.rightContainer {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* barras */
+.bar {
+  height: 1vh;
+  transition: background-color 0.4s ease;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+:global(.dark) .bar {
+  background-color: rgba(255, 255, 255, 0.35);
+}

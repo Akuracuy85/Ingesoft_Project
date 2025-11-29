@@ -1,0 +1,390 @@
+import React, { useEffect, useState } from "react";
+import { X } from "lucide-react";
+import UbicacionService, { type LocationOption } from "@/services/UbicacionService";
+import ArtistaService, { type Artista } from "@/services/ArtistaService";
+import NotificationService from "@/services/NotificationService";
+import ModalCrearArtista from "./ModalCrearArtista";
+
+export type EstadoEventoUI = "Publicado" | "Borrador" | "En revisión" | "Cancelado";
+
+export interface NuevoEventoForm {
+  nombre: string;
+  descripcion: string;
+  fecha: string;
+  hora: string;
+  lugar: string;
+  estado: EstadoEventoUI;
+  imagen: File | null;
+  // Cambiado a IDs numéricos
+  departamentoId: number | null;
+  provinciaId: number | null;
+  distritoId: number | null;
+  // Nuevo: artista seleccionado
+  artistaId: number | null;
+}
+
+const defaultForm: NuevoEventoForm = {
+  nombre: "",
+  descripcion: "",
+  fecha: "",
+  hora: "",
+  lugar: "",
+  estado: "Borrador",
+  imagen: null,
+  departamentoId: null,
+  provinciaId: null,
+  distritoId: null,
+  artistaId: null,
+};
+
+interface ModalCrearEventoProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: NuevoEventoForm) => void;
+}
+
+const ModalCrearEvento: React.FC<ModalCrearEventoProps> = ({ open, onClose, onSave }) => {
+  const [form, setForm] = useState<NuevoEventoForm>({ ...defaultForm });
+  const [touchedSubmit, setTouchedSubmit] = useState(false);
+
+  // Opciones de selects
+  const [departamentos, setDepartamentos] = useState<LocationOption[]>([]);
+  const [provincias, setProvincias] = useState<LocationOption[]>([]);
+  const [distritos, setDistritos] = useState<LocationOption[]>([]);
+  const [artistas, setArtistas] = useState<Artista[]>([]);
+  const [openCrearArtista, setOpenCrearArtista] = useState(false);
+
+  // Reset del formulario al abrir
+  useEffect(() => {
+    if (open) {
+      setForm({ ...defaultForm });
+      setTouchedSubmit(false);
+      // Cargar departamentos
+      UbicacionService.getDepartamentos().then(setDepartamentos).catch(() => setDepartamentos([]));
+      setProvincias([]);
+      setDistritos([]);
+      // Cargar artistas
+      ArtistaService.getArtistas().then(setArtistas).catch(() => setArtistas([]));
+    }
+  }, [open]);
+
+  const onChangeText = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    setForm((prev) => ({ ...prev, imagen: file }));
+  };
+
+  const handleDepartamentoChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, departamentoId: selectedId, provinciaId: null, distritoId: null }));
+    setDistritos([]);
+    if (selectedId) {
+      const provs = await UbicacionService.getProvincias(selectedId).catch(() => []);
+      setProvincias(provs);
+    } else {
+      setProvincias([]);
+    }
+  };
+
+  const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, provinciaId: selectedId, distritoId: null }));
+    setDistritos([]);
+    if (selectedId && form.departamentoId) {
+      const dists = await UbicacionService.getDistritos(form.departamentoId, selectedId).catch(() => []);
+      setDistritos(dists);
+    }
+  };
+
+  const handleDistritoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value ? Number(e.target.value) : null;
+    setForm((prev) => ({ ...prev, distritoId: selectedId }));
+  };
+
+  const handleArtistaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const parsed = value ? Number(value) : NaN;
+    setForm((prev) => ({ ...prev, artistaId: !isNaN(parsed) && parsed > 0 ? parsed : null }));
+  };
+
+  const handleArtistaCreado = async (nuevoId: number) => {
+    // Refrescar lista y seleccionar
+    const lista = await ArtistaService.getArtistas();
+    setArtistas(lista);
+    setForm((prev) => ({ ...prev, artistaId: nuevoId }));
+  };
+
+  const handleGuardar = () => {
+    setTouchedSubmit(true);
+
+    // Validación de campos obligatorios
+    if (
+      !form.nombre.trim() ||
+      !form.descripcion.trim() ||
+      !form.fecha ||
+      !form.hora ||
+      !form.departamentoId ||
+      !form.provinciaId ||
+      !form.distritoId ||
+      !form.lugar.trim() ||
+      !form.artistaId
+    ) {
+      NotificationService.warning("Por favor completa todos los campos obligatorios");
+      return;
+    }
+
+    // Forzar estado = "Borrador" antes de enviar
+    const data: NuevoEventoForm = { ...form, estado: "Borrador" };
+    onSave(data);
+  };
+
+  const nombreError = touchedSubmit && !form.nombre.trim();
+  const descripcionError = touchedSubmit && !form.descripcion.trim();
+  const fechaError = touchedSubmit && !form.fecha;
+  const horaError = touchedSubmit && !form.hora;
+  const departamentoError = touchedSubmit && !form.departamentoId;
+  const provinciaError = touchedSubmit && !form.provinciaId;
+  const distritoError = touchedSubmit && !form.distritoId;
+  const lugarError = touchedSubmit && !form.lugar.trim();
+  const artistaError = touchedSubmit && !form.artistaId;
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center" onClick={onClose}>
+      <div
+        className="mx-auto bg-white text-gray-900 dark:bg-card dark:text-card-foreground rounded-lg shadow-lg p-6 w-full max-w-lg overflow-y-auto"
+        style={{ maxHeight: 'calc(100vh - 4rem)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Crear nuevo evento</h3>
+          <button type="button" onClick={onClose} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100" aria-label="Cerrar">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="space-y-4 px-1">
+          {/* Nombre del evento */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Nombre del evento<span className="text-red-500"> *</span>
+            </label>
+            <input
+              type="text"
+              name="nombre"
+              value={form.nombre}
+              onChange={onChangeText}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                nombreError ? "border-red-500" : "border-gray-300 dark:border-border"
+              }`}
+            />
+            {nombreError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Descripción */}
+          <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Descripción<span className="text-red-500"> *</span>
+            </label>
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={onChangeText}
+              rows={4}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                descripcionError ? "border-red-500" : "border-gray-300 dark:border-border"
+              }`}
+            />
+            {descripcionError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Artista */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center justify-between">
+              <span>Artista <span className="text-red-500">*</span></span>
+              <button type="button" onClick={() => setOpenCrearArtista(true)} className="text-xs px-2 py-1 rounded bg-amber-500 text-white dark:text-gray-900 hover:bg-amber-600" aria-label="Crear artista">
+                + Nuevo
+              </button>
+            </label>
+            <select
+              name="artistaId"
+              value={form.artistaId ?? ""}
+              onChange={handleArtistaChange}
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                artistaError ? "border-red-500" : "border-gray-300 dark:border-border"
+              }`}
+            >
+              <option value="">Selecciona artista</option>
+              {artistas.map((a) => (
+                <option key={a.id} value={String(a.id)}>{a.nombre}</option>
+              ))}
+            </select>
+            {artistaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Fecha y Hora */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Fecha <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="fecha"
+                value={form.fecha}
+                onChange={onChangeText}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  fechaError ? "border-red-500" : "border-gray-300 dark:border-border"
+                }`}
+              />
+              {fechaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Hora <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="time"
+                name="hora"
+                value={form.hora}
+                onChange={onChangeText}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  horaError ? "border-red-500" : "border-gray-300 dark:border-border"
+                }`}
+              />
+              {horaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+          </div>
+
+          {/* Ubicación: Departamento / Provincia / Distrito */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Departamento <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="departamento"
+                value={form.departamentoId ?? ""}
+                onChange={handleDepartamentoChange}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                  departamentoError ? "border-red-500" : "border-gray-300 dark:border-border"
+                }`}
+              >
+                <option value="">Selecciona departamento</option>
+                {departamentos.map((d) => (
+                  <option key={d.id} value={d.id}>{d.nombre}</option>
+                ))}
+              </select>
+              {departamentoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Provincia <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="provincia"
+                value={form.provinciaId ?? ""}
+                onChange={handleProvinciaChange}
+                disabled={!form.departamentoId}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 dark:disabled:bg-slate-700 ${
+                  provinciaError ? "border-red-500" : "border-gray-300 dark:border-border"
+                }`}
+              >
+                <option value="">Selecciona provincia</option>
+                {provincias.map((p) => (
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
+                ))}
+              </select>
+              {provinciaError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Distrito <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="distrito"
+                value={form.distritoId ?? ""}
+                onChange={handleDistritoChange}
+                disabled={!form.departamentoId || !form.provinciaId}
+                className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100 dark:disabled:bg-slate-700 ${
+                  distritoError ? "border-red-500" : "border-gray-300 dark:border-border"
+                }`}
+              >
+                <option value="">Selecciona distrito</option>
+                {distritos.map((di) => (
+                  <option key={di.id} value={di.id}>{di.nombre}</option>
+                ))}
+              </select>
+              {distritoError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+            </div>
+          </div>
+
+          {/* Lugar */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Lugar <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              name="lugar"
+              value={form.lugar}
+              onChange={onChangeText}
+              placeholder="Ej: Teatro Nacional"
+              className={`w-full border rounded-md px-3 py-2 text-sm bg-white dark:bg-card dark:text-card-foreground dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
+                lugarError ? "border-red-500" : "border-gray-300 dark:border-border"
+              }`}
+            />
+            {lugarError && <p className="mt-1 text-xs text-red-600">Este campo es obligatorio.</p>}
+          </div>
+
+          {/* Estado (oculto en creación) */}
+          {/* Campo de estado removido del UI. Se fuerza a "Borrador" al guardar. */}
+
+          {/* Imagen */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Imagen de portada del evento</label>
+            <input
+              type="file"
+              name="imagen"
+              accept="image/*"
+              onChange={onChangeFile}
+              className="block w-full text-sm text-gray-700 dark:text-card-foreground file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 dark:file:bg-card file:text-gray-700 dark:file:text-card-foreground hover:file:bg-gray-200 dark:hover:file:bg-slate-600"
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño recomendado: 1200 × 600 px. Se mostrará en la vista pública del evento.</p>
+            {form.imagen && (
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">Archivo seleccionado: {form.imagen.name}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleGuardar}
+            className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white dark:text-gray-900"
+          >
+            Guardar evento
+          </button>
+        </div>
+      </div>
+      <ModalCrearArtista open={openCrearArtista} onClose={() => setOpenCrearArtista(false)} onCreated={handleArtistaCreado} />
+    </div>
+  );
+};
+
+export default ModalCrearEvento;

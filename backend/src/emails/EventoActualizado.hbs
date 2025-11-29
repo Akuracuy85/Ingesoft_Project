@@ -1,0 +1,50 @@
+<html>
+  <body style="font-family: Arial, sans-serif; background-color:#fafafa; padding: 20px;">
+    <h2 style="color:#1976d2;">🔔 Actualización del evento: {{evento.nombre}}</h2>
+
+    <p>Hola!</p>
+    <p>
+      Queremos informarte que el evento 
+      <strong>{{evento.nombre}}</strong> ha sido actualizado recientemente.
+    </p>
+
+    <div style="margin-top: 20px;">
+      <h3>Detalles actualizados:</h3>
+      <table cellpadding="8" cellspacing="0" style="background:#fff; border-radius:10px; border:1px solid #ddd;">
+        <tr>
+          <td><strong>📅 Nueva fecha:</strong></td>
+          <td>{{fechaFormateada}}</td>
+        </tr>
+        <tr>
+          <td><strong>📍 Lugar:</strong></td>
+          <td>{{evento.lugar}}, {{evento.distrito}}, {{evento.provincia}}</td>
+        </tr>
+        {{#if evento.descripcion}}
+        <tr>
+          <td><strong>📝 Descripción:</strong></td>
+          <td>{{evento.descripcion}}</td>
+        </tr>
+        {{/if}}
+        {{#if evento.artista}}
+        <tr>
+          <td><strong>🎤 Artista:</strong></td>
+          <td>{{evento.artista.nombre}}</td>
+        </tr>
+        {{/if}}
+      </table>
+    </div>
+
+    <div style="margin-top: 30px; background-color: #e3f2fd; border: 1px solid #bbdefb; padding: 15px; border-radius: 10px;">
+      <h3 style="margin-top: 0; color: #0d47a1;">Información importante:</h3>
+      <p>
+        Te recomendamos revisar los nuevos detalles antes del evento. 
+        Si no puedes asistir en la nueva fecha o tienes alguna duda, 
+        comunícate con el organizador o revisa tu cuenta para más información.
+      </p>
+    </div>
+
+    <p style="margin-top: 40px;">Gracias por tu atención,<br>El equipo de <strong>Unite</strong></p>
+
+    {{> Footer }}
+  </body>
+</html>
