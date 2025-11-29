@@ -25,7 +25,7 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
     // Función para convertir las opciones al formato que espera CustomDropdown
     const withTodos = useMemo(() => (options: LocationOption[]): Option[] => {
         const mappedOptions: Option[] = options.map(opt => ({
-            id: String(opt.id),
+            id: opt.nombre,
             nombre: opt.nombre
         }));
         return [{ id: "", nombre: "Todos" }, ...mappedOptions];
@@ -40,21 +40,24 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
             return;
         }
 
+        const deptObj = departamentoOptions.find(d => d.nombre === departamento);
+        if (!deptObj) return;
+
         let isMounted = true;
         // Llamar al servicio para obtener las provincias del departamento seleccionado
-        MetadataService.getProvincias(Number(departamento))
+        MetadataService.getProvincias(Number(deptObj.id))
             .then(data => {
                 if (isMounted) {
                     setProvincias(data);
                     // Si la provincia seleccionada anteriormente no está en la nueva lista, se limpia
-                    if (provincia && !data.some(p => p.id === Number(provincia))) {
+                    if (provincia && !data.some(p => p.nombre === provincia)) {
                         onChange({ ...value, provincia: null, distrito: null });
                     }
                 }
             });
 
         return () => { isMounted = false; };
-    }, [departamento]); // Se ejecuta solo cuando el ID del departamento cambia
+    }, [departamento, departamentoOptions]);
 
     // EFECTO 2: Cargar Distritos cuando cambia la PROVINCIA (o el departamento)
     useEffect(() => {
@@ -64,21 +67,25 @@ export const LocationSelect = ({ value, onChange, departamentoOptions }: Locatio
             return;
         }
 
+        const deptObj = departamentoOptions.find(d => d.nombre === departamento);
+        const provObj = provincias.find(p => p.nombre === provincia);
+        if (!deptObj || !provObj) return;
+
         let isMounted = true;
         // Llamar al servicio para obtener los distritos
-        MetadataService.getDistritos(Number(departamento), Number(provincia))
+        MetadataService.getDistritos(Number(deptObj.id), Number(provObj.id))
             .then(data => {
                 if (isMounted) {
                     setDistritos(data);
                     // Si el distrito seleccionado anteriormente no está en la nueva lista, se limpia
-                    if (distrito && !data.some(d => d.id === Number(distrito))) {
+                    if (distrito && !data.some(d => d.nombre === distrito)) {
                         onChange({ ...value, distrito: null });
                     }
                 }
             });
 
         return () => { isMounted = false; };
-    }, [provincia, departamento]); // Se ejecuta cuando el ID de la provincia o departamento cambia
+    }, [provincia, departamento, provincias]);
 
     return (
         <div className="mb-6 min-w-0">
