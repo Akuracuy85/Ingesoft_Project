@@ -6,12 +6,14 @@ import { Moon, Sun } from "lucide-react";
 
 import LogoLight from "@/assets/Logo_Unite_Modo_Claro.svg";
 import LogoDark from "@/assets/Logo_Unite_Modo_Oscuro.svg";
+import { useAuth } from "@/hooks/useAuth";
 
 // 1. Definimos el tipo para el componente. 
 // 'React.FC' (Functional Component) se usa para componentes que no tienen props o que tienen props bien definidas.
 const HeaderOrganizador: React.FC = () => {
 
   const { isDark, toggleDarkMode } = useDarkMode();
+  const { user } = useAuth();
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-8">
@@ -44,7 +46,7 @@ const HeaderOrganizador: React.FC = () => {
           )}
         </button>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-foreground font-medium">Organizador</span>
+          <span className="text-sm text-foreground font-medium">{user?.RazonSocial}</span>
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
             <img
               src={userIcon}

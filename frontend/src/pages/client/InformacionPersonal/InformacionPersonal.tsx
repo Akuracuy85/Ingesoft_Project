@@ -20,6 +20,7 @@ import PerfilService from "../../../services/PerfilService";
 import Loading from '@/components/common/Loading';
 import { FormatearTarjeta, TipoDeTarjeta } from "@/utils/TarjetaUtils";
 import type { Tarjeta } from "@/models/Tarjeta";
+import { useAuth } from "@/hooks/useAuth";
 
 const soloLetras = (valor: string) =>
   /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor);
@@ -49,6 +50,8 @@ export default function InformacionPersonal() {
   const [loading, setLoading] = useState(true);
 
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -275,7 +278,7 @@ px-10 lg:px-20 py-12 max-w-[1600px] mx-auto">
                 </div>
 
                 <div className="pt-4">
-                  <Button onClick={handleSaveChanges} className="bg-[#D59B2C] hover:bg-[#C08A25] text-white px-8">
+                  <Button onClick={handleSaveChanges} className="bg-[#D59B2C] hover:bg-[#C08A25] text-white px-8 dark:text-gray-900">
                     Guardar cambios
                   </Button>
                 </div>
@@ -283,7 +286,9 @@ px-10 lg:px-20 py-12 max-w-[1600px] mx-auto">
             </Card>
 
             {/* Tarjetas guardadas */}
-            <Card className="shadow-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            { 
+              user?.rol === "CLIENTE" && 
+              <Card className="shadow-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
               <CardHeader>
                 <CardTitle className="text-xl">Tarjetas guardadas</CardTitle>
                 <CardDescription>Cuentas con estas tarjetas para futuras compras.</CardDescription>
@@ -324,7 +329,7 @@ px-10 lg:px-20 py-12 max-w-[1600px] mx-auto">
                             setShowDeleteAlert(true);
                           }}
                           className="border-red-300 dark:border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
+                          >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -335,22 +340,25 @@ px-10 lg:px-20 py-12 max-w-[1600px] mx-auto">
                 )}
               </CardContent>
             </Card>
+          }
           </div>
 
           {/* Puntos */}
+          { user?.rol === "CLIENTE" && 
           <div>
-            <Card className="shadow-sm bg-gradient-to-br from-[#D59B2C] to-[#C08A25] text-white dark:text-white">
-              <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center gap-2">
-                  <Star className="w-5 h-5" /> Puntos acumulados
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center py-6">
-                <p className="text-6xl font-bold mb-2">{points.toLocaleString()}</p>
-                <p className="text-lg opacity-90">puntos</p>
-              </CardContent>
-            </Card>
-          </div>
+              <Card className="shadow-sm bg-gradient-to-br from-[#D59B2C] to-[#C08A25] text-white dark:text-white">
+                <CardHeader>
+                  <CardTitle className="text-xl text-white flex items-center gap-2">
+                    <Star className="w-5 h-5" /> Puntos acumulados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center py-6">
+                  <p className="text-6xl font-bold mb-2">{points.toLocaleString()}</p>
+                  <p className="text-lg opacity-90">puntos</p>
+                </CardContent>
+              </Card>
+            </div>
+          }
         </div>
       </div>
 
