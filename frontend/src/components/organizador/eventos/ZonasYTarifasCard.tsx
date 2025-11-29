@@ -303,7 +303,7 @@ const ZonasYTarifasCard: React.FC<ZonasYTarifasCardProps> = ({ eventoId, eventoE
       <label className="border-2 border-dashed border-gray-300 dark:border-border rounded-md flex flex-col items-center justify-center h-48 mb-5 text-gray-500 dark:text-card-foreground hover:bg-gray-50 dark:hover:bg-card cursor-pointer relative overflow-hidden">
         {imageLugarBase64 ? (
           <img
-            src={imageLugarBase64.startsWith('data:') ? imageLugarBase64 : `data:image/*;base64,${imageLugarBase64}`}
+            src={imageLugarBase64}
             alt="Mapa / Imagen del lugar"
             className="absolute inset-0 w-full h-full object-cover"
           />
